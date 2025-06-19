@@ -11,18 +11,18 @@ import {
 
 // 默认配置对象
 const defaultConfig = {
+  MSG_SECRET,
   BASE_URL,
   SOCKET_URL,
   STATIC_URL,
   FAST_STATIC_URL,
   LOW_STATIC_URL: STATIC_URL,
-  MSG_SECRET,
   THUMBNAIL_URL: `${BASE_URL}Thumbnail/`,
 };
 
 /**
  * 获取基础配置
- * @returns {Promise<Object|null>} 配置对象或null
+ * @returns {Promise<Object>} 配置对象
  */
 export const getBaseConfig = async () => {
   if (!COULD_URL) {
@@ -40,6 +40,6 @@ export const getBaseConfig = async () => {
     };
   } catch (error) {
     console.error('获取云端配置失败:', error);
-    return null;
+    return defaultConfig;
   }
 };

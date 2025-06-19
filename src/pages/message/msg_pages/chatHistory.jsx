@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import {View, Card, LoaderScreen, Colors} from 'react-native-ui-lib';
 import {useToast} from '../../../components/commom/Toast';
 import {useRealm} from '@realm/react';
-import {getUserMsgList} from '../../../api/dataManager';
+import {getSessionDetail} from '../../../api/session';
 import {formatMsg, setLocalMsg} from '../../../utils/handle/chatHandle';
 import ListItem from '../../../components/commom/ListItem';
 import BaseDialog from '../../../components/commom/BaseDialog';
@@ -29,10 +29,10 @@ const ChatHistory = ({navigation, route}) => {
   const getCouldChatHistory = async () => {
     try {
       setLoading(true);
-      const res = await getUserMsgList({session_id, isPaging: 0});
+      const res = await getSessionDetail({session_id, msg_status: 'read'});
       if (res.success) {
         const newlist = [];
-        res.data.list.forEach(item => {
+        res.data.msgs.forEach(item => {
           newlist.push(formatMsg(item));
         });
         setLocalMsg(realm, newlist);

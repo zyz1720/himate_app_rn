@@ -161,7 +161,6 @@ const Chat = React.memo(({navigation, route}) => {
         chat_type: chatType,
         msg_status: 'unread',
       });
-      console.log(unreadRes);
 
       if (unreadRes.success) {
         const {id: sess_id, msgs, mate, group} = unreadRes.data;
