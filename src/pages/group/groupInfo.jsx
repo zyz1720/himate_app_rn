@@ -36,7 +36,7 @@ import {
   requestFolderPermission,
 } from '../../stores/store-slice/permissionStore';
 import {formatMsg, setLocalMsg} from '../../utils/handle/chatHandle';
-import {getUserMsgList} from '../../api/dataManager';
+import {getSessionDetail} from '../../../api/session';
 import {delSessionMsgs} from '../../api/dataManager';
 
 const GroupInfo = ({navigation, route}) => {
@@ -266,10 +266,10 @@ const GroupInfo = ({navigation, route}) => {
   const getCouldChatHistory = async () => {
     try {
       setRefreshing(true);
-      const res = await getUserMsgList({session_id, isPaging: 0});
+      const res = await getSessionDetail({session_id, msg_status: 'read'});
       if (res.success) {
         const newlist = [];
-        res.data.list.forEach(item => {
+        res.data.msgs.forEach(item => {
           newlist.push(formatMsg(item));
         });
         setLocalMsg(realm, newlist);
