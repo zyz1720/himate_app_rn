@@ -36,7 +36,7 @@ import {
   requestFolderPermission,
 } from '../../stores/store-slice/permissionStore';
 import {formatMsg, setLocalMsg} from '../../utils/handle/chatHandle';
-import {getSessionDetail} from '../../../api/session';
+import {getSessionDetail} from '../../api/session';
 import {delSessionMsgs} from '../../api/dataManager';
 
 const GroupInfo = ({navigation, route}) => {
