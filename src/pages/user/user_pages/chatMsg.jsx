@@ -56,7 +56,6 @@ const ChatMsg = ({navigation, route}) => {
       .then(JSONfiles => {
         setImportFile(JSONfiles);
         setInputVisible(true);
-        // console.log('文件:', JSONfiles);
       })
       .finally();
   };

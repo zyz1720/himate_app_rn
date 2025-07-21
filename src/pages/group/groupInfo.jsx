@@ -299,9 +299,65 @@ const GroupInfo = ({navigation, route}) => {
   }, [session_id]);
 
   const [isExpand, setIsExpand] = useState(false);
+
+  const renderMembers = () => {
+    return groupInfo?.members?.map(item => (
+      <View key={item.id}>
+        <TouchableOpacity
+          key={item.id}
+          flexS
+          center
+          onLongPress={() => {
+            if (groupRole !== 'member') {
+              Vibration.vibrate(50);
+              setShowActionSheet(true);
+              setEditMemberInfo({
+                id: item.id,
+                member_remark: item.member_remark,
+                member_role: item.member_role,
+                member_status: item.member_status,
+              });
+            }
+          }}
+          onPress={() => {
+            navigation.navigate('Mateinfo', {
+              uid: item.member_uid,
+            });
+          }}>
+          <Avatar
+            source={{
+              uri: STATIC_URL + item.member_avatar,
+            }}
+            imageStyle={{
+              opacity: item.member_status === 'forbidden' ? 0.2 : 1,
+            }}
+            ribbonLabel={
+              item.member_role === 'owner'
+                ? '群主'
+                : item.member_role === 'admin'
+                ? '管理员'
+                : null
+            }
+            ribbonStyle={{
+              backgroundColor:
+                item.member_role === 'owner'
+                  ? Colors.Primary
+                  : item.member_role === 'admin'
+                  ? Colors.yellow30
+                  : null,
+            }}
+          />
+          <Text text90L numberOfLines={1} style={{maxWidth: 60}}>
+            {item.member_remark}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    ));
+  };
   return (
     <>
       <ScrollView
+        style={{flex: 1}}
         refreshControl={
           <RefreshControl
             colors={[Colors.Primary]}
@@ -492,7 +548,7 @@ const GroupInfo = ({navigation, route}) => {
               children={
                 <>
                   {groupRole !== 'member' ? (
-                    <View marginB-6 flexS>
+                    <View flexS>
                       <Text text90L grey30 center>
                         <FontAwesome
                           name="info-circle"
@@ -503,66 +559,7 @@ const GroupInfo = ({navigation, route}) => {
                       </Text>
                     </View>
                   ) : null}
-                  <GridList
-                    data={groupInfo?.members}
-                    containerWidth={fullWidth * 0.9}
-                    contentContainerStyle={{paddingBottom: 12}}
-                    maxItemWidth={80}
-                    numColumns={4}
-                    itemSpacing={12}
-                    listPadding={12}
-                    renderItem={({item}) => (
-                      <TouchableOpacity
-                        key={item.id}
-                        flexS
-                        center
-                        onLongPress={() => {
-                          if (groupRole !== 'member') {
-                            Vibration.vibrate(50);
-                            setShowActionSheet(true);
-                            setEditMemberInfo({
-                              id: item.id,
-                              member_remark: item.member_remark,
-                              member_role: item.member_role,
-                              member_status: item.member_status,
-                            });
-                          }
-                        }}
-                        onPress={() => {
-                          navigation.navigate('Mateinfo', {
-                            uid: item.member_uid,
-                          });
-                        }}>
-                        <Avatar
-                          source={{
-                            uri: STATIC_URL + item.member_avatar,
-                          }}
-                          imageStyle={{
-                            opacity:
-                              item.member_status === 'forbidden' ? 0.2 : 1,
-                          }}
-                          ribbonLabel={
-                            item.member_role === 'owner'
-                              ? '群主'
-                              : item.member_role === 'admin'
-                              ? '管理员'
-                              : null
-                          }
-                          ribbonStyle={{
-                            backgroundColor:
-                              item.member_role === 'owner'
-                                ? Colors.Primary
-                                : item.member_role === 'admin'
-                                ? Colors.yellow30
-                                : null,
-                          }}
-                        />
-                        <Text text90L numberOfLines={1} style={{maxWidth: 60}}>
-                          {item.member_remark}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-                  />
+                  <View style={styles.membersGrid}>{renderMembers()}</View>
                 </>
               }
               onPress={() => {}}
@@ -825,6 +822,14 @@ const styles = StyleSheet.create({
   inputLine: {
     borderBottomColor: Colors.grey60,
     borderBottomWidth: 1,
+  },
+  membersGrid: {
+    flex: 1,
+    flexWrap: 'wrap',
+    flexDirection: 'row',
+    columnGap: 38,
+    rowGap: 12,
+    padding: 16,
   },
 });
 export default GroupInfo;

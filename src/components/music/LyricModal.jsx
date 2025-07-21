@@ -307,7 +307,7 @@ const LyricModal = React.memo(props => {
                 <View padding-26>
                   <View row centerV spread marginT-12>
                     <View flexS>
-                      <Text text50BO color={Colors.lyricColor}>
+                      <Text text60BO color={Colors.lyricColor}>
                         {Music?.title ?? '还没有要播放的音乐 ~'}
                       </Text>
                       <Text marginT-6 color={Colors.lyricColor} text70>
@@ -359,7 +359,7 @@ const LyricModal = React.memo(props => {
                     </View>
                   </View>
 
-                  <View row centerV spread marginT-16>
+                  <View row centerV spread marginT-8>
                     <TouchableOpacity
                       style={styles.musicBut}
                       onPress={OnChangeMode}>

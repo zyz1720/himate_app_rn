@@ -22,8 +22,6 @@ instance.interceptors.request.use(
     if (userToken) {
       config.headers.Authorization = 'Bearer ' + userToken; // 让每个请求携带自定义token
     }
-    console.log(111, config.data);
-
     return config;
   },
   function (error) {

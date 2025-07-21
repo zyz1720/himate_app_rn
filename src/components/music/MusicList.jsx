@@ -298,7 +298,7 @@ const MusicList = props => {
       setNowFileIndex(i + 1);
       const savePath = await DownloadFile(
         STATIC_URL + file.file_name,
-        `${file.title} - ${file.artist}.${getFileExt(file.file_name)}`,
+        `${file.title} - ${file.artist.replace(/\//g, ' - ')}.${getFileExt(file.file_name)}`,
         progress => {
           if (progress) {
             setDownloadProgress(progress);

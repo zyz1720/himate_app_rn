@@ -44,6 +44,7 @@ export class MusicInfo extends Realm.Object {
       sampleRate: 'int?',
       bitrate: 'int?',
       title: 'string',
+      artist: 'string',
       artists: 'string?[]',
       album: 'string?',
       createdAt: 'string',
