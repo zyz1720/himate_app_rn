@@ -65,7 +65,7 @@ const FindFavorites = ({navigation}) => {
             link
             linkColor={Colors.Primary}
             onPress={() => {
-              setPageNum(1);
+              setPageNum(0);
               setFavoritesList([]);
               getAllFavoritesList();
             }}
