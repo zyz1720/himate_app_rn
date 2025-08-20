@@ -103,7 +103,7 @@ export const formatLrc = Music => {
   };
 };
 
-export const mergeArraysByIndex = (array1, array2 = [], array3 = []) => {
+export const mergeArraysByIndex = (array1 = [], array2 = [], array3 = []) => {
   const maxLength = array1.length;
   if (maxLength === 0) {
     return [];

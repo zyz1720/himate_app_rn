@@ -247,8 +247,10 @@ const LrcView = React.memo(props => {
       const isActive = nowIndex === index;
       let progress = 0;
       let visibleChars = '';
-      const fullText = item.words.map(w => w.char).join('');
-      if (isActive) {
+      const fullText = item?.words
+        ? item.words.map(w => w.char).join('')
+        : item?.text;
+      if (isActive && item?.words) {
         const lineTime = CurrentTime - item.startTime;
         progress = Math.min(Math.max(lineTime / item.duration, 0), 1);
 
@@ -329,7 +331,7 @@ const LrcView = React.memo(props => {
             ref={flatListRef}
             data={parsedLrc}
             renderItem={renderItem}
-            keyExtractor={item => item.id.toString()}
+            keyExtractor={item => item?.id || item?.time}
             contentContainerStyle={{
               paddingVertical: isTwoLines
                 ? lrcHeight / 2 - 48
