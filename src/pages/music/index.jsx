@@ -471,7 +471,12 @@ const Music = ({navigation}) => {
                 setShowImportDialog(true);
                 setImportUrl('');
               }}>
-              <AntDesign name="login" color={Colors.grey40} size={18} />
+              <AntDesign
+                name="login"
+                style={styles.importStyle}
+                color={Colors.grey40}
+                size={18}
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -762,6 +767,9 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderWidth: 2,
     borderColor: Colors.white,
+  },
+  importStyle: {
+    transform: [{rotate: '180deg'}],
   },
 });
 export default Music;

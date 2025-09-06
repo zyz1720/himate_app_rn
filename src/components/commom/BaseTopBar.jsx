@@ -9,7 +9,7 @@ const BaseTopBar = props => {
     Routes = [],
     FocusIndex = 0,
     OnChangeIndex = () => {},
-    HeightScale = 0.84,
+    HeightScale = 0.92,
   } = props;
 
   return (

@@ -71,8 +71,6 @@ import Animated, {
   withSpring,
   runOnJS,
   Easing,
-  FadeInDown,
-  FadeOutDown,
 } from 'react-native-reanimated';
 import {fullWidth, fullHeight} from '../../../styles';
 import {DownloadFile} from '../../../utils/handle/fileHandle';
@@ -1308,174 +1306,160 @@ const Chat = React.memo(({navigation, route}) => {
   /* 自定义下方内容 */
   const renderAccessory = props => {
     return showMore ? (
-      <Animated.View entering={FadeInDown} exiting={FadeOutDown}>
-        <View flexS row paddingT-8 paddingH-8 spread>
+      <View flexS row paddingT-8 paddingH-8 spread>
+        <TouchableOpacity
+          flexS
+          centerH
+          onPress={() => {
+            showToast('长按开始说话', 'warning');
+          }}>
+          <GestureHandlerRootView>
+            <GestureDetector gesture={gesture}>
+              <View
+                flexS
+                center
+                backgroundColor={Colors.Primary}
+                style={styles.radioBut}>
+                <FontAwesome name="microphone" color={Colors.white} size={24} />
+              </View>
+            </GestureDetector>
+          </GestureHandlerRootView>
+          <Text marginT-4 text90L grey30>
+            语音
+          </Text>
+        </TouchableOpacity>
+        <View flexS row>
           <TouchableOpacity
             flexS
             centerH
             onPress={() => {
-              showToast('长按开始说话', 'warning');
+              if (!accessCamera) {
+                showToast('请授予应用相机使用权限', 'warning');
+                dispatch(requestCameraPermission());
+                return;
+              }
+              ImagePicker.openCamera({
+                cropping: true,
+                mediaType: 'photo',
+                cropperActiveWidgetColor: Colors.Primary,
+              })
+                .then(image => {
+                  sendMediaMsg([image], 'camera');
+                })
+                .finally(() => {
+                  setShowMore(false);
+                });
             }}>
-            <GestureHandlerRootView>
-              <GestureDetector gesture={gesture}>
-                <View
-                  flexS
-                  center
-                  backgroundColor={Colors.Primary}
-                  style={styles.radioBut}>
-                  <FontAwesome
-                    name="microphone"
-                    color={Colors.white}
-                    size={24}
-                  />
-                </View>
-              </GestureDetector>
-            </GestureHandlerRootView>
+            <View
+              flexS
+              center
+              backgroundColor={Colors.grey40}
+              style={styles.otherBut}>
+              <FontAwesome name="camera" color={Colors.white} size={20} />
+            </View>
             <Text marginT-4 text90L grey30>
-              语音
+              拍照
             </Text>
           </TouchableOpacity>
-          <View flexS row>
-            <TouchableOpacity
-              flexS
-              centerH
-              onPress={() => {
-                if (!accessCamera) {
-                  showToast('请授予应用相机使用权限', 'warning');
-                  dispatch(requestCameraPermission());
-                  return;
-                }
-                ImagePicker.openCamera({
-                  cropping: true,
-                  mediaType: 'photo',
-                  cropperActiveWidgetColor: Colors.Primary,
+          <TouchableOpacity
+            flexS
+            centerH
+            marginL-16
+            onPress={() => {
+              if (!accessCamera) {
+                showToast('请授予应用相机使用权限', 'warning');
+                dispatch(requestCameraPermission());
+                return;
+              }
+              ImagePicker.openCamera({
+                mediaType: 'video',
+              })
+                .then(video => {
+                  sendMediaMsg([video], 'camera');
                 })
-                  .then(image => {
-                    sendMediaMsg([image], 'camera');
-                  })
-                  .finally(() => {
-                    setShowMore(false);
-                  });
-              }}>
-              <View
-                flexS
-                center
-                backgroundColor={Colors.grey40}
-                style={styles.otherBut}>
-                <FontAwesome name="camera" color={Colors.white} size={20} />
-              </View>
-              <Text marginT-4 text90L grey30>
-                拍照
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+                .finally(() => {
+                  setShowMore(false);
+                });
+            }}>
+            <View
               flexS
-              centerH
-              marginL-16
-              onPress={() => {
-                if (!accessCamera) {
-                  showToast('请授予应用相机使用权限', 'warning');
-                  dispatch(requestCameraPermission());
-                  return;
-                }
-                ImagePicker.openCamera({
-                  mediaType: 'video',
+              center
+              backgroundColor={Colors.blue40}
+              style={styles.otherBut}>
+              <FontAwesome name="video-camera" color={Colors.white} size={24} />
+            </View>
+            <Text marginT-4 text90L grey30>
+              录像
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            flexS
+            centerH
+            marginL-16
+            onPress={() => {
+              if (!accessFolder) {
+                showToast('请授予媒体使用权限', 'warning');
+                dispatch(requestFolderPermission());
+                return;
+              }
+              ImagePicker.openPicker({
+                cropping: true,
+                mediaType: 'photo',
+                cropperActiveWidgetColor: Colors.Primary,
+              })
+                .then(image => {
+                  sendMediaMsg([image], 'camera');
                 })
-                  .then(video => {
-                    sendMediaMsg([video], 'camera');
-                  })
-                  .finally(() => {
-                    setShowMore(false);
-                  });
-              }}>
-              <View
-                flexS
-                center
-                backgroundColor={Colors.blue40}
-                style={styles.otherBut}>
-                <FontAwesome
-                  name="video-camera"
-                  color={Colors.white}
-                  size={24}
-                />
-              </View>
-              <Text marginT-4 text90L grey30>
-                录像
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+                .finally(() => {
+                  setShowMore(false);
+                });
+            }}>
+            <View
               flexS
-              centerH
-              marginL-16
-              onPress={() => {
-                if (!accessFolder) {
-                  showToast('请授予媒体使用权限', 'warning');
-                  dispatch(requestFolderPermission());
-                  return;
-                }
-                ImagePicker.openPicker({
-                  cropping: true,
-                  mediaType: 'photo',
-                  cropperActiveWidgetColor: Colors.Primary,
+              center
+              backgroundColor={Colors.cyan40}
+              style={styles.otherBut}>
+              <FontAwesome name="image" color={Colors.white} size={24} />
+            </View>
+            <Text marginT-4 text90L grey30>
+              图库
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            flexS
+            centerH
+            marginL-16
+            onPress={() => {
+              if (!accessFolder) {
+                showToast('请授予应用文件和媒体使用权限', 'warning');
+                dispatch(requestFolderPermission());
+                return;
+              }
+              DocumentPicker.pick({
+                type: [DocumentPicker.types.allFiles],
+                allowMultiSelection: true,
+              })
+                .then(medias => {
+                  // console.log('文件:', medias);
+                  sendMediaMsg(medias, 'folder');
                 })
-                  .then(image => {
-                    sendMediaMsg([image], 'camera');
-                  })
-                  .finally(() => {
-                    setShowMore(false);
-                  });
-              }}>
-              <View
-                flexS
-                center
-                backgroundColor={Colors.cyan40}
-                style={styles.otherBut}>
-                <FontAwesome name="image" color={Colors.white} size={24} />
-              </View>
-              <Text marginT-4 text90L grey30>
-                图库
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+                .finally(() => {
+                  setShowMore(false);
+                });
+            }}>
+            <View
               flexS
-              centerH
-              marginL-16
-              onPress={() => {
-                if (!accessFolder) {
-                  showToast('请授予应用文件和媒体使用权限', 'warning');
-                  dispatch(requestFolderPermission());
-                  return;
-                }
-                DocumentPicker.pick({
-                  type: [DocumentPicker.types.allFiles],
-                  allowMultiSelection: true,
-                })
-                  .then(medias => {
-                    // console.log('文件:', medias);
-                    sendMediaMsg(medias, 'folder');
-                  })
-                  .finally(() => {
-                    setShowMore(false);
-                  });
-              }}>
-              <View
-                flexS
-                center
-                backgroundColor={Colors.yellow40}
-                style={styles.otherBut}>
-                <FontAwesome
-                  name="folder-open"
-                  color={Colors.white}
-                  size={24}
-                />
-              </View>
-              <Text marginT-4 text90L grey30>
-                文件
-              </Text>
-            </TouchableOpacity>
-          </View>
+              center
+              backgroundColor={Colors.yellow40}
+              style={styles.otherBut}>
+              <FontAwesome name="folder-open" color={Colors.white} size={24} />
+            </View>
+            <Text marginT-4 text90L grey30>
+              文件
+            </Text>
+          </TouchableOpacity>
         </View>
-      </Animated.View>
+      </View>
     ) : null;
   };
 

@@ -42,6 +42,11 @@ import {
 } from '../../../utils/handle/chatHandle';
 import BaseDialog from '../../../components/commom/BaseDialog';
 import {getStorage} from '../../../utils/Storage';
+import {
+  msgTypeMap,
+  chatTypeMap,
+  msgStatusMap,
+} from '../../../constants/baseConst';
 import dayjs from 'dayjs';
 import Clipboard from '@react-native-clipboard/clipboard';
 import BaseTopBar from '../../../components/commom/BaseTopBar';
@@ -308,40 +313,18 @@ const DataManager = ({navigation, route}) => {
             <View row>
               <Badge
                 backgroundColor={Colors.blue50}
-                label={
-                  item.chat_type === 'group'
-                    ? '群聊'
-                    : item.chat_type === 'personal'
-                    ? '私聊'
-                    : '未知'
-                }
+                label={chatTypeMap[item.chat_type] || '未知'}
               />
               <View marginL-6>
                 <Badge
                   backgroundColor={Colors.green50}
-                  label={
-                    item.msg_type === 'text'
-                      ? '文字'
-                      : item.msg_type === 'image'
-                      ? '图片'
-                      : item.msg_type === 'audio'
-                      ? '语音'
-                      : item.msg_type === 'video'
-                      ? '视频'
-                      : '未知'
-                  }
+                  label={msgTypeMap[item.msg_type] || '未知'}
                 />
               </View>
               <View marginL-6>
                 <Badge
                   backgroundColor={Colors.red50}
-                  label={
-                    item.msg_status === 'unread'
-                      ? '未读'
-                      : item.msg_status === 'read'
-                      ? '已读'
-                      : '未知'
-                  }
+                  label={msgStatusMap[item.msg_status] || '未知'}
                 />
               </View>
               {item.msg_secret ? (

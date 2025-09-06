@@ -133,6 +133,7 @@ const FavoritesDetail = ({navigation, route}) => {
       <View paddingH-12 marginT-12>
         <MusicList
           List={music}
+          HeightScale={0.68}
           FavoriteId={favoritesId}
           RefreshList={() => {
             getFavorites(favoritesId);

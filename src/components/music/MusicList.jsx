@@ -42,7 +42,7 @@ const MusicList = props => {
     IsOwn = false,
     IsLocal = false,
     RightBut = null,
-    HeightScale = 0.7,
+    HeightScale = 0.92,
   } = props;
   const {showToast} = useToast();
   const dispatch = useDispatch();
