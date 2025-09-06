@@ -11,10 +11,10 @@ import {
   Drawer,
   Checkbox,
   Button,
-  Incubator,
   Switch,
   PanningProvider,
   Dialog,
+  Slider,
 } from 'react-native-ui-lib';
 import {FlatList, StyleSheet, Vibration} from 'react-native';
 import {useSelector, useDispatch} from 'react-redux';
@@ -658,7 +658,7 @@ const Music = ({navigation}) => {
             <Text text90L grey30 marginV-6>
               将在{alarmTime}分钟后停止播放
             </Text>
-            <Incubator.Slider
+            <Slider
               thumbTintColor={Colors.Primary}
               minimumTrackTintColor={Colors.Primary}
               thumbStyle={styles.thumbStyle}
@@ -714,7 +714,7 @@ const Music = ({navigation}) => {
             <Text text90L grey30 marginV-4>
               将在曲库中第{randomNum.min}-{randomNum.max}首歌曲之间随机播放
             </Text>
-            <Incubator.Slider
+            <Slider
               thumbTintColor={Colors.Primary}
               minimumTrackTintColor={Colors.Primary}
               thumbStyle={styles.thumbStyle}

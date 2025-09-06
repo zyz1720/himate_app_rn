@@ -9272,10 +9272,10 @@ react-native-svg@^15.6.0:
     css-tree "^1.1.3"
     warn-once "0.1.1"
 
-react-native-ui-lib@^7.39.0:
-  version "7.39.0"
-  resolved "https://registry.yarnpkg.com/react-native-ui-lib/-/react-native-ui-lib-7.39.0.tgz#16bf425e04bf76d842f23cb90860ad822745cdfc"
-  integrity sha512-dbP306uUdztrTqF5F8caw7NLiOVe8eeLuttwmu+VPotRewYsG0vfEZabZ81w0HH1UJRs65Ke4uYxloUq2L5TNA==
+react-native-ui-lib@^7.46.3:
+  version "7.46.3"
+  resolved "https://registry.npmmirror.com/react-native-ui-lib/-/react-native-ui-lib-7.46.3.tgz#05b7cdcd376345bcd1233c447bb7e309b0eba9a9"
+  integrity sha512-oE564MpcQNTYLsGN/9YgTt2Cr6NlJUs8a71trZr2AyRTeSMN8OjGOAnos+SuKL65VW9BYwYNw5iKViwhjfcWLw==
   dependencies:
     babel-plugin-transform-inline-environment-variables "^0.0.2"
     color "^3.1.0"

@@ -1,10 +1,9 @@
-import React, {useEffect} from 'react';
 import {StyleSheet} from 'react-native';
 import {
   Colors,
   TouchableOpacity,
   View,
-  Incubator,
+  Slider,
   Text,
 } from 'react-native-ui-lib';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -55,7 +54,7 @@ const AudioMsg = props => {
             )}
             <View row centerV marginL-8>
               <View style={styles.audioProgress}>
-                <Incubator.Slider
+                <Slider
                   thumbStyle={styles.audioThumb}
                   value={currentPosition}
                   minimumValue={0}

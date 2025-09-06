@@ -300,25 +300,24 @@ const Edituser = ({navigation, route}) => {
             </View>
           </Card>
 
-          <Card
-            flexS
-            center
+          <Button
             marginT-16
-            enableShadow={false}
-            padding-8
-            bg-red40
-            onPress={() => setShowLogOff(true)}>
-            <Button link text70 red30 label="注销账号" />
-          </Card>
-          <Card
-            flexS
-            center
+            bg-white
+            text70
+            red30
+            label="注销账号"
+            borderRadius={12}
+            onPress={() => setShowLogOff(true)}
+          />
+          <Button
+            bg-white
             marginT-16
-            enableShadow={false}
-            padding-8
-            onPress={() => setShowLoginOut(true)}>
-            <Button link text70 orange40 label="退出登录" />
-          </Card>
+            text70
+            orange40
+            borderRadius={12}
+            label="退出登录"
+            onPress={() => setShowLoginOut(true)}
+          />
         </View>
       </ScrollView>
       <BaseDialog

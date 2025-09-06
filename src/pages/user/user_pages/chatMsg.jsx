@@ -160,15 +160,15 @@ const ChatMsg = ({navigation, route}) => {
           ) : null}
         </Card>
         {!session_id ? (
-          <Card
-            flexS
-            center
+          <Button
+            bg-white
             marginT-16
-            enableShadow={false}
-            padding-8
-            onPress={() => setClearMsgVisible(true)}>
-            <Button link text70 red30 label="清除所有聊天记录" />
-          </Card>
+            text70
+            red30
+            borderRadius={12}
+            label="清除所有聊天记录"
+            onPress={() => setClearMsgVisible(true)}
+          />
         ) : null}
       </View>
       <BaseDialog

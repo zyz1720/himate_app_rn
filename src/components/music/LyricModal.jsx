@@ -12,7 +12,7 @@ import {
   Colors,
   Image,
   TouchableOpacity,
-  Incubator,
+  Slider,
   Carousel,
 } from 'react-native-ui-lib';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -176,7 +176,7 @@ const LyricModal = React.memo(props => {
                       </TouchableOpacity>
                     </View>
                     <View marginT-8>
-                      <Incubator.Slider
+                      <Slider
                         value={CurPosition}
                         minimumValue={0}
                         disabled={!Duration}
@@ -336,7 +336,7 @@ const LyricModal = React.memo(props => {
                     </View>
                   ) : null}
                   <View marginT-16>
-                    <Incubator.Slider
+                    <Slider
                       value={CurPosition}
                       minimumValue={0}
                       disabled={!Duration}
