@@ -94,7 +94,7 @@ yarn android
 如果使用Android14运行先进行如下修改
 
 ```java
-./node_modules/react-native-musicontrol/android/java/com/tanguyantoine/react/MusicControlModule.java:204
+./node_modules/react-native-musicontrol/android/src/main/java/com/tanguyantoine/react/MusicControlModule.java:204
 原代码：context.registerReceiver(receiver, filter);
 修改为：context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED);
 ```
@@ -164,7 +164,7 @@ RELEASE_KEY_PASSWORD=
 1，解决使用react-native-audio-recorder-player组件播放音乐时，在网络延迟时导致的卡顿问题
 
 ```kotlin
-./node_modules/react-native-audio-recorder-player/android/java/com/dooboolab.audiorecorderplayer/RNAudioRecorderPlayerModule.kt:311
+./node_modules/react-native-audio-recorder-player/android/src/main/java/com/dooboolab.audiorecorderplayer/RNAudioRecorderPlayerModule.kt:311
 
 // 使用prepareAsync()替代prepare()
             mediaPlayer!!.setOnErrorListener { mp, what, extra ->
