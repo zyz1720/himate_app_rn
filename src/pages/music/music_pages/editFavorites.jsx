@@ -5,7 +5,6 @@ import {
   Colors,
   Image,
   Switch,
-  LoaderScreen,
   Card,
   TextField,
   Button,
@@ -23,8 +22,9 @@ import {
 import ImagePicker from 'react-native-image-crop-picker';
 import {UploadFile} from '../../../utils/handle/fileHandle';
 import {getfileFormdata} from '../../../utils/base';
+import FullScreenLoading from '../../../components/commom/FullScreenLoading';
 
-const EditFavorites = ({navigation, route}) => {
+const EditFavorites = ({route}) => {
   const {favoritesId} = route.params || {};
 
   const {showToast} = useToast();
@@ -59,9 +59,9 @@ const EditFavorites = ({navigation, route}) => {
         setCoverUri(THUMBNAIL_URL + favorites_cover);
         setIsPublic(is_public === 1);
       }
-      setLoading(false);
     } catch (error) {
       console.error(error);
+    } finally {
       setLoading(false);
     }
   };
@@ -71,13 +71,8 @@ const EditFavorites = ({navigation, route}) => {
 
   // 是否需要保存
   const [isSave, setIsSave] = useState(false);
-  const isNeedSave = value => {
-    if (Object.values(favoritesForm).includes(value)) {
-      setIsSave(false);
-      return false;
-    }
+  const updateNeedSave = () => {
     setIsSave(true);
-    return true;
   };
 
   // 提交编辑
@@ -87,7 +82,7 @@ const EditFavorites = ({navigation, route}) => {
     try {
       // 修改头像
       if (THUMBNAIL_URL + favoritesForm.favorites_cover !== coverUri) {
-        const res = await UploadFile(fileData, () => {}, {
+        const res = await UploadFile(coverfile, () => {}, {
           uid: userId,
           fileType: 'image',
           useType: 'music',
@@ -112,23 +107,20 @@ const EditFavorites = ({navigation, route}) => {
         is_public: isPublic ? 1 : 0,
       });
       showToast(updateRes.message, updateRes.success ? 'success' : 'error');
-      setLoading(false);
     } catch (error) {
       console.error(error);
+    } finally {
       setLoading(false);
     }
   };
 
   // 提交头像 setCoverfile
   const [coverfile, setCoverfile] = useState(null);
-  const [fileData, setFileData] = useState(null);
 
   useEffect(() => {
     if (coverfile) {
       const fileRes = getfileFormdata('music', coverfile);
       setCoverUri(fileRes.uri);
-      setFileData(fileRes.file);
-      isNeedSave(fileRes.uri);
     }
   }, [coverfile]);
 
@@ -149,7 +141,7 @@ const EditFavorites = ({navigation, route}) => {
           padding-16
           onPress={() => setShowDialog(true)}>
           <View flex>
-            <Text grey10 text70>
+            <Text grey40 text70>
               收藏夹封面
             </Text>
           </View>
@@ -175,7 +167,7 @@ const EditFavorites = ({navigation, route}) => {
             validateOnChange={true}
             onChangeText={value => {
               setFavoritesName(value);
-              isNeedSave(value);
+              updateNeedSave();
             }}
           />
           <View marginT-10>
@@ -195,7 +187,7 @@ const EditFavorites = ({navigation, route}) => {
               validateOnChange={true}
               onChangeText={value => {
                 setFavoritesRemark(value);
-                isNeedSave(value);
+                updateNeedSave();
               }}
             />
           </View>
@@ -208,24 +200,25 @@ const EditFavorites = ({navigation, route}) => {
                 value={isPublic}
                 onValueChange={value => {
                   setIsPublic(value);
-                  isNeedSave(value);
+                  updateNeedSave();
                 }}
               />
             </View>
           </View>
         </Card>
-        <Card marginT-16 center backgroundColor={Colors.Primary}>
+        {isSave && (
           <Button
-            label={'保存'}
-            link
-            linkColor={Colors.white}
-            style={styles.button}
-            disabled={!isSave}
+            marginT-16
+            bg-Primary
+            text70
+            white
+            label="保存更改"
+            borderRadius={12}
             onPress={() => {
               submitForm();
             }}
           />
-        </Card>
+        )}
       </View>
       <BaseSheet
         Title={'选择收藏夹封面'}
@@ -277,14 +270,7 @@ const EditFavorites = ({navigation, route}) => {
           },
         ]}
       />
-      {loading ? (
-        <LoaderScreen
-          message={'加载中...'}
-          color={Colors.Primary}
-          backgroundColor={Colors.hyalineWhite}
-          overlay={true}
-        />
-      ) : null}
+      {loading ? <FullScreenLoading /> : null}
       <View height={120} />
     </ScrollView>
   );

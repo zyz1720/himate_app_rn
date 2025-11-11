@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {StyleSheet, ScrollView, RefreshControl} from 'react-native';
 import {
   View,
   Text,
@@ -11,105 +11,131 @@ import {
   RadioGroup,
   DateTimePicker,
   RadioButton,
-  LoaderScreen,
 } from 'react-native-ui-lib';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import { useToast } from '../../../components/commom/Toast';
-import { getUserdetail, EditUserInfo } from '../../../api/user';
-import { UploadFile } from '../../../utils/handle/fileHandle';
-import { useDispatch, useSelector } from 'react-redux';
-import { setUserInfo as setUserData } from '../../../stores/store-slice/userStore';
+import {useToast} from '../../../components/commom/Toast';
+import {getUserdetail, EditUserInfo} from '../../../api/user';
+import {UploadFile} from '../../../utils/handle/fileHandle';
+import {useDispatch, useSelector} from 'react-redux';
+import {setUserInfo as setUserData} from '../../../stores/store-slice/userStore';
 import ImagePicker from 'react-native-image-crop-picker';
 import BaseSheet from '../../../components/commom/BaseSheet';
-import { getfileFormdata } from '../../../utils/base';
+import {getfileFormdata, keepChangedFields} from '../../../utils/base';
 import {
   requestCameraPermission,
   requestFolderPermission,
 } from '../../../stores/store-slice/permissionStore';
+import FullScreenLoading from '../../../components/commom/FullScreenLoading';
 
-const Edituser = ({ navigation, route }) => {
-  const { userId } = route.params || {};
+const Edituser = ({route}) => {
+  const {userId} = route.params || {};
 
-  const { showToast } = useToast();
+  const {showToast} = useToast();
   const [userInfo, setUserInfo] = useState({});
-  const [username, setUsername] = useState(null);
-  const [selfaccount, setSelfaccount] = useState(null);
-  const [userBirthday, setUserBirthday] = useState(null);
-  const [usersex, seUsersex] = useState(null);
+  const [originalUserInfo, setOriginalUserInfo] = useState({});
 
   const accessCamera = useSelector(state => state.permissionStore.accessCamera);
   const accessFolder = useSelector(state => state.permissionStore.accessFolder);
 
   // baseConfig
-  const { STATIC_URL } = useSelector(state => state.baseConfigStore.baseConfig);
+  const {STATIC_URL} = useSelector(state => state.baseConfigStore.baseConfig);
 
   const dispatch = useDispatch();
+
+  const genderEnum = [
+    {
+      label: '男',
+      value: 'man',
+      color: Colors.geekblue,
+    },
+    {
+      label: '女',
+      value: 'woman',
+      color: Colors.magenta,
+    },
+    {
+      label: '保密',
+      value: 'unknown',
+      color: Colors.grey30,
+    },
+  ];
 
   // 初始化数据
   const dataInit = async () => {
     setRefreshing(true);
     try {
-      const res = await getUserdetail({ id: userId });
-      // console.log(res);
+      const res = await getUserdetail({id: userId});
       if (res.success) {
-        const { user_avatar, user_name, sex, self_account, birthday } = res.data;
+        const {user_avatar, user_name, sex, self_account, birthday} = res.data;
         dispatch(setUserData(userId));
-        setUserInfo({ user_avatar, user_name, sex, self_account, birthday });
+        setUserInfo({
+          user_avatar,
+          user_name,
+          sex,
+          self_account,
+          birthday,
+        });
+        setOriginalUserInfo(res.data);
         setAvatarUri(STATIC_URL + user_avatar);
-        setUsername(user_name);
-        setSelfaccount(self_account);
-        setUserBirthday(birthday);
-        seUsersex(sex);
-        setRefreshing(false);
       }
     } catch (error) {
       console.error(error);
+    } finally {
       setRefreshing(false);
     }
   };
 
-  // 保存修改
-  const [avatarshow, setAvatarshow] = useState(false);
-  const [nameshow, setNameshow] = useState(false);
-  const [accountshow, setAccountshow] = useState(false);
-  const [birthdayshow, setBirthdayshow] = useState(false);
-  const [sexshow, setSexshow] = useState(false);
-
   // 是否需要保存
-  const isNeedSave = value => {
-    if (Object.values(userInfo).includes(value)) {
-      return true;
-    }
-    return false;
+  const [isNeedSave, setIsNeedSave] = useState(false);
+
+  // 检查是否需要保存的纯函数（不更新状态）
+  const shouldShowError = value => {
+    return !Object.values(userInfo).includes(value);
   };
 
-  // 提交修改
-  const [uploading, setUploading] = useState(false);
-  const submitData = async value => {
-    const truekey = Object.keys(value)[0];
-    const truevalue = Object.values(value)[0];
-    if (truevalue === null || truevalue === '') {
-      showToast('请输入要修改的内容！', 'error');
-      return;
+  // 更新保存状态的函数
+  const updateNeedSave = () => {
+    setIsNeedSave(true);
+  };
+
+  // 处理数据
+  const handleData = async () => {
+    const keys = Object.keys(userInfo);
+
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      const element = userInfo[key];
+      if (element === null || element === '') {
+        showToast('请输入要修改的内容！', 'error');
+        return false;
+      }
+      if (key === 'self_account' && element.length < 6) {
+        showToast('请至少输入6位账号', 'error');
+        return false;
+      }
     }
-    if (truekey === 'self_account' && truevalue.length < 6) {
-      showToast('请至少输入6位账号', 'error');
-      return;
-    }
-    value.id = userId;
-    try {
-      setUploading(true);
-      // 修改头像
-      if (truekey === 'user_avatar') {
-        const res = await UploadFile(fileData, () => { }, {
+
+    if (avatarfile) {
+      try {
+        const res = await UploadFile(avatarfile, () => {}, {
           uid: userId,
           fileType: 'image',
           useType: 'user',
         });
         const upRes = JSON.parse(res.text());
         if (upRes.success) {
-          value.user_avatar = upRes.data.file_name;
+          const useAvatar = upRes.data.file_name;
+          setUserInfo({...userInfo, user_avatar: useAvatar});
+          return true;
+        } else {
+          showToast('上传头像失败', 'error');
+          return false;
         }
+      } catch (error) {
+        console.error(error);
+        showToast('上传头像失败', 'error');
+        return false;
+      } finally {
         ImagePicker.clean()
           .then(() => {
             console.log('清除缓存的头像tmp');
@@ -118,32 +144,36 @@ const Edituser = ({ navigation, route }) => {
             console.error(error);
           });
       }
+    }
+    return true;
+  };
 
-      // 修改其它
-      const res = await EditUserInfo(value);
+  // 提交修改
+  const [submitting, setSubmitting] = useState(false);
+  const submitData = async () => {
+    try {
+      setSubmitting(true);
+      // 修改头像
+      const isToSubmit = await handleData();
+      if (!isToSubmit) {
+        return;
+      }
+      // 检查是否有修改
+      const changedFields = keepChangedFields(originalUserInfo, userInfo);
+      if (!changedFields) {
+        showToast('没有修改任何内容', 'warning');
+        return;
+      }
+      changedFields.id = userId;
+      const res = await EditUserInfo(changedFields);
       if (res.success) {
         dataInit();
-        if (truekey === 'birthday') {
-          setBirthdayshow(false);
-        }
-        if (truekey === 'self_account') {
-          setAccountshow(false);
-        }
-        if (truekey === 'user_name') {
-          setNameshow(false);
-        }
-        if (truekey === 'sex') {
-          setSexshow(false);
-        }
-        if (truekey === 'user_avatar') {
-          setAvatarshow(false);
-        }
       }
       showToast(res.message, res.success ? 'success' : 'error');
-      setUploading(false);
     } catch (error) {
-      setUploading(false);
       console.error(error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -154,14 +184,11 @@ const Edituser = ({ navigation, route }) => {
   // 提交头像 setAvatarfile
   const [avatarUri, setAvatarUri] = useState(null);
   const [avatarfile, setAvatarfile] = useState(null);
-  const [fileData, setFileData] = useState(null);
 
   useEffect(() => {
     if (avatarfile) {
       const fileRes = getfileFormdata('user', avatarfile);
       setAvatarUri(fileRes.uri);
-      setFileData(fileRes.file);
-      setAvatarshow(!isNeedSave(fileRes.uri));
     }
   }, [avatarfile]);
 
@@ -193,18 +220,7 @@ const Edituser = ({ navigation, route }) => {
                 头像
               </Text>
             </View>
-            <View marginH-20 style={{ display: avatarshow ? 'flex' : 'none' }}>
-              <Button
-                label={'保存'}
-                outline={true}
-                outlineColor={Colors.Primary}
-                size={Button.sizes.small}
-                borderRadius={8}
-                backgroundColor={Colors.Primary}
-                onPress={() => submitData({ user_avatar: true })}
-              />
-            </View>
-            <Image source={{ uri: avatarUri }} style={styles.image} />
+            <Image source={{uri: avatarUri}} style={styles.image} />
             <FontAwesome name="angle-right" color={Colors.grey50} size={26} />
           </Card>
           <Card flexS enableShadow={false} marginT-16 padding-16>
@@ -213,39 +229,27 @@ const Edituser = ({ navigation, route }) => {
                 label={'昵称'}
                 labelColor={Colors.grey40}
                 text70
-                enableErrors={nameshow}
+                enableErrors={shouldShowError(userInfo.user_name)}
                 style={styles.input}
                 placeholder={'请输入昵称'}
                 placeholderTextColor={Colors.grey50}
                 validate={[value => value.length !== 0]}
                 validationMessage={['昵称不能为空！']}
                 maxLength={10}
-                value={username}
+                value={userInfo.user_name}
                 validateOnChange={true}
                 onChangeText={value => {
-                  setUsername(value);
-                  setNameshow(!isNeedSave(value));
-                }}
-                onBlur={() => {
-                  setNameshow(!isNeedSave(username));
+                  updateNeedSave();
+                  setUserInfo({...userInfo, user_name: value});
                 }}
               />
-              <View marginB-20 style={{ display: nameshow ? 'flex' : 'none' }}>
-                <Button
-                  label={'保存'}
-                  size={Button.sizes.small}
-                  borderRadius={8}
-                  backgroundColor={Colors.Primary}
-                  onPress={() => submitData({ user_name: username })}
-                />
-              </View>
             </View>
             <View flexG row spread centerV marginT-16 style={styles.inputLine}>
               <TextField
                 label={'账号'}
                 labelColor={Colors.grey40}
                 text70
-                enableErrors={accountshow}
+                enableErrors={shouldShowError(userInfo.self_account)}
                 style={styles.input}
                 placeholder={'请输入账号'}
                 placeholderTextColor={Colors.grey50}
@@ -253,24 +257,12 @@ const Edituser = ({ navigation, route }) => {
                 validationMessage={['请至少输入六位账号！']}
                 maxLength={16}
                 validateOnChange={true}
-                value={selfaccount}
+                value={userInfo.self_account}
                 onChangeText={value => {
-                  setSelfaccount(value);
-                  setAccountshow(!isNeedSave(value));
-                }}
-                onBlur={() => {
-                  setAccountshow(!isNeedSave(selfaccount));
+                  updateNeedSave();
+                  setUserInfo({...userInfo, self_account: value});
                 }}
               />
-              <View marginB-20 style={{ display: accountshow ? 'flex' : 'none' }}>
-                <Button
-                  label={'保存'}
-                  size={Button.sizes.small}
-                  borderRadius={8}
-                  backgroundColor={Colors.Primary}
-                  onPress={() => submitData({ self_account: selfaccount })}
-                />
-              </View>
             </View>
             <View flexG row spread centerV marginT-16 style={styles.inputLine}>
               <DateTimePicker
@@ -279,69 +271,47 @@ const Edituser = ({ navigation, route }) => {
                 title={'选择出生日期'}
                 placeholder={'请选择出生日期'}
                 mode={'date'}
-                value={new Date(userBirthday)}
+                value={new Date(userInfo.birthday)}
                 onChange={value => {
-                  setUserBirthday(value);
-                  setBirthdayshow(!isNeedSave(value));
+                  updateNeedSave();
+                  setUserInfo({...userInfo, birthday: value});
                 }}
               />
-              <View
-                marginB-20
-                style={{ display: birthdayshow ? 'flex' : 'none' }}>
-                <Button
-                  label={'保存'}
-                  size={Button.sizes.small}
-                  borderRadius={8}
-                  backgroundColor={Colors.Primary}
-                  onPress={() => submitData({ birthday: userBirthday })}
-                />
-              </View>
             </View>
             <View flexG row spread centerV marginT-16>
               <Text grey40>性别</Text>
               <RadioGroup
-                initialValue={usersex}
+                gap={16}
+                row
+                initialValue={userInfo.sex}
                 onValueChange={value => {
-                  seUsersex(value);
-                  setSexshow(!isNeedSave(value));
-                }}
-                flexS
-                row>
-                <RadioButton
-                  value={'man'}
-                  size={18}
-                  label={'男'}
-                  color={Colors.geekblue}
-                  labelStyle={{ color: Colors.geekblue }}
-                />
-                <RadioButton
-                  value={'woman'}
-                  size={18}
-                  label={'女'}
-                  color={Colors.magenta}
-                  labelStyle={{ color: Colors.magenta }}
-                  marginL-16
-                />
-                <RadioButton
-                  value={'unknown'}
-                  size={18}
-                  label={'保密'}
-                  color={Colors.orange30}
-                  labelStyle={{ color: Colors.orange30 }}
-                  marginL-16
-                />
+                  updateNeedSave();
+                  setUserInfo({...userInfo, sex: value});
+                }}>
+                {genderEnum.map(item => (
+                  <RadioButton
+                    key={item.value}
+                    value={item.value}
+                    size={18}
+                    label={item.label}
+                    color={item.color}
+                    labelStyle={{color: item.color}}
+                  />
+                ))}
               </RadioGroup>
-              <View style={{ display: sexshow ? 'flex' : 'none' }}>
-                <Button
-                  label={'保存'}
-                  size={Button.sizes.small}
-                  borderRadius={8}
-                  backgroundColor={Colors.Primary}
-                  onPress={() => submitData({ sex: usersex })}
-                />
-              </View>
             </View>
           </Card>
+          {isNeedSave && (
+            <Button
+              marginT-16
+              bg-Primary
+              text70
+              white
+              label="保存更改"
+              borderRadius={12}
+              onPress={submitData}
+            />
+          )}
         </View>
       </ScrollView>
       <BaseSheet
@@ -368,9 +338,10 @@ const Edituser = ({ navigation, route }) => {
               })
                 .then(image => {
                   setAvatarfile(image);
+                  updateNeedSave();
                 })
                 .finally(() => {
-                  setShowDialog(false)
+                  setShowDialog(false);
                 });
             },
           },
@@ -393,6 +364,7 @@ const Edituser = ({ navigation, route }) => {
               })
                 .then(image => {
                   setAvatarfile(image);
+                  updateNeedSave();
                 })
                 .finally(() => {
                   setShowDialog(false);
@@ -401,19 +373,12 @@ const Edituser = ({ navigation, route }) => {
           },
         ]}
       />
-      {uploading ? (
-        <LoaderScreen
-          message={'修改中...'}
-          color={Colors.Primary}
-          backgroundColor={Colors.hyalineWhite}
-          overlay={true}
-        />
-      ) : null}
+      {submitting ? <FullScreenLoading Message={'修改中...'} /> : null}
     </>
   );
 };
 const styles = StyleSheet.create({
-  image: { width: 60, height: 60, borderRadius: 8, marginRight: 12 },
+  image: {width: 64, height: 64, borderRadius: 8, marginRight: 12},
   input: {
     width: 200,
   },

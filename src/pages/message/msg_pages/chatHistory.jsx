@@ -1,11 +1,12 @@
 import React, {useState} from 'react';
-import {View, Card, LoaderScreen, Colors} from 'react-native-ui-lib';
+import {View, Card, Colors} from 'react-native-ui-lib';
 import {useToast} from '../../../components/commom/Toast';
 import {useRealm} from '@realm/react';
 import {getSessionDetail} from '../../../api/session';
 import {formatMsg, setLocalMsg} from '../../../utils/handle/chatHandle';
 import ListItem from '../../../components/commom/ListItem';
 import BaseDialog from '../../../components/commom/BaseDialog';
+import FullScreenLoading from '../../../components/commom/FullScreenLoading';
 
 const ChatHistory = ({navigation, route}) => {
   const {showToast} = useToast();
@@ -119,14 +120,7 @@ const ChatHistory = ({navigation, route}) => {
         SetVisible={setClearVisible}
         MainText={'您确定要清除历史消息吗？'}
       />
-      {loading ? (
-        <LoaderScreen
-          message={'同步中...'}
-          color={Colors.Primary}
-          backgroundColor={Colors.hyalineWhite}
-          overlay={true}
-        />
-      ) : null}
+      {loading ? <FullScreenLoading Message="同步中..." /> : null}
     </View>
   );
 };

@@ -14,9 +14,11 @@ export const SystemThemeInit = color => {
     success: Colors.green40,
     warning: Colors.yellow40,
     error: Colors.red40,
+    loadingWhite: 'rgba(255,255,255,0.9)',
+    loadingGrey: 'rgba(0,0,0,0.8)',
     hyalineWhite: 'rgba(255,255,255,0.4)',
     hyalineGrey: 'rgba(0,0,0,0.4)',
-    primaryBackground: '#f5f5f5',
+    primaryBackground: Colors.$backgroundNeutral,
     lyricColor: Colors.white,
   });
 };

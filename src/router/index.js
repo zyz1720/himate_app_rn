@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import {StatusBar} from 'react-native';
 import RootScreen from './RootScreen';
-import {Colors, LoaderScreen} from 'react-native-ui-lib';
+import {Colors} from 'react-native-ui-lib';
 import {useSelector, useDispatch} from 'react-redux';
 import {initUserStore, setUserInfo} from '../stores/store-slice/userStore';
 import {initSettingStore} from '../stores/store-slice/settingStore';
@@ -19,7 +19,8 @@ import {
   clearErrorMsgStore,
 } from '../stores/store-slice/errorMsgStore';
 import 'react-native-get-random-values';
-import { install } from 'react-native-quick-crypto';
+import {install} from 'react-native-quick-crypto';
+import FullScreenLoading from '../components/commom/FullScreenLoading';
 
 const RootView = () => {
   install();
@@ -114,10 +115,7 @@ const RootView = () => {
         hidden={false}
       />
       {configLoading || userLoading ? (
-        <LoaderScreen
-          message={appDisplayName + ' 初始化中...'}
-          color={themeColor}
-        />
+        <FullScreenLoading Message={appDisplayName + '正在初始化...'} />
       ) : (
         <RootScreen />
       )}

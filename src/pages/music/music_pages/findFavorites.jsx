@@ -1,15 +1,9 @@
 import React, {useState, useEffect} from 'react';
-import {
-  View,
-  Card,
-  Colors,
-  LoaderScreen,
-  Button,
-  TextField,
-} from 'react-native-ui-lib';
+import {View, Card, Colors, Button, TextField} from 'react-native-ui-lib';
 import {StyleSheet} from 'react-native';
 import {getFavoritesList} from '../../../api/music';
 import FavoritesList from '../../../components/music/FavoritesList';
+import FullScreenLoading from '../../../components/commom/FullScreenLoading';
 
 const FindFavorites = ({navigation}) => {
   /* 获取收藏夹列表 */
@@ -85,14 +79,7 @@ const FindFavorites = ({navigation}) => {
           />
         </View>
       </View>
-      {isLoading ? (
-        <LoaderScreen
-          message={'加载中...'}
-          color={Colors.Primary}
-          backgroundColor={Colors.hyalineWhite}
-          overlay={true}
-        />
-      ) : null}
+      {isLoading ? <FullScreenLoading /> : null}
     </>
   );
 };

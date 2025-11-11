@@ -1,17 +1,10 @@
 import React, {useState, useEffect} from 'react';
-import {
-  View,
-  Text,
-  LoaderScreen,
-  Card,
-  Colors,
-  Button,
-  TextField,
-} from 'react-native-ui-lib';
+import {View, Text, Card, Colors, Button, TextField} from 'react-native-ui-lib';
 import {StyleSheet} from 'react-native';
 import {getMusicList} from '../../../api/music';
 import MusicList from '../../../components/music/MusicList';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import FullScreenLoading from '../../../components/commom/FullScreenLoading';
 
 const SearchMusic = ({navigation}) => {
   /* 获取收藏夹列表 */
@@ -90,14 +83,7 @@ const SearchMusic = ({navigation}) => {
           />
         </View>
       </View>
-      {isLoading ? (
-        <LoaderScreen
-          message={'加载中...'}
-          color={Colors.Primary}
-          backgroundColor={Colors.hyalineWhite}
-          overlay={true}
-        />
-      ) : null}
+      {isLoading ? <FullScreenLoading /> : null}
     </>
   );
 };

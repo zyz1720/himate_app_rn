@@ -267,3 +267,17 @@ export const formatDateTime = inputDate => {
     return date.format('YYYY/MM/DD');
   }
 };
+
+/* 保留更改过的字段 */
+export const keepChangedFields = (original, current) => {
+  const changedFields = {};
+  for (const key in current) {
+    if (current[key] !== original[key]) {
+      changedFields[key] = current[key];
+    }
+  }
+  if (Object.keys(changedFields).length === 0) {
+    return null;
+  }
+  return changedFields;
+};

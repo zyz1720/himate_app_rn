@@ -6,12 +6,12 @@ import {
   Avatar,
   Colors,
   TouchableOpacity,
-  LoaderScreen,
 } from 'react-native-ui-lib';
 import {useSelector} from 'react-redux';
 import {useToast} from '../../components/commom/Toast';
 import dayjs from 'dayjs';
 import {getAllJoinGroupList} from '../../api/groupMember';
+import FullScreenLoading from '../../components/commom/FullScreenLoading';
 
 const Grouplist = ({navigation}) => {
   const userId = useSelector(state => state.userStore.userId);
@@ -87,7 +87,7 @@ const Grouplist = ({navigation}) => {
   return (
     <>
       {loading ? (
-        <LoaderScreen message={'加载中...'} color={Colors.Primary} />
+        <FullScreenLoading />
       ) : (
         <View>
           {selfGroupList.length > 0 ? (

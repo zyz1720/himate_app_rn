@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Checkbox,
   Button,
-  LoaderScreen,
 } from 'react-native-ui-lib';
 import {FlatList, StyleSheet, Platform, Modal} from 'react-native';
 import {useToast} from '../../../components/commom/Toast';
@@ -21,6 +20,7 @@ import BaseDialog from '../../../components/commom/BaseDialog';
 import {requestFolderPermission} from '../../../stores/store-slice/permissionStore';
 import {useSelector, useDispatch} from 'react-redux';
 import {audioExtNames} from '../../../constants/baseConst';
+import FullScreenLoading from '../../../components/commom/FullScreenLoading';
 
 const LocalMusic = ({navigation}) => {
   const {showToast} = useToast();
@@ -203,14 +203,7 @@ const LocalMusic = ({navigation}) => {
           </View>
         }
       />
-      {loading ? (
-        <LoaderScreen
-          message={'正在扫描中...'}
-          color={Colors.Primary}
-          backgroundColor={Colors.hyalineWhite}
-          overlay={true}
-        />
-      ) : null}
+      {loading ? <FullScreenLoading Message="正在扫描中..." /> : null}
       <Modal
         animationType="fade"
         transparent={true}

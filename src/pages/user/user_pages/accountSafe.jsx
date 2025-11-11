@@ -1,14 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, ScrollView, RefreshControl} from 'react-native';
-import {
-  View,
-  Text,
-  Card,
-  Colors,
-  TextField,
-  Button,
-  LoaderScreen,
-} from 'react-native-ui-lib';
+import {View, Text, Card, Colors, TextField, Button} from 'react-native-ui-lib';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useToast} from '../../../components/commom/Toast';
 import PasswordEye from '../../../components/aboutInput/PasswordEye';
@@ -25,9 +17,10 @@ import {ValidateMail} from '../../../utils/base';
 import BaseDialog from '../../../components/commom/BaseDialog';
 import {clearStorage} from '../../../utils/Storage';
 import {clearUserStore} from '../../../stores/store-slice/userStore';
+import FullScreenLoading from '../../../components/commom/FullScreenLoading';
 
 let timer = {};
-const Edituser = ({navigation, route}) => {
+const Edituser = ({route}) => {
   const {userId} = route.params;
 
   const {showToast} = useToast();
@@ -405,14 +398,7 @@ const Edituser = ({navigation, route}) => {
         SetVisible={setShowLogOff}
         MainText={'您确定要注销账号吗？'}
       />
-      {uploading ? (
-        <LoaderScreen
-          message={'修改中...'}
-          color={Colors.Primary}
-          backgroundColor={Colors.hyalineWhite}
-          overlay={true}
-        />
-      ) : null}
+      {uploading ? <FullScreenLoading Message={'修改中...'} /> : null}
     </>
   );
 };

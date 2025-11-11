@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Image,
   Colors,
-  LoaderScreen,
   Dialog,
   Card,
   Text,
@@ -52,6 +51,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import BaseTopBar from '../../../components/commom/BaseTopBar';
 import VideoModal from '../../../components/commom/VideoModal';
 import ImgModal from '../../../components/commom/ImgModal';
+import FullScreenLoading from '../../../components/commom/FullScreenLoading';
 
 const DataManager = ({navigation, route}) => {
   const userId = useSelector(state => state.userStore.userId);
@@ -834,14 +834,7 @@ const DataManager = ({navigation, route}) => {
         }}
       />
 
-      {loading ? (
-        <LoaderScreen
-          message={'加载中...'}
-          color={Colors.Primary}
-          backgroundColor={Colors.hyalineWhite}
-          overlay={true}
-        />
-      ) : null}
+      {loading ? <FullScreenLoading /> : null}
 
       <BaseSheet
         Title={'请选择上传的用途'}

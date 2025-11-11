@@ -11,7 +11,6 @@ const BaseSheet = props => {
     Actions = [],
   } = props;
 
-  // [{label: 'Cancel', onPress: () => {}}];
   return (
     <ActionSheet
       dialogStyle={styles.dialogStyle}

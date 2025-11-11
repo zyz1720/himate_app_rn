@@ -11,7 +11,6 @@ import {
   ExpandableSection,
   GridList,
   TouchableOpacity,
-  LoaderScreen,
   Avatar,
 } from 'react-native-ui-lib';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -28,7 +27,6 @@ import ImagePicker from 'react-native-image-crop-picker';
 import BaseDialog from '../../components/commom/BaseDialog';
 import ListItem from '../../components/commom/ListItem';
 import {useRealm} from '@realm/react';
-import {fullWidth} from '../../styles';
 import BaseSheet from '../../components/commom/BaseSheet';
 import {getfileFormdata} from '../../utils/base';
 import {
@@ -38,6 +36,7 @@ import {
 import {formatMsg, setLocalMsg} from '../../utils/handle/chatHandle';
 import {getSessionDetail} from '../../api/session';
 import {delSessionMsgs} from '../../api/dataManager';
+import FullScreenLoading from '../../components/commom/FullScreenLoading';
 
 const GroupInfo = ({navigation, route}) => {
   const {session_id} = route.params || {};
@@ -606,14 +605,7 @@ const GroupInfo = ({navigation, route}) => {
           )}
         </View>
       </ScrollView>
-      {uploading ? (
-        <LoaderScreen
-          message={'修改中...'}
-          color={Colors.Primary}
-          backgroundColor={Colors.hyalineWhite}
-          overlay={true}
-        />
-      ) : null}
+      {uploading ? <FullScreenLoading Message="修改中..." /> : null}
       <BaseSheet
         Title={'选择群头像'}
         Visible={showDialog}

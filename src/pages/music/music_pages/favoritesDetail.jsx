@@ -6,7 +6,6 @@ import {
   Image,
   TouchableOpacity,
   Avatar,
-  LoaderScreen,
 } from 'react-native-ui-lib';
 import {StyleSheet} from 'react-native';
 import {useIsFocused} from '@react-navigation/native';
@@ -17,6 +16,7 @@ import FavoriteModal from '../../../components/music/FavoriteModal';
 import {isEmptyObject} from '../../../utils/base';
 import dayjs from 'dayjs';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import FullScreenLoading from '../../../components/commom/FullScreenLoading';
 
 const FavoritesDetail = ({navigation, route}) => {
   const {favoritesId} = route.params || {};
@@ -150,14 +150,7 @@ const FavoritesDetail = ({navigation, route}) => {
         CreateAvatar={STATIC_URL + favoritesForm?.creator_avatar}
         CreateName={favoritesForm?.creator_name}
       />
-      {loading ? (
-        <LoaderScreen
-          message={'加载中...'}
-          color={Colors.Primary}
-          backgroundColor={Colors.hyalineWhite}
-          overlay={true}
-        />
-      ) : null}
+      {loading ? <FullScreenLoading /> : null}
     </>
   );
 };

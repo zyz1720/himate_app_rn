@@ -6,7 +6,6 @@ import {
   Colors,
   Image,
   TouchableOpacity,
-  LoaderScreen,
   Dialog,
   Button,
   ProgressBar,
@@ -26,6 +25,7 @@ import DeviceInfo from 'react-native-device-info';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import ImgModal from '../../components/commom/ImgModal';
 import {isEmptyObject} from '../../utils/base';
+import FullScreenLoading from '../../components/commom/FullScreenLoading';
 
 const User = ({navigation}) => {
   const {showToast} = useToast();
@@ -154,10 +154,7 @@ const User = ({navigation}) => {
   return (
     <>
       {isEmptyObject(userInfo) ? (
-        <LoaderScreen
-          message={appDisplayName + ' 加载中...'}
-          color={Colors.Primary}
-        />
+        <FullScreenLoading Message={appDisplayName + ' 加载中...'} />
       ) : (
         <View flexG top paddingH-16 paddingT-16>
           <Card

@@ -531,7 +531,6 @@ const Music = ({navigation}) => {
                 <TouchableOpacity
                   row
                   centerV
-                  backgroundColor={Colors.$backgroundNeutral}
                   onLongPress={() => {
                     Vibration.vibrate(50);
                     setIsMultiSelect(true);
