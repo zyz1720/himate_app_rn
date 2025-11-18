@@ -39,7 +39,7 @@ const AudioMsg = props => {
               <TouchableOpacity onPress={OnPause}>
                 <AntDesign
                   name="pausecircle"
-                  color={Msg.user._id === 1 ? Colors.Primary : Colors.grey10}
+                  color={Msg.user._id === 1 ? Colors.primary : Colors.grey10}
                   size={20}
                 />
               </TouchableOpacity>
@@ -47,7 +47,7 @@ const AudioMsg = props => {
               <TouchableOpacity onPress={OnPlay}>
                 <AntDesign
                   name="playcircleo"
-                  color={Msg.user._id === 1 ? Colors.Primary : Colors.grey10}
+                  color={Msg.user._id === 1 ? Colors.primary : Colors.grey10}
                   size={20}
                 />
               </TouchableOpacity>
@@ -59,7 +59,7 @@ const AudioMsg = props => {
                   value={currentPosition}
                   minimumValue={0}
                   maximumValue={duration}
-                  minimumTrackTintColor={Colors.Primary}
+                  minimumTrackTintColor={Colors.primary}
                   onValueChange={value => {
                     OnValueChange(value);
                   }}
@@ -73,7 +73,7 @@ const AudioMsg = props => {
         ) : (
           <FontAwesome
             name="volume-down"
-            color={Msg.user._id === 1 ? Colors.Primary : Colors.grey10}
+            color={Msg.user._id === 1 ? Colors.primary : Colors.grey10}
             size={24}
           />
         )}

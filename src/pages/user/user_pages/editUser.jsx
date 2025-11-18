@@ -13,19 +13,19 @@ import {
   RadioButton,
 } from 'react-native-ui-lib';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {useToast} from '../../../components/commom/Toast';
+import {useToast} from '../../../components/common/Toast';
 import {getUserdetail, EditUserInfo} from '../../../api/user';
 import {UploadFile} from '../../../utils/handle/fileHandle';
 import {useDispatch, useSelector} from 'react-redux';
-import {setUserInfo as setUserData} from '../../../stores/store-slice/userStore';
+import {setUserInfo as setUserData} from '../../../stores/store_slice/userStore';
 import ImagePicker from 'react-native-image-crop-picker';
-import BaseSheet from '../../../components/commom/BaseSheet';
-import {getfileFormdata, keepChangedFields} from '../../../utils/base';
+import BaseSheet from '../../../components/common/BaseSheet';
+import {getfileFormdata, keepChangedFields} from '../../../utils/common/base';
 import {
   requestCameraPermission,
   requestFolderPermission,
-} from '../../../stores/store-slice/permissionStore';
-import FullScreenLoading from '../../../components/commom/FullScreenLoading';
+} from '../../../stores/store_slice/permissionStore';
+import FullScreenLoading from '../../../components/common/FullScreenLoading';
 
 const Edituser = ({route}) => {
   const {userId} = route.params || {};
@@ -201,7 +201,7 @@ const Edituser = ({route}) => {
       <ScrollView
         refreshControl={
           <RefreshControl
-            colors={[Colors.Primary]}
+            colors={[Colors.primary]}
             refreshing={refreshing}
             onRefresh={dataInit}
           />
@@ -304,7 +304,7 @@ const Edituser = ({route}) => {
           {isNeedSave && (
             <Button
               marginT-16
-              bg-Primary
+              bg-primary
               text70
               white
               label="保存更改"
@@ -321,7 +321,7 @@ const Edituser = ({route}) => {
         Actions={[
           {
             label: '相机',
-            color: Colors.Primary,
+            color: Colors.primary,
             onPress: () => {
               if (!accessCamera) {
                 showToast('请授予应用相机使用权限', 'warning');
@@ -334,7 +334,7 @@ const Edituser = ({route}) => {
                 cropping: true,
                 mediaType: 'photo',
                 cropperCircleOverlay: true,
-                cropperActiveWidgetColor: Colors.Primary,
+                cropperActiveWidgetColor: Colors.primary,
               })
                 .then(image => {
                   setAvatarfile(image);
@@ -347,7 +347,7 @@ const Edituser = ({route}) => {
           },
           {
             label: '图库',
-            color: Colors.Primary,
+            color: Colors.primary,
             onPress: () => {
               if (!accessFolder) {
                 showToast('请授予应用文件和媒体使用权限', 'warning');
@@ -360,7 +360,7 @@ const Edituser = ({route}) => {
                 cropping: true,
                 mediaType: 'photo',
                 cropperCircleOverlay: true,
-                cropperActiveWidgetColor: Colors.Primary,
+                cropperActiveWidgetColor: Colors.primary,
               })
                 .then(image => {
                   setAvatarfile(image);

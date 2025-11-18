@@ -9,8 +9,8 @@ import {
   ColorPicker,
   Switch,
 } from 'react-native-ui-lib';
-import {useToast} from '../../components/commom/Toast';
-import ListItem from '../../components/commom/ListItem';
+import {useToast} from '../../components/common/Toast';
+import ListItem from '../../components/common/ListItem';
 import {useSelector, useDispatch} from 'react-redux';
 import {
   setIsFullScreen,
@@ -21,16 +21,16 @@ import {
   setIsFastStatic,
   setIsEncryptMsg,
   setIsMusicApp,
-} from '../../stores/store-slice/settingStore';
+} from '../../stores/store_slice/settingStore';
 import BaseColorPicker from '../../components/setting/BaseColoerPciker';
-import BaseSheet from '../../components/commom/BaseSheet';
-import {addStorage} from '../../utils/Storage';
-import {playSystemSound} from '../../utils/notification';
+import BaseSheet from '../../components/common/BaseSheet';
+import {addStorage} from '../../utils/common/localStorage';
+import {playSystemSound} from '../../utils/common/notification';
 import {displayName as appDisplayName} from '../../../app.json';
-import {setBaseConfig} from '../../stores/store-slice/baseConfigStore';
-import {getBaseConfig} from '../../api/baseConfig';
-import {deepClone} from '../../utils/base';
-import {getStorage} from '../../utils/Storage';
+import {setBaseConfig} from '../../stores/store_slice/baseConfigStore';
+import {getBaseConfig} from '../../api/base_config';
+import {deepClone} from '../../utils/common/base';
+import {getStorage} from '../../utils/common/localStorage';
 
 const Setting = ({navigation}) => {
   const {showToast} = useToast();
@@ -139,7 +139,7 @@ const Setting = ({navigation}) => {
             IconColor={Colors.grey30}
             RightView={
               <Switch
-                onColor={Colors.Primary}
+                onColor={Colors.primary}
                 offColor={Colors.grey50}
                 value={isFullScreen}
                 onValueChange={value => dispatch(setIsFullScreen(value))}
@@ -170,7 +170,7 @@ const Setting = ({navigation}) => {
             IconColor={Colors.yellow30}
             RightView={
               <Switch
-                onColor={Colors.Primary}
+                onColor={Colors.primary}
                 offColor={Colors.grey50}
                 value={isPlaySound}
                 onValueChange={value => dispatch(setIsPlaySound(value))}
@@ -183,7 +183,7 @@ const Setting = ({navigation}) => {
             IconColor={Colors.grey30}
             RightView={
               <Switch
-                onColor={Colors.Primary}
+                onColor={Colors.primary}
                 offColor={Colors.grey50}
                 value={isEncryptMsg}
                 onValueChange={value => dispatch(setIsEncryptMsg(value))}
@@ -196,7 +196,7 @@ const Setting = ({navigation}) => {
             IconColor={Colors.red30}
             RightView={
               <Switch
-                onColor={Colors.Primary}
+                onColor={Colors.primary}
                 offColor={Colors.grey50}
                 value={notSaveMsg}
                 onValueChange={value => dispatch(setNotSaveMsg(value))}
@@ -229,7 +229,7 @@ const Setting = ({navigation}) => {
               IconColor={Colors.red20}
               RightView={
                 <Switch
-                  onColor={Colors.Primary}
+                  onColor={Colors.primary}
                   offColor={Colors.grey50}
                   value={isFastStatic}
                   onValueChange={value => {
@@ -256,9 +256,9 @@ const Setting = ({navigation}) => {
           <View flexS row centerV paddingH-24>
             <Text>自定义主题色</Text>
             <ColorPicker
-              colors={[Colors.Primary]}
-              initialColor={Colors.Primary}
-              value={Colors.Primary}
+              colors={[Colors.primary]}
+              initialColor={Colors.primary}
+              value={Colors.primary}
               onDismiss={() => console.log('取消')}
               onSubmit={(color, textColor) => {
                 dispatch(setPrimaryColor(color));
@@ -276,7 +276,7 @@ const Setting = ({navigation}) => {
         Actions={[
           {
             label: '系统默认',
-            color: toastType === 'System' ? Colors.Primary : Colors.grey30,
+            color: toastType === 'System' ? Colors.primary : Colors.grey30,
             onPress: () => {
               dispatch(setToastType('System'));
               showToast('设置成功！', 'success', true);
@@ -285,7 +285,7 @@ const Setting = ({navigation}) => {
           },
           {
             label: '顶部弹出',
-            color: toastType === 'top' ? Colors.Primary : Colors.grey30,
+            color: toastType === 'top' ? Colors.primary : Colors.grey30,
             onPress: () => {
               dispatch(setToastType('top'));
               showToast('设置成功！', 'success', true);
@@ -294,7 +294,7 @@ const Setting = ({navigation}) => {
           },
           {
             label: '底部弹出',
-            color: toastType === 'bottom' ? Colors.Primary : Colors.grey30,
+            color: toastType === 'bottom' ? Colors.primary : Colors.grey30,
             onPress: () => {
               dispatch(setToastType('bottom'));
               showToast('设置成功！', 'success', true);
@@ -310,7 +310,7 @@ const Setting = ({navigation}) => {
         Actions={[
           {
             label: '聊天应用',
-            color: isMusicApp ? Colors.grey30 : Colors.Primary,
+            color: isMusicApp ? Colors.grey30 : Colors.primary,
             onPress: () => {
               dispatch(setIsMusicApp(false));
               showToast('下次启动为聊天应用！', 'success', true);
@@ -319,7 +319,7 @@ const Setting = ({navigation}) => {
           },
           {
             label: '音乐应用',
-            color: isMusicApp ? Colors.Primary : Colors.grey30,
+            color: isMusicApp ? Colors.primary : Colors.grey30,
             onPress: () => {
               dispatch(setIsMusicApp(true));
               showToast('下次启动为音乐应用！', 'success', true);
@@ -335,7 +335,7 @@ const Setting = ({navigation}) => {
         Actions={soundNames.map(item => {
           return {
             label: item.name,
-            color: soundName === item.value ? Colors.Primary : Colors.grey30,
+            color: soundName === item.value ? Colors.primary : Colors.grey30,
             onPress: () => {
               playSystemSound(item.value);
               addStorage('setting', 'soundName', item.value);
@@ -353,21 +353,21 @@ const Setting = ({navigation}) => {
           <View flexS paddingH-16>
             <Text text70BO>图片/视频存储位置</Text>
             {Platform.OS === 'ios' ? (
-              <Text color={Colors.Primary}>
+              <Text color={Colors.primary}>
                 我的iPhone/{appDisplayName}/Picture
               </Text>
             ) : (
-              <Text color={Colors.Primary}>系统相册/{appDisplayName}</Text>
+              <Text color={Colors.primary}>系统相册/{appDisplayName}</Text>
             )}
           </View>
           <View marginT-16 flexS paddingH-16>
             <Text text70BO>其它文件存储位置</Text>
             {Platform.OS === 'ios' ? (
-              <Text color={Colors.Primary}>
+              <Text color={Colors.primary}>
                 我的iPhone/{appDisplayName}/Download
               </Text>
             ) : (
-              <Text color={Colors.Primary}>
+              <Text color={Colors.primary}>
                 内部存储/Download/{appDisplayName}
               </Text>
             )}

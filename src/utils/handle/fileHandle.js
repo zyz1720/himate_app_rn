@@ -8,7 +8,7 @@ import {
   excelTypes,
   pptTypes,
   pdfTypes,
-} from '../../constants/baseConst.js';
+} from '../../constants/base_const.js';
 import {Colors} from 'react-native-ui-lib';
 
 /* 下载文件 */

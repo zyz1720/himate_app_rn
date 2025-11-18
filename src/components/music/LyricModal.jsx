@@ -18,7 +18,7 @@ import {
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {fullHeight, fullWidth, statusBarHeight} from '../../styles';
-import {formatMilliseconds, isEmptyString} from '../../utils/base';
+import {formatMilliseconds, isEmptyString} from '../../utils/common/base';
 import Animated, {FadeInUp, FadeOutDown} from 'react-native-reanimated';
 import {getColors} from 'react-native-image-colors';
 import {getWhitenessScore} from '../../utils/handle/colorHandle';
@@ -182,11 +182,11 @@ const LyricModal = React.memo(props => {
                         disabled={!Duration}
                         maximumValue={Duration || 100}
                         maximumTrackTintColor={Colors.lyricColor}
-                        thumbTintColor={Colors.Primary}
+                        thumbTintColor={Colors.primary}
                         thumbStyle={styles.thumbStyle}
                         trackStyle={styles.trackStyle}
                         disableActiveStyling={true}
-                        minimumTrackTintColor={Colors.Primary}
+                        minimumTrackTintColor={Colors.primary}
                         onValueChange={OnSliderChange}
                       />
                       <View row centerV spread>
@@ -342,11 +342,11 @@ const LyricModal = React.memo(props => {
                       disabled={!Duration}
                       maximumValue={Duration || 100}
                       maximumTrackTintColor={Colors.lyricColor}
-                      thumbTintColor={Colors.Primary}
+                      thumbTintColor={Colors.primary}
                       thumbStyle={styles.thumbStyle}
                       trackStyle={styles.trackStyle}
                       disableActiveStyling={true}
-                      minimumTrackTintColor={Colors.Primary}
+                      minimumTrackTintColor={Colors.primary}
                       onValueChange={OnSliderChange}
                     />
                     <View row centerV spread>

@@ -14,7 +14,7 @@ import {AnimatedCircularProgress} from 'react-native-circular-progress';
 import {fullWidth} from '../../styles';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import {Marquee} from '@animatereactnative/marquee';
-import {isEmptyObject, deepClone, getRandomInt} from '../../utils/base';
+import {isEmptyObject, deepClone, getRandomInt} from '../../utils/common/base';
 import {
   setPlayingMusic,
   removePlayList,
@@ -22,8 +22,8 @@ import {
   addPlayList,
   setPlayList,
   initMusicStore,
-} from '../../stores/store-slice/musicStore';
-import {useToast} from '../commom/Toast';
+} from '../../stores/store_slice/musicStore';
+import {useToast} from '../common/Toast';
 import {useRealm} from '@realm/react';
 import MusicControl, {Command} from 'react-native-music-control';
 import {

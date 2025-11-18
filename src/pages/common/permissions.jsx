@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, Card, Colors, Text} from 'react-native-ui-lib';
-import ListItem from '../../components/commom/ListItem';
+import ListItem from '../../components/common/ListItem';
 import {useSelector, useDispatch} from 'react-redux';
 import {
   checkPermissions,
@@ -8,9 +8,9 @@ import {
   requestMicrophonePermission,
   requestFolderPermission,
   requestNotifyPermission,
-} from '../../stores/store-slice/permissionStore';
+} from '../../stores/store_slice/permissionStore';
 import {openSettings} from 'react-native-permissions';
-import {useToast} from '../../components/commom/Toast';
+import {useToast} from '../../components/common/Toast';
 
 const Permissions = ({navigation, route}) => {
   const accessCamera = useSelector(state => state.permissionStore.accessCamera);

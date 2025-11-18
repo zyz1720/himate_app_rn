@@ -6,10 +6,10 @@ import {
 } from '@react-navigation/native';
 import Login from '../pages/login/login';
 import DrawerScreen from './screens/DrawerScreen';
-import BaseWebView from '../pages/commom/baseWebView';
+import BaseWebView from '../pages/common/baseWebView';
 import {Colors, TouchableOpacity} from 'react-native-ui-lib';
 import {useSelector, useDispatch} from 'react-redux';
-import {setShowMusicCtrl} from '../stores/store-slice/musicStore';
+import {setShowMusicCtrl} from '../stores/store_slice/musicStore';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {createStackNavigator} from '@react-navigation/stack';
 import BootSplash from 'react-native-bootsplash';
@@ -47,7 +47,7 @@ const RootScreen = () => {
               headerStyle: {
                 backgroundColor: isLogin
                   ? isFullScreen
-                    ? Colors.$backgroundNeutral
+                    ? Colors.background
                     : themeColor
                   : Colors.white,
               },

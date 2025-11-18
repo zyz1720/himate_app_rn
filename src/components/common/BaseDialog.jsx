@@ -54,7 +54,7 @@ const BaseDialog = props => {
               outline={true}
               borderRadius={8}
               marginR-16
-              outlineColor={Colors.Primary}
+              outlineColor={Colors.primary}
               onPress={() => {
                 SetVisible(false);
                 CancelFun();
@@ -64,7 +64,7 @@ const BaseDialog = props => {
               label={'确认'}
               size={Button.sizes.medium}
               borderRadius={8}
-              backgroundColor={Colors.Primary}
+              backgroundColor={Colors.primary}
               onPress={() => {
                 SetVisible(false);
                 Fun();

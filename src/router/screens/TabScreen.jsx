@@ -11,7 +11,7 @@ import {useSelector} from 'react-redux';
 
 const Tab = createBottomTabNavigator();
 
-const renderTabinfo = (name, type, focused = false) => {
+const renderTabInfo = (name, type, focused = false) => {
   let IconName = '';
   let tablabel = '';
   if (name === 'Msg') {
@@ -50,19 +50,19 @@ const TabScreen = () => {
   return (
     <Tab.Navigator
       screenOptions={({route}) => ({
-        tabBarLabel: renderTabinfo(route.name, 'label'),
-        tabBarActiveTintColor: themeColor,
-        tabBarIcon: ({focused}) => (
-          <FontAwesome
-            name={renderTabinfo(route.name, 'icon', focused)}
-            color={focused ? themeColor : Colors.black}
-            size={20}
-          />
-        ),
+        tabBarLabel: renderTabInfo(route.name, 'label'),
         headerShown: !isFullScreen,
         headerStyle: {backgroundColor: themeColor, height: 46},
         headerTitleAlign: 'center',
         headerTitleStyle: {fontSize: 16, color: Colors.white},
+        tabBarActiveTintColor: themeColor,
+        tabBarIcon: ({focused}) => (
+          <FontAwesome
+            name={renderTabInfo(route.name, 'icon', focused)}
+            color={focused ? themeColor : Colors.grey10}
+            size={20}
+          />
+        ),
       })}>
       <Tab.Screen
         name="Msg"

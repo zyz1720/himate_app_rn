@@ -1,25 +1,25 @@
 import React, {useState, useEffect} from 'react';
 import {View, Colors, Button} from 'react-native-ui-lib';
-import {useToast} from '../../../components/commom/Toast';
+import {useToast} from '../../../components/common/Toast';
 import MusicList from '../../../components/music/MusicList';
 import {useRealm} from '@realm/react';
-import BaseDialog from '../../../components/commom/BaseDialog';
+import BaseDialog from '../../../components/common/BaseDialog';
 
-const LatelyMusic = ({navigation}) => {
+const LatelyMusic = () => {
   const {showToast} = useToast();
   const realm = useRealm();
   const [localMusic, setLocalMusic] = useState([]);
 
   // 获取最近播放的音乐记录
   const getLocalMusic = async () => {
-    const music = realm.objects('MusicInfo').toJSON().reverse();
+    const music = realm.objects('MusicInfo').sorted('updateAt', true).toJSON();
     setLocalMusic(music);
   };
 
   /* 删除本地音乐记录 */
   const [delVisible, setDelVisible] = useState(false);
   const delLocalMusic = () => {
-    const toDelete = realm.objects('MusicInfo');
+    const toDelete = realm.objects('MusicInfo').filtered('id == $0', 303);
     realm.write(() => {
       realm.delete(toDelete);
     });

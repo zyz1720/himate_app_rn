@@ -22,7 +22,7 @@ const BaseTopBar = props => {
                 style={[styles.barStyle]}
                 onPress={() => OnChangeIndex(index)}>
                 <Text
-                  color={index === FocusIndex ? Colors.Primary : Colors.grey30}>
+                  color={index === FocusIndex ? Colors.primary : Colors.grey30}>
                   {item.title}
                 </Text>
               </TouchableOpacity>
@@ -31,7 +31,7 @@ const BaseTopBar = props => {
                   entering={FadeIn}
                   exiting={FadeOut}
                   height={2}
-                  backgroundColor={Colors.Primary}
+                  backgroundColor={Colors.primary}
                 />
               ) : null}
             </View>

@@ -12,20 +12,20 @@ import {
 } from 'react-native-ui-lib';
 import {StyleSheet, ActivityIndicator, Platform} from 'react-native';
 import {useSelector} from 'react-redux';
-import {useToast} from '../../components/commom/Toast';
+import {useToast} from '../../components/common/Toast';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {DownloadFile} from '../../utils/handle/fileHandle';
-import ListItem from '../../components/commom/ListItem';
-import {getAppPackageDetail} from '../../api/appPackage';
+import ListItem from '../../components/common/ListItem';
+import {getAppPackageDetail} from '../../api/app_package';
 import {
   name as appName,
   displayName as appDisplayName,
 } from '../../../app.json';
 import DeviceInfo from 'react-native-device-info';
 import ReactNativeBlobUtil from 'react-native-blob-util';
-import ImgModal from '../../components/commom/ImgModal';
-import {isEmptyObject} from '../../utils/base';
-import FullScreenLoading from '../../components/commom/FullScreenLoading';
+import ImgModal from '../../components/common/ImgModal';
+import {isEmptyObject} from '../../utils/common/base';
+import FullScreenLoading from '../../components/common/FullScreenLoading';
 
 const User = ({navigation}) => {
   const {showToast} = useToast();
@@ -291,7 +291,7 @@ const User = ({navigation}) => {
             <Card flexS padding-16>
               {updateLoading ? (
                 <View flexS paddingH-16>
-                  <ActivityIndicator color={Colors.Primary} size={'large'} />
+                  <ActivityIndicator color={Colors.primary} size={'large'} />
                   <Text marginT-16 text70BO center>
                     正在检查更新...
                   </Text>
@@ -312,7 +312,7 @@ const User = ({navigation}) => {
                       <Button
                         size={'medium'}
                         label={isNewVersion ? '立即更新' : '下载安装包'}
-                        backgroundColor={Colors.Primary}
+                        backgroundColor={Colors.primary}
                         onPress={downloadApp}
                       />
                     </View>
@@ -324,7 +324,7 @@ const User = ({navigation}) => {
                   <Text marginB-16>安装包下载中...{downloadProgress}%</Text>
                   <ProgressBar
                     progress={downloadProgress}
-                    progressColor={Colors.Primary}
+                    progressColor={Colors.primary}
                   />
                 </View>
               ) : null}

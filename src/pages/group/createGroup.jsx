@@ -1,11 +1,11 @@
 import React, {useEffect} from 'react';
 import {View, Colors, Text, Button} from 'react-native-ui-lib';
 import {getmatelist} from '../../api/mate';
-import {useToast} from '../../components/commom/Toast';
+import {useToast} from '../../components/common/Toast';
 import {useSelector} from 'react-redux';
 import MateList from '../../components/mate/MateList';
 import {addGroup} from '../../api/group';
-import {addGroupMember} from '../../api/groupMember';
+import {addGroupMember} from '../../api/group_member';
 
 const CreateGroup = ({navigation, route}) => {
   const userId = useSelector(state => state.userStore.userId);
@@ -115,7 +115,7 @@ const CreateGroup = ({navigation, route}) => {
           <View center>
             <Text text70 grey20 center>
               已选择
-              <Text color={Colors.Primary}> {selectUids.length} </Text>
+              <Text color={Colors.primary}> {selectUids.length} </Text>
               位好友
             </Text>
           </View>
@@ -124,7 +124,7 @@ const CreateGroup = ({navigation, route}) => {
               label={'完成'}
               size={Button.sizes.small}
               borderRadius={8}
-              backgroundColor={Colors.Primary}
+              backgroundColor={Colors.primary}
               onPress={handleCreateGroup}
             />
           ) : null}

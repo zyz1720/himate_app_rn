@@ -1,4 +1,4 @@
-import {deepClone} from '../base';
+import {deepClone} from '../common/base';
 import {store} from '../../stores/index';
 import {getTrueSecretKey, decryptAES} from './cryptoHandle';
 

@@ -1,4 +1,4 @@
-import instance from '../utils/request/http';
+import instance from '../utils/request/request';
 
 // 创建群成员
 export const addGroupMember = form =>

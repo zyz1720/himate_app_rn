@@ -1,4 +1,4 @@
-import instance from '../utils/request/http';
+import instance from '../utils/request/request';
 
 // 添加歌单
 export const addFavorities = form => instance.post('api/favorites/add', form);

@@ -1,4 +1,4 @@
-import instance from '../utils/request/http';
+import instance from '../utils/request/request';
 
 // 用户注册
 export const userRegMail = form => instance.post('api/user/reg', form);

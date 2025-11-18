@@ -1,5 +1,5 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {addStorage, delStorage, getkeyStorage} from '../../utils/Storage';
+import {addStorage, delStorage, getkeyStorage} from '../../utils/common/localStorage';
 import {getUserdetail} from '../../api/user';
 
 const defaultState = {

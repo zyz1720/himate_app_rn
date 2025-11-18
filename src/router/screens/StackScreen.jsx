@@ -18,7 +18,7 @@ import Grouplist from '../../pages/group/groupList';
 import SearchMsg from '../../pages/message/msg_pages/searchMsg';
 import ChatMsg from '../../pages/user/user_pages/chatMsg';
 import DataManager from '../../pages/user/user_pages/dataManager';
-import BasePdfView from '../../pages/commom/basePdfView';
+import BasePdfView from '../../pages/common/basePdfView';
 
 const Stack = createStackNavigator();
 

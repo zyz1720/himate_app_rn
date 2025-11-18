@@ -1,5 +1,5 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {addStorage, getkeyStorage} from '../../utils/Storage';
+import {addStorage, getkeyStorage} from '../../utils/common/localStorage';
 
 const defaultState = {
   socketReady: false, // socket连接状态

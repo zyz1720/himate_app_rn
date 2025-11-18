@@ -10,7 +10,7 @@ import {
   PanningProvider,
   Checkbox,
 } from 'react-native-ui-lib';
-import {getFirstLetter} from '../../utils/base';
+import {getFirstLetter} from '../../utils/common/base';
 import {useSelector} from 'react-redux';
 
 const MateList = props => {
@@ -29,18 +29,18 @@ const MateList = props => {
   // baseConfig
   const {STATIC_URL} = useSelector(state => state.baseConfigStore.baseConfig);
 
-  const [matelist, setMatelist] = React.useState([]);
-  const [alphabetList, setAlphabetList] = React.useState([]);
-  const [scorollData, setScorollData] = React.useState([]);
+  const [mateList, setMateList] = useState([]);
+  const [alphabetList, setAlphabetList] = useState([]);
+  const [scrollData, setScrollData] = useState([]);
   /* 处理为分组数据 */
   const toGroupList = list => {
-    const newlist = list.map(item => {
+    const newList = list.map(item => {
       return {
         title: getFirstLetter(item.remark),
         data: item,
       };
     });
-    const newData = newlist.reduce((accumulator, currentValue) => {
+    const newData = newList.reduce((accumulator, currentValue) => {
       // 检查当前title是否已经存在于累积器中
       const foundIndex = accumulator.findIndex(
         item => item.title === currentValue.title,
@@ -74,7 +74,7 @@ const MateList = props => {
     });
 
     return {
-      mlist: newData,
+      mList: newData,
       letterList: letterList,
     };
   };
@@ -83,8 +83,8 @@ const MateList = props => {
   const [HintVisible, setHintVisible] = useState(false);
   const [groupHeight, setGroupHeight] = useState(0);
   /* 滑动字母对应表 */
-  const ScorollSetting = list => {
-    const newlist = [];
+  const scrollSetting = list => {
+    const newList = [];
     const height = groupHeight / 2 - (20 * list.length) / 2 + 46;
     for (let i = 0; i < list.length; i++) {
       const element = {
@@ -92,15 +92,15 @@ const MateList = props => {
         max: Math.floor(height + (i + 1) * 20),
         index: i,
       };
-      newlist.push(element);
+      newList.push(element);
     }
-    return JSON.parse(JSON.stringify(newlist));
+    return JSON.parse(JSON.stringify(newList));
   };
 
   const [flatListRef, setFlatListRef] = useState(null);
   /* 处理滑动字母对应表 */
-  const showletter = num => {
-    const findIndex = scorollData.findIndex(
+  const showLetter = num => {
+    const findIndex = scrollData.findIndex(
       range => num >= range.min && num < range.max,
     );
     if (findIndex === -1) {
@@ -117,9 +117,9 @@ const MateList = props => {
 
   useEffect(() => {
     const needRes = toGroupList(OriginList);
-    setMatelist(needRes.mlist);
+    setMateList(needRes.mList);
     setAlphabetList(needRes.letterList);
-    setScorollData(ScorollSetting(needRes.letterList));
+    setScrollData(scrollSetting(needRes.letterList));
   }, [OriginList]);
 
   const [selectedItem, setSelectedItem] = useState(SelectedIds);
@@ -127,7 +127,7 @@ const MateList = props => {
     <>
       <SectionList
         style={{height: Height}}
-        sections={matelist}
+        sections={mateList}
         keyExtractor={(item, index) => item + index}
         ref={Ref => setFlatListRef(Ref)}
         onEndReached={() => {
@@ -138,7 +138,7 @@ const MateList = props => {
             <View flexS row centerV backgroundColor={Colors.white} padding-12>
               <Checkbox
                 marginR-12
-                color={Colors.Primary}
+                color={Colors.primary}
                 size={20}
                 borderRadius={10}
                 value={selectedItem.includes(item.uid)}
@@ -215,7 +215,7 @@ const MateList = props => {
         style={styles.alphabet}
         onStartShouldSetResponder={() => true}
         onResponderMove={event => {
-          showletter(event.nativeEvent.pageY);
+          showLetter(event.nativeEvent.pageY);
         }}
         onResponderRelease={() => {
           setHintVisible(false);
@@ -234,7 +234,7 @@ const MateList = props => {
                 style={styles.alphabeBox}
                 center
                 backgroundColor={
-                  index == pressIndex ? Colors.Primary : Colors.transparent
+                  index == pressIndex ? Colors.primary : Colors.transparent
                 }>
                 <Text
                   text90L

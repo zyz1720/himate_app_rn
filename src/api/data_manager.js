@@ -1,4 +1,4 @@
-import instance from '../utils/request/http';
+import instance from '../utils/request/request';
 
 // 获取用户上传的文件列表
 export const getUserUploadFiles = data =>

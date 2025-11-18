@@ -11,18 +11,18 @@ import {
 } from 'react-native-ui-lib';
 import {StyleSheet, ScrollView} from 'react-native';
 import {useSelector, useDispatch} from 'react-redux';
-import {useToast} from '../../../components/commom/Toast';
+import {useToast} from '../../../components/common/Toast';
 import {getFavoritesDetail, updateFavorites} from '../../../api/music';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import BaseSheet from '../../../components/commom/BaseSheet';
+import BaseSheet from '../../../components/common/BaseSheet';
 import {
   requestCameraPermission,
   requestFolderPermission,
-} from '../../../stores/store-slice/permissionStore';
+} from '../../../stores/store_slice/permissionStore';
 import ImagePicker from 'react-native-image-crop-picker';
 import {UploadFile} from '../../../utils/handle/fileHandle';
-import {getfileFormdata} from '../../../utils/base';
-import FullScreenLoading from '../../../components/commom/FullScreenLoading';
+import {getfileFormdata} from '../../../utils/common/base';
+import FullScreenLoading from '../../../components/common/FullScreenLoading';
 
 const EditFavorites = ({route}) => {
   const {favoritesId} = route.params || {};
@@ -195,7 +195,7 @@ const EditFavorites = ({route}) => {
             <Text grey40>是否公开</Text>
             <View marginL-12>
               <Switch
-                onColor={Colors.Primary}
+                onColor={Colors.primary}
                 offColor={Colors.grey50}
                 value={isPublic}
                 onValueChange={value => {
@@ -209,7 +209,7 @@ const EditFavorites = ({route}) => {
         {isSave && (
           <Button
             marginT-16
-            bg-Primary
+            bg-primary
             text70
             white
             label="保存更改"
@@ -227,7 +227,7 @@ const EditFavorites = ({route}) => {
         Actions={[
           {
             label: '相机',
-            color: Colors.Primary,
+            color: Colors.primary,
             onPress: () => {
               if (!accessCamera) {
                 showToast('请授予应用相机使用权限', 'warning');
@@ -236,7 +236,7 @@ const EditFavorites = ({route}) => {
               }
               ImagePicker.openCamera({
                 mediaType: 'photo',
-                cropperActiveWidgetColor: Colors.Primary,
+                cropperActiveWidgetColor: Colors.primary,
               })
                 .then(image => {
                   setCoverfile(image);
@@ -248,7 +248,7 @@ const EditFavorites = ({route}) => {
           },
           {
             label: '图库',
-            color: Colors.Primary,
+            color: Colors.primary,
             onPress: () => {
               if (!accessFolder) {
                 showToast('请授予应用文件和媒体使用权限', 'warning');
@@ -258,7 +258,7 @@ const EditFavorites = ({route}) => {
               ImagePicker.openPicker({
                 cropping: true,
                 mediaType: 'photo',
-                cropperActiveWidgetColor: Colors.Primary,
+                cropperActiveWidgetColor: Colors.primary,
               })
                 .then(image => {
                   setCoverfile(image);

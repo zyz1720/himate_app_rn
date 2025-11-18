@@ -1,4 +1,4 @@
-import instance from '../utils/request/http';
+import instance from '../utils/request/request';
 
 // 创建群组
 export const addGroup = form => instance.post('api/group/add', form);

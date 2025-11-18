@@ -11,9 +11,9 @@ import {
 } from 'react-native-ui-lib';
 import {useSelector, useDispatch} from 'react-redux';
 import {getUserSessionList, dleUserSession} from '../../api/session';
-import {getBaseConst} from '../../api/commom';
-import {useToast} from '../../components/commom/Toast';
-import {useSocket} from '../../utils/socket';
+import {getBaseConst} from '../../api/common';
+import {useToast} from '../../components/common/Toast';
+import {useSocket} from '../../utils/common/socket';
 import {useRealm} from '@realm/react';
 import {
   setLocalMsg,
@@ -25,7 +25,7 @@ import {
   onDisplayRealMsg,
   cancelNotification,
   playSystemSound,
-} from '../../utils/notification';
+} from '../../utils/common/notification';
 import {
   setChatMsg,
   setNotRemindSessionIds,
@@ -33,9 +33,9 @@ import {
   setRemindSessions,
   delRemindSessions,
   initChatMsgStore,
-} from '../../stores/store-slice/chatMsgStore';
+} from '../../stores/store_slice/chatMsgStore';
 import Feather from 'react-native-vector-icons/Feather';
-import {formatDateTime} from '../../utils/base';
+import {formatDateTime} from '../../utils/common/base';
 import {useIsFocused} from '@react-navigation/native';
 
 const Msg = ({navigation}) => {
@@ -61,15 +61,15 @@ const Msg = ({navigation}) => {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    if (sessionlist?.length && roomName && socketReady) {
-      sessionlist.forEach(item => {
+    if (sessionList?.length && roomName && socketReady) {
+      sessionList.forEach(item => {
         chatMsglistener(roomName, item);
       });
     }
-  }, [sessionlist?.length, roomName, socketReady, isFocused]);
+  }, [sessionList?.length, roomName, socketReady, isFocused]);
 
   /* 获取会话列表 */
-  const [sessionlist, setSessionlist] = useState([]);
+  const [sessionList, setSessionList] = useState([]);
   const sessionDataInit = async _userId => {
     try {
       setRefreshing(true);
@@ -79,12 +79,12 @@ const Msg = ({navigation}) => {
       });
       if (res.success) {
         // console.log(res.data.list);
-        setSessionlist(res.data.list);
+        setSessionList(res.data.list);
         getSelfReminds(res.data.list);
-        setRefreshing(false);
       }
     } catch (error) {
       console.error(error);
+    } finally {
       setRefreshing(false);
     }
   };
@@ -323,7 +323,7 @@ const Msg = ({navigation}) => {
         ]}
         leftItem={{
           text: '已读',
-          background: Colors.Primary,
+          background: Colors.primary,
           onPress: () => {
             readListMsg(item);
           },
@@ -395,7 +395,7 @@ const Msg = ({navigation}) => {
       <FlatList
         refreshControl={
           <RefreshControl
-            colors={[Colors.Primary]}
+            colors={[Colors.primary]}
             refreshing={refreshing}
             onRefresh={() => {
               if (userId) {
@@ -404,8 +404,8 @@ const Msg = ({navigation}) => {
             }}
           />
         }
-        data={sessionlist}
-        keyExtractor={(item, index) => item + index}
+        data={sessionList}
+        keyExtractor={(item, index) => item?.session_id + index}
         onEndReached={() => {}}
         renderItem={({item}) => renderSessionItem(item)}
         ListEmptyComponent={

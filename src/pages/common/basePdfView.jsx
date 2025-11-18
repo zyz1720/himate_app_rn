@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import { Colors } from 'react-native-ui-lib';
 import Pdf from 'react-native-pdf';
 import { fullWidth, fullHeight } from '../../styles';
-import { useToast } from '../../components/commom/Toast';
+import { useToast } from '../../components/common/Toast';
 
 const BasePdfView = ({ route }) => {
   const { url } = route.params || {};
@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: fullWidth,
     height: fullHeight,
-    backgroundColor: Colors.$backgroundNeutral,
+    backgroundColor: Colors.background,
   },
 });
 

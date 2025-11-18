@@ -1,12 +1,12 @@
 import React, {useState} from 'react';
 import {View, Card, Colors} from 'react-native-ui-lib';
-import {useToast} from '../../../components/commom/Toast';
+import {useToast} from '../../../components/common/Toast';
 import {useRealm} from '@realm/react';
 import {getSessionDetail} from '../../../api/session';
 import {formatMsg, setLocalMsg} from '../../../utils/handle/chatHandle';
-import ListItem from '../../../components/commom/ListItem';
-import BaseDialog from '../../../components/commom/BaseDialog';
-import FullScreenLoading from '../../../components/commom/FullScreenLoading';
+import ListItem from '../../../components/common/ListItem';
+import BaseDialog from '../../../components/common/BaseDialog';
+import FullScreenLoading from '../../../components/common/FullScreenLoading';
 
 const ChatHistory = ({navigation, route}) => {
   const {showToast} = useToast();
@@ -56,7 +56,7 @@ const ChatHistory = ({navigation, route}) => {
           ItemName={'创建群聊'}
           IconName={'group'}
           IconSize={20}
-          IconColor={Colors.Primary}
+          IconColor={Colors.primary}
           Fun={() => {
             navigation.navigate('CreateGroup', {
               uid: to_uid,

@@ -3,7 +3,7 @@ import {View, Colors} from 'react-native-ui-lib';
 import {getmatelist, getapplylist} from '../../api/mate';
 import {useSelector} from 'react-redux';
 import {useIsFocused} from '@react-navigation/native';
-import ListItem from '../../components/commom/ListItem';
+import ListItem from '../../components/common/ListItem';
 import MateList from '../../components/mate/MateList';
 
 const Mate = ({navigation}) => {
@@ -53,7 +53,7 @@ const Mate = ({navigation}) => {
           <ListItem
             ItemName={'新的朋友'}
             IconName={'user'}
-            IconColor={Colors.Primary}
+            IconColor={Colors.primary}
             IsBadge={true}
             BadgeCount={applycount}
             Fun={() => {

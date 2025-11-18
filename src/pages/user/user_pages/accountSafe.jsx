@@ -2,8 +2,8 @@ import React, {useEffect, useState} from 'react';
 import {StyleSheet, ScrollView, RefreshControl} from 'react-native';
 import {View, Text, Card, Colors, TextField, Button} from 'react-native-ui-lib';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {useToast} from '../../../components/commom/Toast';
-import PasswordEye from '../../../components/aboutInput/PasswordEye';
+import {useToast} from '../../../components/common/Toast';
+import PasswordEye from '../../../components/about_input/PasswordEye';
 import {
   getUserdetail,
   EditUserInfo,
@@ -12,12 +12,12 @@ import {
   userLogOff,
 } from '../../../api/user';
 import {useDispatch} from 'react-redux';
-import {setUserInfo as setUserData} from '../../../stores/store-slice/userStore';
-import {ValidateMail} from '../../../utils/base';
-import BaseDialog from '../../../components/commom/BaseDialog';
-import {clearStorage} from '../../../utils/Storage';
-import {clearUserStore} from '../../../stores/store-slice/userStore';
-import FullScreenLoading from '../../../components/commom/FullScreenLoading';
+import {setUserInfo as setUserData} from '../../../stores/store_slice/userStore';
+import {ValidateMail} from '../../../utils/common/base';
+import BaseDialog from '../../../components/common/BaseDialog';
+import {clearStorage} from '../../../utils/common/localStorage';
+import {clearUserStore} from '../../../stores/store_slice/userStore';
+import FullScreenLoading from '../../../components/common/FullScreenLoading';
 
 let timer = {};
 const Edituser = ({route}) => {
@@ -200,7 +200,7 @@ const Edituser = ({route}) => {
       <ScrollView
         refreshControl={
           <RefreshControl
-            colors={[Colors.Primary]}
+            colors={[Colors.primary]}
             refreshing={refreshing}
             onRefresh={dataInit}
           />
@@ -246,7 +246,7 @@ const Edituser = ({route}) => {
                   label={'保存'}
                   size={Button.sizes.small}
                   borderRadius={8}
-                  backgroundColor={Colors.Primary}
+                  backgroundColor={Colors.primary}
                   onPress={() => {
                     setShowCodeDialog(true);
                     sendCode();
@@ -284,7 +284,7 @@ const Edituser = ({route}) => {
                   label={'保存'}
                   size={Button.sizes.small}
                   borderRadius={8}
-                  backgroundColor={Colors.Primary}
+                  backgroundColor={Colors.primary}
                   onPress={() => {
                     setShowPassDialog(true);
                   }}

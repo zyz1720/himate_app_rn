@@ -21,9 +21,9 @@ import {
   setPlayList,
   addPlayList,
   unshiftPlayList,
-} from '../../stores/store-slice/musicStore';
-import {useToast} from '../commom/Toast';
-import {isEmptyObject} from '../../utils/base';
+} from '../../stores/store_slice/musicStore';
+import {useToast} from '../common/Toast';
+import {isEmptyObject} from '../../utils/common/base';
 import {
   editDefaultFavorites,
   updateFavorites,
@@ -35,6 +35,7 @@ import {DownloadFile, getFileExt} from '../../utils/handle/fileHandle';
 const MusicList = props => {
   const {
     List = [],
+    Total = 0,
     OnEndReached = () => {},
     OnPress = () => {},
     FavoriteId,
@@ -298,7 +299,9 @@ const MusicList = props => {
       setNowFileIndex(i + 1);
       const savePath = await DownloadFile(
         STATIC_URL + file.file_name,
-        `${file.title} - ${file.artist.replace(/\//g, ' - ')}.${getFileExt(file.file_name)}`,
+        `${file.title} - ${file.artist.replace(/\//g, ' - ')}.${getFileExt(
+          file.file_name,
+        )}`,
         progress => {
           if (progress) {
             setDownloadProgress(progress);
@@ -332,7 +335,7 @@ const MusicList = props => {
       {isMultiSelect ? (
         <Checkbox
           marginR-12
-          color={Colors.Primary}
+          color={Colors.primary}
           size={20}
           borderRadius={10}
           value={selectedItems.includes(item.id)}
@@ -375,7 +378,7 @@ const MusicList = props => {
                 grey10
                 numberOfLines={1}
                 color={
-                  playingMusic?.id === item.id ? Colors.Primary : Colors.grey10
+                  playingMusic?.id === item.id ? Colors.primary : Colors.grey10
                 }>
                 {item.title}
               </Text>
@@ -385,7 +388,7 @@ const MusicList = props => {
                 marginT-4
                 numberOfLines={1}
                 color={
-                  playingMusic?.id === item.id ? Colors.Primary : Colors.grey10
+                  playingMusic?.id === item.id ? Colors.primary : Colors.grey10
                 }>
                 {(item.artists && item.artists?.length > 0
                   ? item.artists.join('/')
@@ -438,7 +441,7 @@ const MusicList = props => {
             <FontAwesome name="play-circle" color={Colors.grey50} size={26} />
           </TouchableOpacity>
           <Text marginL-12 text80BO grey20>
-            {List.length}首歌曲
+            {Total || List.length}首歌曲
           </Text>
         </View>
         {RightBut}
@@ -451,7 +454,7 @@ const MusicList = props => {
               marginR-12
               size={'xSmall'}
               label={'操作'}
-              backgroundColor={Colors.Primary}
+              backgroundColor={Colors.primary}
               onPress={() => {
                 setModalVisible(true);
               }}
@@ -490,7 +493,7 @@ const MusicList = props => {
           onEndReached={() => {
             OnEndReached();
           }}
-          onEndReachedThreshold={0.6}
+          onEndReachedThreshold={0.8}
           renderItem={renderItem}
           ListEmptyComponent={
             <View marginT-16 center>
@@ -603,7 +606,7 @@ const MusicList = props => {
                 label={'确认'}
                 size={'small'}
                 link
-                linkColor={Colors.Primary}
+                linkColor={Colors.primary}
                 onPress={() => {
                   setFavoriteVisible(false);
                   addMusicToFavorites();
@@ -627,7 +630,7 @@ const MusicList = props => {
                 <View marginT-8 row centerV paddingH-12>
                   <Checkbox
                     marginR-12
-                    color={Colors.Primary}
+                    color={Colors.primary}
                     size={20}
                     borderRadius={10}
                     disabled={FavoriteId === item.id}
@@ -681,7 +684,7 @@ const MusicList = props => {
             {downloadProgress ? (
               <ProgressBar
                 progress={downloadProgress}
-                progressColor={Colors.Primary}
+                progressColor={Colors.primary}
               />
             ) : null}
           </View>

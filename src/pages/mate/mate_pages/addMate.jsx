@@ -11,17 +11,17 @@ import {
   Avatar,
 } from 'react-native-ui-lib';
 import {useSelector, useDispatch} from 'react-redux';
-import {useToast} from '../../../components/commom/Toast';
+import {useToast} from '../../../components/common/Toast';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {getUserdetail} from '../../../api/user';
 import {addmate, getmateStatus} from '../../../api/mate';
-import BaseDialog from '../../../components/commom/BaseDialog';
+import BaseDialog from '../../../components/common/BaseDialog';
 import {
   Camera,
   useCameraDevice,
   useCodeScanner,
 } from 'react-native-vision-camera';
-import {requestCameraPermission} from '../../../stores/store-slice/permissionStore';
+import {requestCameraPermission} from '../../../stores/store_slice/permissionStore';
 import {fullHeight} from '../../../styles';
 
 const Addmate = ({navigation, route}) => {
@@ -132,7 +132,7 @@ const Addmate = ({navigation, route}) => {
                 showToast('没有找到相机！', 'error');
               }
             }}>
-            <AntDesign name="scan1" size={24} color={Colors.Primary} />
+            <AntDesign name="scan1" size={24} color={Colors.primary} />
           </TouchableOpacity>
           <Button
             marginL-12
@@ -141,7 +141,7 @@ const Addmate = ({navigation, route}) => {
             labelStyle={{fontSize: 13}}
             avoidMinWidth={true}
             size={Button.sizes.small}
-            backgroundColor={Colors.Primary}
+            backgroundColor={Colors.primary}
             onPress={() => {
               searchUser(account);
             }}
@@ -181,7 +181,7 @@ const Addmate = ({navigation, route}) => {
                 labelStyle={{fontSize: 13}}
                 avoidMinWidth={true}
                 outline
-                outlineColor={Colors.Primary}
+                outlineColor={Colors.primary}
                 size={Button.sizes.xSmall}
               />
             </View>
@@ -233,7 +233,7 @@ const Addmate = ({navigation, route}) => {
         }}>
         <View bg-white>
           {!isFullScreen ? (
-            <View padding-12 row center backgroundColor={Colors.Primary}>
+            <View padding-12 row center backgroundColor={Colors.primary}>
               <TouchableOpacity
                 style={styles.BackBut}
                 onPress={() => setModalVisible(false)}>

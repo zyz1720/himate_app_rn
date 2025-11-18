@@ -13,10 +13,10 @@ import {useSelector} from 'react-redux';
 import {getFavoritesDetail} from '../../../api/music';
 import MusicList from '../../../components/music/MusicList';
 import FavoriteModal from '../../../components/music/FavoriteModal';
-import {isEmptyObject} from '../../../utils/base';
+import {isEmptyObject} from '../../../utils/common/base';
 import dayjs from 'dayjs';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import FullScreenLoading from '../../../components/commom/FullScreenLoading';
+import FullScreenLoading from '../../../components/common/FullScreenLoading';
 
 const FavoritesDetail = ({navigation, route}) => {
   const {favoritesId} = route.params || {};
@@ -42,9 +42,9 @@ const FavoritesDetail = ({navigation, route}) => {
         setFavoritesForm(res.data);
         setMusic(res.data.music);
       }
-      setLoading(false);
     } catch (error) {
       console.error(error);
+    } finally {
       setLoading(false);
     }
   };
@@ -93,7 +93,7 @@ const FavoritesDetail = ({navigation, route}) => {
                   </View>
                   <Text marginT-10 text90L grey40>
                     创建于
-                    {dayjs(favoritesForm.create_time).format('YYYY-MM-DD')}
+                    {dayjs(favoritesForm.create_time).format('YYYY/MM/DD')}
                   </Text>
                 </View>
               </TouchableOpacity>

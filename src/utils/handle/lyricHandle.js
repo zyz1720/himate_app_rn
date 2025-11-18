@@ -1,4 +1,4 @@
-import {isEmptyString} from '../base';
+import {isEmptyString} from '../common/base';
 
 // 解析普通歌词函数
 export const parserLrc = lrc => {

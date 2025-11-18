@@ -19,14 +19,14 @@ import {
   getUserMsgList,
   delUserMsgs,
   delUserUploadFiles,
-} from '../../../api/dataManager';
+} from '../../../api/data_manager';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import BaseSheet from '../../../components/commom/BaseSheet';
-import {useToast} from '../../../components/commom/Toast';
+import BaseSheet from '../../../components/common/BaseSheet';
+import {useToast} from '../../../components/common/Toast';
 import {DownloadFile} from '../../../utils/handle/fileHandle';
-import {requestFolderPermission} from '../../../stores/store-slice/permissionStore';
+import {requestFolderPermission} from '../../../stores/store_slice/permissionStore';
 import DocumentPicker from 'react-native-document-picker';
-import {getDocumentfileFormdata, formatDateTime} from '../../../utils/base';
+import {getDocumentfileFormdata, formatDateTime} from '../../../utils/common/base';
 import {
   UploadFile,
   getFileColor,
@@ -39,19 +39,19 @@ import {
   getLocalUser,
   formatMsg,
 } from '../../../utils/handle/chatHandle';
-import BaseDialog from '../../../components/commom/BaseDialog';
-import {getStorage} from '../../../utils/Storage';
+import BaseDialog from '../../../components/common/BaseDialog';
+import {getStorage} from '../../../utils/common/localStorage';
 import {
   msgTypeMap,
   chatTypeMap,
   msgStatusMap,
-} from '../../../constants/baseConst';
+} from '../../../constants/base_const';
 import dayjs from 'dayjs';
 import Clipboard from '@react-native-clipboard/clipboard';
-import BaseTopBar from '../../../components/commom/BaseTopBar';
-import VideoModal from '../../../components/commom/VideoModal';
-import ImgModal from '../../../components/commom/ImgModal';
-import FullScreenLoading from '../../../components/commom/FullScreenLoading';
+import BaseTopBar from '../../../components/common/BaseTopBar';
+import VideoModal from '../../../components/common/VideoModal';
+import ImgModal from '../../../components/common/ImgModal';
+import FullScreenLoading from '../../../components/common/FullScreenLoading';
 
 const DataManager = ({navigation, route}) => {
   const userId = useSelector(state => state.userStore.userId);
@@ -198,7 +198,7 @@ const DataManager = ({navigation, route}) => {
         {isMultiSelect ? (
           <Checkbox
             marginR-12
-            color={Colors.Primary}
+            color={Colors.primary}
             size={20}
             borderRadius={10}
             value={selectedFileItem.includes(item.id)}
@@ -281,7 +281,7 @@ const DataManager = ({navigation, route}) => {
         {isMultiSelect ? (
           <Checkbox
             marginR-12
-            color={Colors.Primary}
+            color={Colors.primary}
             size={20}
             borderRadius={10}
             value={selectedMsgItem.includes(item.id)}
@@ -736,7 +736,7 @@ const DataManager = ({navigation, route}) => {
           size={'small'}
           borderRadius={8}
           label={'上传文件'}
-          backgroundColor={Colors.Primary}
+          backgroundColor={Colors.primary}
           onPress={() => {
             if (!accessFolder) {
               showToast('请授予应用文件和媒体使用权限', 'warning');
@@ -816,7 +816,7 @@ const DataManager = ({navigation, route}) => {
             size={'xSmall'}
             label={isMultiSelect ? '取消' : '多选'}
             link
-            color={Colors.Primary}
+            color={Colors.primary}
             onPress={() => {
               setIsMultiSelect(prev => !prev);
             }}
@@ -843,7 +843,7 @@ const DataManager = ({navigation, route}) => {
         Actions={[
           {
             label: '文件存储',
-            color: Colors.Primary,
+            color: Colors.primary,
             onPress: async () => {
               DocumentPicker.pick({
                 type: [DocumentPicker.types.allFiles],
@@ -859,7 +859,7 @@ const DataManager = ({navigation, route}) => {
           },
           {
             label: '作为音乐',
-            color: Colors.Primary,
+            color: Colors.primary,
             onPress: async () => {
               DocumentPicker.pick({
                 type: [DocumentPicker.types.audio],
@@ -882,7 +882,7 @@ const DataManager = ({navigation, route}) => {
         Actions={[
           {
             label: focusedIndex === 3 ? '复制消息内容' : '复制下载链接',
-            color: Colors.Primary,
+            color: Colors.primary,
             onPress: async () => {
               if (focusedIndex === 3) {
                 Clipboard.setString(selectedCloudMsg.text);
@@ -895,7 +895,7 @@ const DataManager = ({navigation, route}) => {
           },
           {
             label: focusedIndex === 3 ? '同步到本地' : '保存到本地',
-            color: Colors.Primary,
+            color: Colors.primary,
             onPress: async () => {
               if (focusedIndex === 3) {
                 asyncMsgToLocal();
@@ -928,7 +928,7 @@ const DataManager = ({navigation, route}) => {
               个文件...
             </Text>
             {progress ? (
-              <ProgressBar progress={progress} progressColor={Colors.Primary} />
+              <ProgressBar progress={progress} progressColor={Colors.primary} />
             ) : null}
           </View>
         </Card>

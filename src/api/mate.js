@@ -1,4 +1,4 @@
-import instance from '../utils/request/http';
+import instance from '../utils/request/request';
 
 // 添加好友
 export const addmate = form => instance.post('api/mate/add', form);

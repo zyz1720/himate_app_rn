@@ -18,7 +18,7 @@ import {
 } from 'react-native-ui-lib';
 import {FlatList, StyleSheet, Vibration} from 'react-native';
 import {useSelector, useDispatch} from 'react-redux';
-import {useToast} from '../../components/commom/Toast';
+import {useToast} from '../../components/common/Toast';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -28,14 +28,14 @@ import {
   addFavorities,
   deleteFavorites,
 } from '../../api/music';
-import BaseDialog from '../../components/commom/BaseDialog';
+import BaseDialog from '../../components/common/BaseDialog';
 import {useRealm} from '@realm/react';
 import dayjs from 'dayjs';
 import {
   setCloseTime,
   setIsRandomPlay,
   setRandomNum,
-} from '../../stores/store-slice/musicStore';
+} from '../../stores/store_slice/musicStore';
 import {getMusicList, importFavorites} from '../../api/music';
 import {useIsFocused} from '@react-navigation/native';
 
@@ -192,18 +192,16 @@ const Music = ({navigation}) => {
 
   /* 获取最近播放数据 */
   const getLocalMusicInfo = () => {
-    const music = realm.objects('MusicInfo').toJSON();
-    const newList = music.sort((a, b) => b.updateAt - a.updateAt);
-    if (newList.length > 0) {
-      const latelyMusic = newList[0];
-      const startDate = dayjs();
-      const endDate = dayjs(latelyMusic.updateAt);
-      const diffInDays = endDate.diff(startDate, 'day');
+    const playHistory = realm.objects('MusicInfo').sorted('updateAt', true).toJSON();
+    if (playHistory.length > 0) {
+      const latelyMusic = playHistory[0];
+      const endDate = dayjs(Number(latelyMusic.updateAt));
+      const diffInDays = dayjs().diff(endDate, 'day');
       setLatelyDay(diffInDays);
     }
     const localMusic = realm.objects('LocalMusic').toJSON();
     setItemData(prev => {
-      prev[1].num = music.length;
+      prev[1].num = playHistory.length;
       prev[2].num = localMusic.length;
       return prev;
     });
@@ -290,7 +288,7 @@ const Music = ({navigation}) => {
         onPress={() => {
           navigation.navigate('SearchMusic');
         }}>
-        <FontAwesome name="search" color={Colors.Primary} size={16} />
+        <FontAwesome name="search" color={Colors.primary} size={16} />
         <View marginL-8>
           <TextField readOnly placeholder={'搜索你想找的音乐'} />
         </View>
@@ -319,11 +317,11 @@ const Music = ({navigation}) => {
             <Text grey20 text100L marginT-6>
               {latelyDay > 0 ? (
                 <Text grey20 text100L marginT-6>
-                  距离上次听歌已经过了
+                  距离上次听歌已经过去
                   <Text blue60 text80L marginT-6>
                     {latelyDay}
                   </Text>
-                  天
+                  天了
                 </Text>
               ) : (
                 '今天也来听听音乐吧 ~'
@@ -341,7 +339,7 @@ const Music = ({navigation}) => {
               }}>
               <MaterialIcons
                 name="library-music"
-                color={randomSwitch ? Colors.Primary : Colors.grey50}
+                color={randomSwitch ? Colors.primary : Colors.grey50}
                 size={20}
               />
               <Text text80 marginL-4 grey30>
@@ -358,7 +356,7 @@ const Music = ({navigation}) => {
               }}>
               <MaterialIcons
                 name="access-alarm"
-                color={alarmSwitch ? Colors.Primary : Colors.grey50}
+                color={alarmSwitch ? Colors.primary : Colors.grey50}
                 size={20}
               />
               <Text text80 marginL-4 grey30>
@@ -428,7 +426,7 @@ const Music = ({navigation}) => {
                   size={'xSmall'}
                   label={isAllSelect ? '全不选' : '全选'}
                   link
-                  color={Colors.Primary}
+                  color={Colors.primary}
                   onPress={() => {
                     setIsAllSelect(prev => {
                       if (!prev) {
@@ -491,7 +489,7 @@ const Music = ({navigation}) => {
               {isMultiSelect ? (
                 <Checkbox
                   marginR-12
-                  color={Colors.Primary}
+                  color={Colors.primary}
                   size={20}
                   borderRadius={10}
                   value={selectedItems.includes(item.id)}
@@ -516,7 +514,7 @@ const Music = ({navigation}) => {
                 rightItems={[
                   {
                     text: isMultiSelect ? '' : '删除',
-                    background: Colors.$backgroundNeutral,
+                    background: Colors.background,
                     onPress: () => {
                       if (isMultiSelect) {
                         return;
@@ -527,7 +525,7 @@ const Music = ({navigation}) => {
                     },
                   },
                 ]}
-                leftItem={{background: Colors.$backgroundNeutral}}>
+                leftItem={{background: Colors.background}}>
                 <TouchableOpacity
                   row
                   centerV
@@ -639,7 +637,7 @@ const Music = ({navigation}) => {
               定时关闭
             </Text>
             <Switch
-              onColor={Colors.Primary}
+              onColor={Colors.primary}
               offColor={Colors.grey50}
               value={alarmSwitch}
               onValueChange={value => {
@@ -658,8 +656,8 @@ const Music = ({navigation}) => {
               将在{alarmTime}分钟后停止播放
             </Text>
             <Slider
-              thumbTintColor={Colors.Primary}
-              minimumTrackTintColor={Colors.Primary}
+              thumbTintColor={Colors.primary}
+              minimumTrackTintColor={Colors.primary}
               thumbStyle={styles.thumbStyle}
               minimumValue={0}
               maximumValue={120}
@@ -694,7 +692,7 @@ const Music = ({navigation}) => {
               随机播放
             </Text>
             <Switch
-              onColor={Colors.Primary}
+              onColor={Colors.primary}
               offColor={Colors.grey50}
               value={randomSwitch}
               onValueChange={value => {
@@ -714,8 +712,8 @@ const Music = ({navigation}) => {
               将在曲库中第{randomNum.min}-{randomNum.max}首歌曲之间随机播放
             </Text>
             <Slider
-              thumbTintColor={Colors.Primary}
-              minimumTrackTintColor={Colors.Primary}
+              thumbTintColor={Colors.primary}
+              minimumTrackTintColor={Colors.primary}
               thumbStyle={styles.thumbStyle}
               minimumValue={1}
               maximumValue={allMusicNum}
@@ -750,7 +748,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   delBox: {
-    color: Colors.$backgroundNeutral,
+    color: Colors.background,
   },
   funBox: {
     borderTopWidth: 1,

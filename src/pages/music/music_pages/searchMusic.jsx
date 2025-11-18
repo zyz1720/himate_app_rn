@@ -1,21 +1,23 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {View, Text, Card, Colors, Button, TextField} from 'react-native-ui-lib';
 import {StyleSheet} from 'react-native';
 import {getMusicList} from '../../../api/music';
 import MusicList from '../../../components/music/MusicList';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import FullScreenLoading from '../../../components/commom/FullScreenLoading';
+import FullScreenLoading from '../../../components/common/FullScreenLoading';
 
-const SearchMusic = ({navigation}) => {
+const SearchMusic = () => {
   /* 获取收藏夹列表 */
   const [isLoading, setIsLoading] = useState(false);
   const [keyword, setKeyword] = useState('');
   const [pageNum, setPageNum] = useState(0);
   const [music, setMusic] = useState([]);
+  const [totalMusic, setTotalMusic] = useState(0);
   const pageSize = 20;
+  const isEnd = useRef(false);
   const getAllMusicList = async () => {
     try {
-      setIsLoading(true);
+      setIsLoading(pageNum < 2);
       const res = await getMusicList({
         pageNum,
         pageSize,
@@ -24,10 +26,11 @@ const SearchMusic = ({navigation}) => {
         album: keyword,
       });
       if (res.success) {
-        const {list} = res.data;
+        const {list, count} = res.data;
+        setTotalMusic(count);
         setMusic(prev => [...prev, ...list]);
         if (list.length < pageSize && pageNum !== 0) {
-          return;
+          isEnd.current = true;
         }
       }
     } catch (error) {
@@ -35,6 +38,12 @@ const SearchMusic = ({navigation}) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const resetState = () => {
+    setPageNum(0);
+    setMusic([]);
+    isEnd.current = false;
   };
 
   useEffect(() => {
@@ -59,10 +68,9 @@ const SearchMusic = ({navigation}) => {
           <Button
             label={'搜索'}
             link
-            linkColor={Colors.Primary}
+            linkColor={Colors.primary}
             onPress={() => {
-              setPageNum(0);
-              setMusic([]);
+              resetState();
               getAllMusicList();
             }}
           />
@@ -77,8 +85,11 @@ const SearchMusic = ({navigation}) => {
           <MusicList
             HeightScale={0.8}
             List={music}
+            Total={totalMusic}
             OnEndReached={() => {
-              setPageNum(prev => prev + 1);
+              if (!isEnd.current) {
+                setPageNum(prev => prev + 1);
+              }
             }}
           />
         </View>

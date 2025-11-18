@@ -1,12 +1,12 @@
 import {pinyin} from 'pinyin-pro';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import {Platform} from 'react-native';
-import {getFileExt} from './handle/fileHandle';
+import {getFileExt} from '../handle/fileHandle';
 import {
   audioExtNames,
   imageExtNames,
   videoExtNames,
-} from '../constants/baseConst';
+} from '../../constants/base_const';
 import dayjs from 'dayjs';
 
 // 判断是否为空字符串

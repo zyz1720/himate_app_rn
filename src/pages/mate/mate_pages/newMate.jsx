@@ -10,14 +10,14 @@ import {
   TextField,
 } from 'react-native-ui-lib';
 import {useSelector} from 'react-redux';
-import {useToast} from '../../../components/commom/Toast';
+import {useToast} from '../../../components/common/Toast';
 import {
   editmate,
   deletemate,
   getmatelist,
   getapplylist,
 } from '../../../api/mate';
-import BaseDialog from '../../../components/commom/BaseDialog';
+import BaseDialog from '../../../components/common/BaseDialog';
 
 const Newmate = ({navigation}) => {
   const userId = useSelector(state => state.userStore.userId);
@@ -154,7 +154,7 @@ const Newmate = ({navigation}) => {
           labelStyle={{fontSize: 13}}
           avoidMinWidth={true}
           size={Button.sizes.xSmall}
-          backgroundColor={Colors.Primary}
+          backgroundColor={Colors.primary}
           onPress={() => {
             setRemarkIsVisible(true);
             setMateId(item.id);

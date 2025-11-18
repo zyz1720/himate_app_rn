@@ -1,5 +1,5 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {getBaseConfig} from '../../api/baseConfig';
+import {getBaseConfig} from '../../api/base_config';
 import {generateSecretKey} from '../../utils/handle/cryptoHandle';
 
 const defaultState = {

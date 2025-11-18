@@ -1,7 +1,7 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {getMusicDetail} from '../../api/music';
-import {addStorage, getkeyStorage} from '../../utils/Storage';
-import {isEmptyObject} from '../../utils/base';
+import {addStorage, getkeyStorage} from '../../utils/common/localStorage';
+import {isEmptyObject} from '../../utils/common/base';
 
 const defaultState = {
   playingMusic: {},

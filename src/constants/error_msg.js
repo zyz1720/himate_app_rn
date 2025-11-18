@@ -1,4 +1,4 @@
-export default {
+export const httpErrorMsg = {
   401: '认证失败，请登录！',
   403: '当前操作没有权限',
   404: '当前访问资源不存在',

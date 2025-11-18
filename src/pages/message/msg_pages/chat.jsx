@@ -27,9 +27,9 @@ import {
 import Clipboard from '@react-native-clipboard/clipboard';
 import ImagePicker from 'react-native-image-crop-picker';
 import {useSelector, useDispatch} from 'react-redux';
-import {useSocket} from '../../../utils/socket';
+import {useSocket} from '../../../utils/common/socket';
 import {getSessionDetail} from '../../../api/session';
-import {useToast} from '../../../components/commom/Toast';
+import {useToast} from '../../../components/common/Toast';
 import {useRealm} from '@realm/react';
 import {
   formatMsg,
@@ -40,8 +40,8 @@ import {
   delLocalMsg,
   addOrUpdateLocalUser,
 } from '../../../utils/handle/chatHandle';
-import {setIsPlaySound} from '../../../stores/store-slice/settingStore';
-import {setNowSessionId} from '../../../stores/store-slice/chatMsgStore';
+import {setIsPlaySound} from '../../../stores/store_slice/settingStore';
+import {setNowSessionId} from '../../../stores/store_slice/chatMsgStore';
 import {
   deepClone,
   getfileFormdata,
@@ -49,7 +49,7 @@ import {
   createRandomNumber,
   getRecordfileFormdata,
   isEmptyObject,
-} from '../../../utils/base';
+} from '../../../utils/common/base';
 import {
   UploadFile,
   getFileName,
@@ -74,19 +74,19 @@ import Animated, {
 } from 'react-native-reanimated';
 import {fullWidth, fullHeight} from '../../../styles';
 import {DownloadFile} from '../../../utils/handle/fileHandle';
-import BaseSheet from '../../../components/commom/BaseSheet';
+import BaseSheet from '../../../components/common/BaseSheet';
 import {
   requestCameraPermission,
   requestMicrophonePermission,
   requestFolderPermission,
-} from '../../../stores/store-slice/permissionStore';
-import {cancelNotification} from '../../../utils/notification';
+} from '../../../stores/store_slice/permissionStore';
+import {cancelNotification} from '../../../utils/common/notification';
 import {
   createRandomSecretKey,
   encryptAES,
 } from '../../../utils/handle/cryptoHandle';
-import VideoModal from '../../../components/commom/VideoModal';
-import ImgModal from '../../../components/commom/ImgModal';
+import VideoModal from '../../../components/common/VideoModal';
+import ImgModal from '../../../components/common/ImgModal';
 import VideoMsg from '../../../components/message/VideoMsg';
 import ImageMsg from '../../../components/message/ImageMsg';
 import AudioMsg from '../../../components/message/AudioMsg';
@@ -718,7 +718,7 @@ const Chat = React.memo(({navigation, route}) => {
         {...props}
         wrapperStyle={{
           right: {
-            backgroundColor: IsText ? Colors.Primary : 'transparent',
+            backgroundColor: IsText ? Colors.primary : 'transparent',
             borderRadius: 8,
             padding: IsText ? 4 : 0,
           },
@@ -738,7 +738,7 @@ const Chat = React.memo(({navigation, route}) => {
       <Send
         {...props}
         containerStyle={{
-          backgroundColor: Colors.Primary,
+          backgroundColor: Colors.primary,
           borderRadius: 8,
           margin: 8,
           height: 30,
@@ -846,7 +846,7 @@ const Chat = React.memo(({navigation, route}) => {
           backgroundColor: Colors.white,
         }}
         textStyle={{color: Colors.grey20}}
-        activityIndicatorColor={Colors.Primary}
+        activityIndicatorColor={Colors.primary}
       />
     );
   };
@@ -867,7 +867,7 @@ const Chat = React.memo(({navigation, route}) => {
   const scrollToBottomComponent = () => {
     return (
       <View>
-        <Ionicons name="chevron-down" color={Colors.Primary} size={24} />
+        <Ionicons name="chevron-down" color={Colors.primary} size={24} />
       </View>
     );
   };
@@ -894,7 +894,7 @@ const Chat = React.memo(({navigation, route}) => {
         if (uploadIds.includes(_id) && nowSendId === _id) {
           return (
             <View flexG row center marginT-4>
-              <ActivityIndicator color={Colors.Primary} size={14} />
+              <ActivityIndicator color={Colors.primary} size={14} />
               <Text marginL-4 grey30 text100L>
                 发送中...{uploadProgress.toFixed(0)}%
               </Text>
@@ -1294,7 +1294,7 @@ const Chat = React.memo(({navigation, route}) => {
           <Animated.View style={rotateAnimatedStyle}>
             <Ionicons
               name="add-circle-outline"
-              color={Colors.Primary}
+              color={Colors.primary}
               size={34}
             />
           </Animated.View>
@@ -1318,7 +1318,7 @@ const Chat = React.memo(({navigation, route}) => {
               <View
                 flexS
                 center
-                backgroundColor={Colors.Primary}
+                backgroundColor={Colors.primary}
                 style={styles.radioBut}>
                 <FontAwesome name="microphone" color={Colors.white} size={24} />
               </View>
@@ -1341,7 +1341,7 @@ const Chat = React.memo(({navigation, route}) => {
               ImagePicker.openCamera({
                 cropping: true,
                 mediaType: 'photo',
-                cropperActiveWidgetColor: Colors.Primary,
+                cropperActiveWidgetColor: Colors.primary,
               })
                 .then(image => {
                   sendMediaMsg([image], 'camera');
@@ -1405,7 +1405,7 @@ const Chat = React.memo(({navigation, route}) => {
               ImagePicker.openPicker({
                 cropping: true,
                 mediaType: 'photo',
-                cropperActiveWidgetColor: Colors.Primary,
+                cropperActiveWidgetColor: Colors.primary,
               })
                 .then(image => {
                   sendMediaMsg([image], 'camera');
@@ -1594,7 +1594,7 @@ const Chat = React.memo(({navigation, route}) => {
       {/* 语音录制弹窗 */}
       <Animated.View style={[AnimatedRadioStyles, styles.radioTips]}>
         <Card flexS padding-16 center width={160}>
-          <ActivityIndicator color={Colors.Primary} size={24} />
+          <ActivityIndicator color={Colors.primary} size={24} />
           <Text grey30 marginT-4>
             倾听中... {recordTime}S
           </Text>
@@ -1626,7 +1626,7 @@ const Chat = React.memo(({navigation, route}) => {
         Actions={[
           {
             label: '保存到本地',
-            color: Colors.Primary,
+            color: Colors.primary,
             onPress: () => saveFile(),
           },
         ]}
@@ -1671,7 +1671,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   textInputStyle: {
-    backgroundColor: Colors.$backgroundNeutral,
+    backgroundColor: Colors.background,
     borderRadius: 8,
     padding: 8,
     lineHeight: 22,

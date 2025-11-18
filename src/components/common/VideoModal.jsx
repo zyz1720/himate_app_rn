@@ -32,7 +32,7 @@ const VideoModal = props => {
             visible={Visible}
             onRequestClose={OnClose}>
             {isFullScreen ? null : (
-                <View padding-12 row center backgroundColor={Colors.Primary}>
+                <View padding-12 row center backgroundColor={Colors.primary}>
                     <TouchableOpacity
                         style={styles.BackBut}
                         onPress={OnPress}>

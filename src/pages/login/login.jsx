@@ -18,10 +18,10 @@ import {
   userRegMail,
 } from '../../api/user';
 import {useSelector, useDispatch} from 'react-redux';
-import {setIsLogin} from '../../stores/store-slice/userStore';
-import {useToast} from '../../components/commom/Toast';
-import {ValidateMail} from '../../utils/base';
-import PasswordEye from '../../components/aboutInput/PasswordEye';
+import {setIsLogin} from '../../stores/store_slice/userStore';
+import {useToast} from '../../components/common/Toast';
+import {ValidateMail} from '../../utils/common/base';
+import PasswordEye from '../../components/about_input/PasswordEye';
 import {displayName as appDisplayName} from '../../../app.json';
 
 const Login = ({navigation}) => {
@@ -258,7 +258,7 @@ const Login = ({navigation}) => {
             size="xSmall"
             link
             disabled={seedflag}
-            color={Colors.Primary}
+            color={Colors.primary}
             label={codetext}
             onPress={seedCode}
           />
@@ -349,8 +349,8 @@ const Login = ({navigation}) => {
             marginT-20
             label="登录"
             disabled={Butdisabled}
-            backgroundColor={Colors.Primary}
-            disabledBackgroundColor={Colors.Primary}
+            backgroundColor={Colors.primary}
+            disabledBackgroundColor={Colors.primary}
             iconOnRight={true}
             iconSource={
               Butdisabled
@@ -365,8 +365,8 @@ const Login = ({navigation}) => {
             marginT-20
             label="注册"
             disabled={Butdisabled}
-            backgroundColor={Colors.Primary}
-            disabledBackgroundColor={Colors.Primary}
+            backgroundColor={Colors.primary}
+            disabledBackgroundColor={Colors.primary}
             iconOnRight={true}
             iconSource={
               Butdisabled
@@ -381,7 +381,7 @@ const Login = ({navigation}) => {
         <Checkbox
           size={18}
           borderRadius={9}
-          color={Colors.Primary}
+          color={Colors.primary}
           label={'已阅读并同意 '}
           labelStyle={styles.label}
           value={agreeFlag}
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
     height: 110,
     borderRadius: 26,
     overflow: 'hidden',
-    backgroundColor: Colors.Primary,
+    backgroundColor: Colors.primary,
   },
   mouthBox: {
     position: 'absolute',
@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     borderWidth: 1.4,
-    borderColor: Colors.Primary,
+    borderColor: Colors.primary,
     padding: 10,
     borderRadius: 12,
     position: 'relative',

@@ -14,11 +14,7 @@ import {useSelector} from 'react-redux';
 import {fullHeight, fullWidth} from '../../styles';
 
 const FavoritesList = props => {
-  const {
-    List = [],
-    OnEndReached = () => {},
-    OnPress = () => {},
-  } = props;
+  const {List = [], OnEndReached = () => {}, OnPress = () => {}} = props;
   // baseConfig
   const {STATIC_URL, THUMBNAIL_URL} = useSelector(
     state => state.baseConfigStore.baseConfig,
@@ -46,12 +42,17 @@ const FavoritesList = props => {
                   source={{uri: THUMBNAIL_URL + item.favorites_cover}}
                   style={styles.image}
                 />
-                <View row bottom>
-                  <Text text50BO grey50 marginL-4>
-                    {item.musicCount}
+                <View bottom>
+                  <Text
+                    style={styles.italicText}
+                    text100BO
+                    grey60
+                    marginL-6
+                    marginB-4>
+                    songs
                   </Text>
-                  <Text text100BO grey50 marginL-4 marginB-4>
-                    首
+                  <Text text40BO grey60 marginL-4>
+                    {item.musicCount}
                   </Text>
                 </View>
               </View>
@@ -62,9 +63,6 @@ const FavoritesList = props => {
               </View>
               <View marginT-6 row bottom spread>
                 <View row centerV>
-                  <Text text90BO grey10>
-                    来自
-                  </Text>
                   <Text text90L grey30 style={styles.userName}>
                     {item.creator_name}
                   </Text>
@@ -113,6 +111,9 @@ const styles = StyleSheet.create({
     maxWidth: 90,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+  },
+  italicText: {
+    fontStyle: 'italic',
   },
 });
 export default FavoritesList;

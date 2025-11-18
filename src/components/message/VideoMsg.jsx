@@ -11,7 +11,7 @@ import {
 import {createVideoThumbnail} from 'react-native-compressor';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Video from 'react-native-video';
-import {formatSeconds} from '../../utils/base';
+import {formatSeconds} from '../../utils/common/base';
 
 const VideoMsg = React.memo(props => {
   const {

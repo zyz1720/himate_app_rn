@@ -3,24 +3,24 @@ import {StatusBar} from 'react-native';
 import RootScreen from './RootScreen';
 import {Colors} from 'react-native-ui-lib';
 import {useSelector, useDispatch} from 'react-redux';
-import {initUserStore, setUserInfo} from '../stores/store-slice/userStore';
-import {initSettingStore} from '../stores/store-slice/settingStore';
-import {initMusicStore} from '../stores/store-slice/musicStore';
-import {checkPermissions} from '../stores/store-slice/permissionStore';
-import {initChatMsgStore} from '../stores/store-slice/chatMsgStore';
-import {useToast} from '../components/commom/Toast';
+import {initUserStore, setUserInfo} from '../stores/store_slice/userStore';
+import {initSettingStore} from '../stores/store_slice/settingStore';
+import {initMusicStore} from '../stores/store_slice/musicStore';
+import {checkPermissions} from '../stores/store_slice/permissionStore';
+import {initChatMsgStore} from '../stores/store_slice/chatMsgStore';
+import {useToast} from '../components/common/Toast';
 import {displayName as appDisplayName} from '../../app.json';
 import {
   setBaseConfig,
   initBaseConfigStore,
-} from '../stores/store-slice/baseConfigStore';
+} from '../stores/store_slice/baseConfigStore';
 import {
   setErrorMsg,
   clearErrorMsgStore,
-} from '../stores/store-slice/errorMsgStore';
+} from '../stores/store_slice/errorMsgStore';
 import 'react-native-get-random-values';
 import {install} from 'react-native-quick-crypto';
-import FullScreenLoading from '../components/commom/FullScreenLoading';
+import FullScreenLoading from '../components/common/FullScreenLoading';
 
 const RootView = () => {
   install();
@@ -100,7 +100,7 @@ const RootView = () => {
         backgroundColor={
           isLogin
             ? isFullScreen
-              ? Colors.$backgroundNeutral
+              ? Colors.background
               : themeColor
             : Colors.white
         }

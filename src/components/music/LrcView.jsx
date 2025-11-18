@@ -5,9 +5,9 @@ import {View, Text, Colors, TouchableOpacity, Image} from 'react-native-ui-lib';
 import {fullHeight, fullWidth} from '../../styles';
 import LrcItem from './LrcItem';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {useToast} from '../commom/Toast';
+import {useToast} from '../common/Toast';
 import {useSelector, useDispatch} from 'react-redux';
-import {setSwitchCount} from '../../stores/store-slice/musicStore';
+import {setSwitchCount} from '../../stores/store_slice/musicStore';
 
 const MODES = [
   {name: 'lrc+trans', label: '普通+翻译歌词'},
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
   },
   activeLine: {
     fontSize: 22,
-    color: Colors.Primary,
+    color: Colors.primary,
     fontWeight: 'bold',
   },
   activeLine2: {

@@ -9,16 +9,16 @@ import {
   Avatar,
   TouchableOpacity,
 } from 'react-native-ui-lib';
-import {useToast} from '../../../components/commom/Toast';
+import {useToast} from '../../../components/common/Toast';
 import {useSelector} from 'react-redux';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import ListItem from '../../../components/commom/ListItem';
+import ListItem from '../../../components/common/ListItem';
 import {getUserdetail} from '../../../api/user';
 import {addmate, editmate, deletemate, getmateStatus} from '../../../api/mate';
-import {delSessionMsgs} from '../../../api/dataManager';
+import {delSessionMsgs} from '../../../api/data_manager';
 import {DownloadFile} from '../../../utils/handle/fileHandle';
-import BaseDialog from '../../../components/commom/BaseDialog';
-import ImgModal from '../../../components/commom/ImgModal';
+import BaseDialog from '../../../components/common/BaseDialog';
+import ImgModal from '../../../components/common/ImgModal';
 
 const Mateinfo = ({navigation, route}) => {
   const {showToast} = useToast();
@@ -206,7 +206,7 @@ const Mateinfo = ({navigation, route}) => {
           <ListItem
             ItemName={'修改备注'}
             IconName={'edit'}
-            IconColor={Colors.Primary}
+            IconColor={Colors.primary}
             Fun={() => {
               setRemarkIsVisible(true);
             }}
@@ -228,7 +228,7 @@ const Mateinfo = ({navigation, route}) => {
               to_uid: uid,
             });
           }}>
-          <Text text70 color={Colors.Primary}>
+          <Text text70 color={Colors.primary}>
             发消息
           </Text>
         </Card>
@@ -254,7 +254,7 @@ const Mateinfo = ({navigation, route}) => {
           <ListItem
             ItemName={'添加好友'}
             IconName={'user-plus'}
-            IconColor={Colors.Primary}
+            IconColor={Colors.primary}
             Fun={() => {
               setAddIsVisible(true);
             }}

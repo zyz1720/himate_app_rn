@@ -8,7 +8,7 @@ import {
   Button,
 } from 'react-native-ui-lib';
 import {FlatList, StyleSheet, Platform, Modal} from 'react-native';
-import {useToast} from '../../../components/commom/Toast';
+import {useToast} from '../../../components/common/Toast';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import MusicList from '../../../components/music/MusicList';
 import {useRealm} from '@realm/react';
@@ -16,13 +16,13 @@ import {v4 as uuid} from 'uuid';
 import {fullHeight, statusBarHeight} from '../../../styles';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import BaseDialog from '../../../components/commom/BaseDialog';
-import {requestFolderPermission} from '../../../stores/store-slice/permissionStore';
+import BaseDialog from '../../../components/common/BaseDialog';
+import {requestFolderPermission} from '../../../stores/store_slice/permissionStore';
 import {useSelector, useDispatch} from 'react-redux';
-import {audioExtNames} from '../../../constants/baseConst';
-import FullScreenLoading from '../../../components/commom/FullScreenLoading';
+import {audioExtNames} from '../../../constants/base_const';
+import FullScreenLoading from '../../../components/common/FullScreenLoading';
 
-const LocalMusic = ({navigation}) => {
+const LocalMusic = () => {
   const {showToast} = useToast();
   const realm = useRealm();
   const dispatch = useDispatch();
@@ -32,63 +32,93 @@ const LocalMusic = ({navigation}) => {
   // 扫描本地音乐
   const [loading, setLoading] = useState(false);
   const [audioFiles, setAudioFiles] = useState([]);
-  const scanMusic = dirPathList => {
-    setLoading(true);
-    const scanDirectory = async Path => {
-      try {
-        const files = await ReactNativeBlobUtil.fs.ls(Path);
-        if (files.length === 0) {
-          return;
-        }
-        const audioFileList = [];
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i];
-          const file_path = Path + '/' + file;
-          const isDir = await isDirectory(file_path);
+
+  // 检查是否为音频文件
+  const isAudioFile = fileName => {
+    return audioExtNames.some(ext => fileName.toLowerCase().endsWith(ext));
+  };
+
+  // 扫描单个目录的函数
+  const scanADirectory = async path => {
+    const audioFilesInDir = [];
+    try {
+      const files = await ReactNativeBlobUtil.fs.ls(path);
+      if (files.length === 0) {
+        return audioFilesInDir;
+      }
+
+      for (const file of files) {
+        const filePath = `${path}/${file}`;
+        try {
+          const isDir = await isDirectory(filePath);
           if (!isDir && isAudioFile(file)) {
-            audioFileList.push({
+            audioFilesInDir.push({
               id: uuid(),
               title: file.split('.').shift(),
-              file_name: `${Path}/${file}`,
+              file_name: filePath,
             });
           } else if (isDir && !file.startsWith('.')) {
-            await scanDirectory(file_path);
+            // 递归扫描子目录
+            const subDirFiles = await scanADirectory(filePath);
+            audioFilesInDir.push(...subDirFiles);
           }
+        } catch (err) {
+          console.error(`处理文件 ${filePath} 时出错:`, err);
         }
-        setAudioFiles(prevItems => {
-          const newItems = [];
-          audioFileList.forEach(item => {
-            if (!prevItems.find(prevItem => prevItem.title === item.title)) {
-              newItems.push(item);
-            }
-          });
-          newItems.forEach(item => {
-            realm.write(() => {
-              realm.create('LocalMusic', item);
+      }
+    } catch (err) {
+      console.error(`扫描目录 ${path} 时出错:`, err);
+    }
+    return audioFilesInDir;
+  };
+
+  const scanMusic = async dirPathList => {
+    setLoading(true);
+    try {
+      const allAudioFilesPromises = dirPathList.map(path =>
+        scanADirectory(path),
+      );
+      const allAudioFilesResults = await Promise.all(allAudioFilesPromises);
+      const audioFileList = allAudioFilesResults.flat();
+      updateAudioFiles(audioFileList);
+    } catch (error) {
+      console.error('扫描音乐时发生错误:', error);
+      showToast('扫描过程中发生错误', 'error', true);
+    } finally {
+      setLoading(false);
+      setSelectedDirs([]);
+    }
+  };
+
+  // 更新音频文件列表和数据库
+  const updateAudioFiles = newAudioFiles => {
+    setAudioFiles(prevItems => {
+      const uniqueNewFiles = newAudioFiles.filter(
+        newFile =>
+          !prevItems.find(prevFile => prevFile.title === newFile.title),
+      );
+
+      if (uniqueNewFiles.length > 0) {
+        try {
+          realm.write(() => {
+            uniqueNewFiles.forEach(file => {
+              realm.create('LocalMusic', file);
             });
           });
-          newItems.length
-            ? showToast(
-                '已扫描到' + newItems.length + '首音乐',
-                'success',
-                true,
-              )
-            : null;
-          return [...newItems, ...prevItems];
-        });
-      } catch (error) {
-        console.error(error);
+        } catch (err) {
+          console.error('保存到数据库时出错:', err);
+        }
       }
-    };
-    const isAudioFile = fileName => {
-      return audioExtNames.some(ext => fileName.toLowerCase().endsWith(ext));
-    };
-    dirPathList.forEach(dirPath => {
-      scanDirectory(dirPath).finally(() => {
-        setLoading(false);
-      });
+
+      showToast(
+        uniqueNewFiles.length
+          ? `已扫描到${uniqueNewFiles.length}首新音乐`
+          : '没有找到新音乐',
+        uniqueNewFiles.length ? 'success' : 'warning',
+        true,
+      );
+      return [...uniqueNewFiles, ...prevItems];
     });
-    setSelectedDirs([]);
   };
 
   // 扫描目录
@@ -188,7 +218,7 @@ const LocalMusic = ({navigation}) => {
               <Button
                 label="扫描歌曲"
                 size="small"
-                backgroundColor={Colors.Primary}
+                backgroundColor={Colors.primary}
                 onPress={() => {
                   if (!accessFolder) {
                     showToast('请授予应用文件和媒体使用权限', 'warning');
@@ -251,7 +281,7 @@ const LocalMusic = ({navigation}) => {
                   label={'确认'}
                   size={'small'}
                   link
-                  linkColor={Colors.Primary}
+                  linkColor={Colors.primary}
                   onPress={() => {
                     setDirVisible(false);
                     scanMusic(selectedDirs);
@@ -273,7 +303,7 @@ const LocalMusic = ({navigation}) => {
                 <View marginT-8 row centerV paddingH-12>
                   <Checkbox
                     marginR-12
-                    color={Colors.Primary}
+                    color={Colors.primary}
                     size={20}
                     borderRadius={10}
                     value={selectedDirs.includes(item.path)}

@@ -1,9 +1,9 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {View, Card, Colors, Button, TextField} from 'react-native-ui-lib';
 import {StyleSheet} from 'react-native';
 import {getFavoritesList} from '../../../api/music';
 import FavoritesList from '../../../components/music/FavoritesList';
-import FullScreenLoading from '../../../components/commom/FullScreenLoading';
+import FullScreenLoading from '../../../components/common/FullScreenLoading';
 
 const FindFavorites = ({navigation}) => {
   /* 获取收藏夹列表 */
@@ -12,9 +12,10 @@ const FindFavorites = ({navigation}) => {
   const [pageNum, setPageNum] = useState(0);
   const [favoritesList, setFavoritesList] = useState([]);
   const pageSize = 20;
+  const isEnd = useRef(false);
   const getAllFavoritesList = async () => {
     try {
-      setIsLoading(true);
+      setIsLoading(pageNum < 2);
       const res = await getFavoritesList({
         pageNum,
         pageSize,
@@ -25,7 +26,7 @@ const FindFavorites = ({navigation}) => {
         const {list} = res.data;
         setFavoritesList(prev => [...prev, ...list]);
         if (list.length < pageSize && pageNum !== 0) {
-          return;
+          isEnd.current = true;
         }
       }
     } catch (error) {
@@ -33,6 +34,12 @@ const FindFavorites = ({navigation}) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const resetState = () => {
+    isEnd.current = false;
+    setPageNum(0);
+    setFavoritesList([]);
   };
 
   useEffect(() => {
@@ -57,10 +64,9 @@ const FindFavorites = ({navigation}) => {
           <Button
             label={'搜索'}
             link
-            linkColor={Colors.Primary}
+            linkColor={Colors.primary}
             onPress={() => {
-              setPageNum(0);
-              setFavoritesList([]);
+              resetState();
               getAllFavoritesList();
             }}
           />
@@ -74,7 +80,9 @@ const FindFavorites = ({navigation}) => {
               });
             }}
             OnEndReached={() => {
-              setPageNum(prev => prev + 1);
+              if (!isEnd.current) {
+                setPageNum(prev => prev + 1);
+              }
             }}
           />
         </View>

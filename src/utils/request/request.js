@@ -1,9 +1,9 @@
 import axios from 'axios';
-import codeMsg from './errorMsg.js';
+import {httpErrorMsg} from '../../constants/error_msg.js';
 import {store} from '../../stores/index.js';
-import {clearUserStore} from '../../stores/store-slice/userStore.js';
-import {requestBaseConfig} from '../../stores/store-slice/baseConfigStore.js';
-import {setErrorMsg} from '../../stores/store-slice/errorMsgStore.js';
+import {clearUserStore} from '../../stores/store_slice/userStore.js';
+import {requestBaseConfig} from '../../stores/store_slice/baseConfigStore.js';
+import {setErrorMsg} from '../../stores/store_slice/errorMsgStore.js';
 
 const {BASE_URL} = store.getState().baseConfigStore.baseConfig;
 
@@ -50,13 +50,13 @@ instance.interceptors.response.use(
       const errcode = message.substr(message.length - 3);
 
       if (errcode === '401') {
-        message = codeMsg[errcode];
+        message = httpErrorMsg[errcode];
         store.dispatch(clearUserStore());
       } else if (errcode === '404') {
-        message = codeMsg[errcode];
+        message = httpErrorMsg[errcode];
         store.dispatch(requestBaseConfig());
       } else {
-        message = error.response.data.message || codeMsg[errcode];
+        message = error.response.data.message || httpErrorMsg[errcode];
       }
     }
     error.message = message;

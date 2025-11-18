@@ -136,7 +136,7 @@ const LrcItem = React.memo(
               <View
                 width={textDimensions?.width || 0}
                 height={textDimensions?.height || 0}>
-                <Text text70BO color={Colors.Primary}>
+                <Text text70BO color={Colors.primary}>
                   {VisibleChars}
                 </Text>
               </View>

@@ -14,29 +14,29 @@ import {
   Avatar,
 } from 'react-native-ui-lib';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {useToast} from '../../components/commom/Toast';
+import {useToast} from '../../components/common/Toast';
 import {getGroupDetail, editGroup, deleteGroup} from '../../api/group';
 import {
   editGroupMember,
   deleteGroupMember,
   deleteAllGroupMember,
-} from '../../api/groupMember';
+} from '../../api/group_member';
 import {UploadFile} from '../../utils/handle/fileHandle';
 import {useSelector, useDispatch} from 'react-redux';
 import ImagePicker from 'react-native-image-crop-picker';
-import BaseDialog from '../../components/commom/BaseDialog';
-import ListItem from '../../components/commom/ListItem';
+import BaseDialog from '../../components/common/BaseDialog';
+import ListItem from '../../components/common/ListItem';
 import {useRealm} from '@realm/react';
-import BaseSheet from '../../components/commom/BaseSheet';
-import {getfileFormdata} from '../../utils/base';
+import BaseSheet from '../../components/common/BaseSheet';
+import {getfileFormdata} from '../../utils/common/base';
 import {
   requestCameraPermission,
   requestFolderPermission,
-} from '../../stores/store-slice/permissionStore';
+} from '../../stores/store_slice/permissionStore';
 import {formatMsg, setLocalMsg} from '../../utils/handle/chatHandle';
 import {getSessionDetail} from '../../api/session';
-import {delSessionMsgs} from '../../api/dataManager';
-import FullScreenLoading from '../../components/commom/FullScreenLoading';
+import {delSessionMsgs} from '../../api/data_manager';
+import FullScreenLoading from '../../components/common/FullScreenLoading';
 
 const GroupInfo = ({navigation, route}) => {
   const {session_id} = route.params || {};
@@ -340,7 +340,7 @@ const GroupInfo = ({navigation, route}) => {
             ribbonStyle={{
               backgroundColor:
                 item.member_role === 'owner'
-                  ? Colors.Primary
+                  ? Colors.primary
                   : item.member_role === 'admin'
                   ? Colors.yellow30
                   : null,
@@ -359,7 +359,7 @@ const GroupInfo = ({navigation, route}) => {
         style={{flex: 1}}
         refreshControl={
           <RefreshControl
-            colors={[Colors.Primary]}
+            colors={[Colors.primary]}
             refreshing={refreshing}
             onRefresh={() => {
               dataInit(session_id);
@@ -388,10 +388,10 @@ const GroupInfo = ({navigation, route}) => {
               <Button
                 label={'保存'}
                 outline={true}
-                outlineColor={Colors.Primary}
+                outlineColor={Colors.primary}
                 size={Button.sizes.small}
                 borderRadius={8}
-                backgroundColor={Colors.Primary}
+                backgroundColor={Colors.primary}
                 onPress={() => submitData({group_avatar: true})}
               />
             </View>
@@ -426,7 +426,7 @@ const GroupInfo = ({navigation, route}) => {
                   label={'保存'}
                   size={Button.sizes.xSmall}
                   borderRadius={8}
-                  backgroundColor={Colors.Primary}
+                  backgroundColor={Colors.primary}
                   onPress={() => submitData({group_name: groupname})}
                 />
               </View>
@@ -464,7 +464,7 @@ const GroupInfo = ({navigation, route}) => {
                   label={'保存'}
                   size={Button.sizes.xSmall}
                   borderRadius={8}
-                  backgroundColor={Colors.Primary}
+                  backgroundColor={Colors.primary}
                   onPress={() => submitData({group_introduce: groupIntroduce})}
                 />
               </View>
@@ -536,7 +536,7 @@ const GroupInfo = ({navigation, route}) => {
                     ItemName={'查看' + groupInfo?.members?.length + '个成员'}
                     IconName={'group'}
                     IconSize={20}
-                    IconColor={Colors.Primary}
+                    IconColor={Colors.primary}
                     IsBottomLine={true}
                     Fun={() => {
                       setIsExpand(prev => !prev);
@@ -613,7 +613,7 @@ const GroupInfo = ({navigation, route}) => {
         Actions={[
           {
             label: '相机',
-            color: Colors.Primary,
+            color: Colors.primary,
             onPress: () => {
               if (!accessCamera) {
                 showToast('请授予应用相机使用权限', 'warning');
@@ -626,7 +626,7 @@ const GroupInfo = ({navigation, route}) => {
                 cropping: true,
                 mediaType: 'photo',
                 cropperCircleOverlay: true,
-                cropperActiveWidgetColor: Colors.Primary,
+                cropperActiveWidgetColor: Colors.primary,
               })
                 .then(image => {
                   setAvatarfile(image);
@@ -638,7 +638,7 @@ const GroupInfo = ({navigation, route}) => {
           },
           {
             label: '图片',
-            color: Colors.Primary,
+            color: Colors.primary,
             onPress: () => {
               if (!accessFolder) {
                 showToast('请授予应用文件和媒体使用权限', 'warning');
@@ -651,7 +651,7 @@ const GroupInfo = ({navigation, route}) => {
                 cropping: true,
                 mediaType: 'photo',
                 cropperCircleOverlay: true,
-                cropperActiveWidgetColor: Colors.Primary,
+                cropperActiveWidgetColor: Colors.primary,
               })
                 .then(image => {
                   setAvatarfile(image);
@@ -725,7 +725,7 @@ const GroupInfo = ({navigation, route}) => {
               editMemberInfo?.member_role === 'admin'
                 ? '取消管理员'
                 : '设为管理员',
-            color: Colors.Primary,
+            color: Colors.primary,
             onPress: () => {
               if (groupRole === 'owner') {
                 setEditMemberInfo(prev => {
@@ -749,7 +749,7 @@ const GroupInfo = ({navigation, route}) => {
               editMemberInfo?.member_status === 'normal'
                 ? '禁止发言'
                 : '恢复发言',
-            color: Colors.Primary,
+            color: Colors.primary,
             onPress: () => {
               setEditMemberInfo(prev => {
                 if (prev.member_role === 'owner') {
