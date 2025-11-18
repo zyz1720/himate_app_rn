@@ -1,11 +1,16 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {addStorage, delStorage, getkeyStorage} from '../../utils/common/localStorage';
-import {getUserdetail} from '../../api/user';
+import {
+  addStorage,
+  delStorage,
+  getKeyStorage,
+} from '../../utils/common/localStorage';
+import {getUserInfo} from '../../api/user';
 
 const defaultState = {
   userInfo: {}, // 用户信息
-  userToken: null, // 用户token
-  userId: null, // 用户id
+  access_token: null, // 用户token
+  refresh_token: null, // 刷新token
+  token_type: null, // token类型
   isLogin: false, // 是否登录
   userLoading: false, // 用户信息加载状态
 };
@@ -19,10 +24,11 @@ export const userSlice = createSlice({
         state.userLoading = true;
       })
       .addCase(initUserStore.fulfilled, (state, action) => {
-        const {userToken, userId} = action.payload || {};
-        state.userToken = userToken || null;
-        state.userId = userId || null;
-        state.isLogin = state.userToken && state.userId;
+        const {access_token, refresh_token, token_type} = action.payload || {};
+        state.access_token = access_token || null;
+        state.refresh_token = refresh_token || null;
+        state.token_type = token_type || null;
+        state.isLogin = state.access_token && state.refresh_token;
         state.userLoading = false;
       })
       .addCase(initUserStore.rejected, () => defaultState);
@@ -35,16 +41,19 @@ export const userSlice = createSlice({
   },
   reducers: {
     setIsLogin: (state, action) => {
-      const {userToken, userId} = action.payload || {};
-      state.userToken = userToken || null;
-      state.userId = userId || null;
-      state.isLogin = state.userToken && state.userId;
-      addStorage('user', 'userId', state.userId);
-      addStorage('user', 'userToken', state.userToken);
+      const {access_token, refresh_token, token_type} = action.payload || {};
+      state.access_token = access_token || null;
+      state.refresh_token = refresh_token || null;
+      state.token_type = token_type || null;
+      state.isLogin = state.access_token && state.refresh_token;
+      addStorage('user', 'access_token', state.access_token);
+      addStorage('user', 'refresh_token', state.refresh_token);
+      addStorage('user', 'token_type', state.token_type);
     },
     clearUserStore: () => {
-      delStorage('user', 'userId');
-      delStorage('user', 'userToken');
+      delStorage('user', 'access_token');
+      delStorage('user', 'refresh_token');
+      delStorage('user', 'token_type');
       return defaultState;
     },
   },
@@ -54,7 +63,7 @@ export const initUserStore = createAsyncThunk(
   'user/initUserStore',
   async (_, {rejectWithValue}) => {
     try {
-      return await getkeyStorage('user');
+      return await getKeyStorage('user');
     } catch (error) {
       console.error(error);
       return rejectWithValue(null); // 错误处理
@@ -64,17 +73,17 @@ export const initUserStore = createAsyncThunk(
 
 export const setUserInfo = createAsyncThunk(
   'user/setUserInfo',
-  async (user_id, {rejectWithValue}) => {
+  async (_, {rejectWithValue}) => {
     try {
-      const userRes = await getUserdetail({id: user_id});
-      if (userRes.success) {
+      const userRes = await getUserInfo();
+      if (userRes.code === 0) {
         return userRes.data;
       } else {
         return rejectWithValue(null);
       }
     } catch (error) {
       console.error(error);
-      return rejectWithValue(null); // 错误处理
+      return rejectWithValue(null);
     }
   },
 );

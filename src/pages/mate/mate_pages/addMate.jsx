@@ -13,7 +13,7 @@ import {
 import {useSelector, useDispatch} from 'react-redux';
 import {useToast} from '../../../components/common/Toast';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import {getUserdetail} from '../../../api/user';
+import {getUserInfo} from '../../../api/user';
 import {addmate, getmateStatus} from '../../../api/mate';
 import BaseDialog from '../../../components/common/BaseDialog';
 import {
@@ -42,7 +42,7 @@ const Addmate = ({navigation, route}) => {
       return;
     }
     try {
-      const userRes = await getUserdetail({self_account: userAccount});
+      const userRes = await getUserInfo({self_account: userAccount});
       if (userRes.success) {
         setUserDetail(userRes.data);
       }

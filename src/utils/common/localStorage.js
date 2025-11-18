@@ -50,7 +50,7 @@ export const getStorage = async (oldKey, oldId = null) => {
 };
 
 // 查询key下所有数据
-export const getkeyStorage = async oldKey => {
+export const getKeyStorage = async oldKey => {
   let value = {};
   try {
     const [keys, values] = await Promise.all([

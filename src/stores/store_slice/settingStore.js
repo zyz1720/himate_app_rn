@@ -1,5 +1,5 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {addStorage, getkeyStorage} from '../../utils/common/localStorage';
+import {addStorage, getKeyStorage} from '../../utils/common/localStorage';
 import {SystemThemeInit} from '../../styles';
 
 const defaultState = {
@@ -82,7 +82,7 @@ export const initSettingStore = createAsyncThunk(
   'setting/initSettingStore',
   async (_, {rejectWithValue}) => {
     try {
-      return await getkeyStorage('setting');
+      return await getKeyStorage('setting');
     } catch (error) {
       console.error(error);
       return rejectWithValue(null); // 错误处理

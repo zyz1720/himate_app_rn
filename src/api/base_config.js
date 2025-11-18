@@ -10,14 +10,14 @@ import {
 } from '@env';
 
 // 默认配置对象
-const defaultConfig = {
+export const defaultConfig = {
   MSG_SECRET,
   BASE_URL,
   SOCKET_URL,
   STATIC_URL,
   FAST_STATIC_URL,
   LOW_STATIC_URL: STATIC_URL,
-  THUMBNAIL_URL: `${BASE_URL}Thumbnail/`,
+  THUMBNAIL_URL: `${BASE_URL}thumbnails/`,
 };
 
 /**
@@ -32,11 +32,11 @@ export const getBaseConfig = async () => {
     const response = await axios.get(COULD_URL, {
       headers: {Authorization: COULD_SECRET},
     });
-    const {data} = response;
+    const config = response.data;
     return {
-      ...data,
-      LOW_STATIC_URL: data.STATIC_URL,
-      THUMBNAIL_URL: `${data.BASE_URL}Thumbnail/`,
+      ...config,
+      LOW_STATIC_URL: config.STATIC_URL,
+      THUMBNAIL_URL: `${config.BASE_URL}thumbnails/`,
     };
   } catch (error) {
     console.error('获取云端配置失败:', error);

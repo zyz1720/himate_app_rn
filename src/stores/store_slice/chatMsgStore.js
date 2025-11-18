@@ -1,5 +1,5 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {addStorage, getkeyStorage} from '../../utils/common/localStorage';
+import {addStorage, getKeyStorage} from '../../utils/common/localStorage';
 
 const defaultState = {
   socketReady: false, // socket连接状态
@@ -71,7 +71,7 @@ export const initChatMsgStore = createAsyncThunk(
   'chat/initChatMsgStore',
   async (_, {rejectWithValue}) => {
     try {
-      return await getkeyStorage('chat');
+      return await getKeyStorage('chat');
     } catch (error) {
       console.error(error);
       return rejectWithValue(null); // 错误处理

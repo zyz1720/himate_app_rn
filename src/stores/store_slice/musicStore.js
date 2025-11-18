@@ -1,6 +1,6 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {getMusicDetail} from '../../api/music';
-import {addStorage, getkeyStorage} from '../../utils/common/localStorage';
+import {addStorage, getKeyStorage} from '../../utils/common/localStorage';
 import {isEmptyObject} from '../../utils/common/base';
 
 const defaultState = {
@@ -100,7 +100,7 @@ export const initMusicStore = createAsyncThunk(
   'music/initMusicStore',
   async (_, {rejectWithValue}) => {
     try {
-      return await getkeyStorage('music');
+      return await getKeyStorage('music');
     } catch (error) {
       console.error(error);
       return rejectWithValue(null); // 错误处理

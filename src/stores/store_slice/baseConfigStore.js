@@ -4,7 +4,7 @@ import {generateSecretKey} from '../../utils/handle/cryptoHandle';
 
 const defaultState = {
   baseConfig: {}, // 基础配置
-  secretStr: '123456', // 加密密钥串
+  secretStr: '', // 加密密钥串
   configLoading: false, // 加载状态
 };
 
@@ -38,11 +38,8 @@ export const initBaseConfigStore = createAsyncThunk(
   'config/initBaseConfigStore',
   async (_, {rejectWithValue}) => {
     try {
-      const response = await getBaseConfig();
-      if (response) {
-        return response;
-      }
-      return rejectWithValue(null);
+      const config = await getBaseConfig();
+      return config;
     } catch (error) {
       console.error(error);
       return rejectWithValue(null); // 错误处理

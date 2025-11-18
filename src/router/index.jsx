@@ -41,7 +41,7 @@ const RootView = () => {
   );
 
   /*  初始化应用设置 */
-  const settingInit = async () => {
+  const settingInit = () => {
     dispatch(initBaseConfigStore());
     dispatch(initChatMsgStore());
     dispatch(initSettingStore());

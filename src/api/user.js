@@ -1,27 +1,19 @@
 import instance from '../utils/request/request';
 
 // 用户注册
-export const userRegMail = form => instance.post('api/user/reg', form);
-
-// 获取验证码
-export const getCodeBymail = account =>
-  instance.get('api/mail/code', {params: {account}});
-
-// 验证验证码
-export const mailValidate = form => instance.post('api/user/validate', form);
-
-// 账号登录
-export const AccountuserLogin = form => instance.post('api/user/login', form);
-
-// 验证码登录
-export const CodeuserLogin = form => instance.post('api/user/codelogin', form);
+export const userReg = data => instance.post('app/user/reg', data);
 
 // 获取用户详情
-export const getUserdetail = params =>
-  instance.get('api/user/detail', {params});
+export const getUserInfo = () => instance.get('app/user/info');
 
 // 修改用户信息
-export const EditUserInfo = form => instance.put('api/user/edit', form);
+export const editUserInfo = data => instance.put('app/user/info', data);
+
+// 修改用户密码
+export const editUserPassword = data => instance.put('app/user/password', data);
+
+// 修改用户账号
+export const editUserAccount = data => instance.put('app/user/account', data);
 
 // 用户注销
-export const userLogOff = data => instance.delete('api/user/del', {data});
+export const userLogout = () => instance.delete('app/user/logout');

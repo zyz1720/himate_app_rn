@@ -13,7 +13,7 @@ import {useToast} from '../../../components/common/Toast';
 import {useSelector} from 'react-redux';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import ListItem from '../../../components/common/ListItem';
-import {getUserdetail} from '../../../api/user';
+import {getUserInfo} from '../../../api/user';
 import {addmate, editmate, deletemate, getmateStatus} from '../../../api/mate';
 import {delSessionMsgs} from '../../../api/data_manager';
 import {DownloadFile} from '../../../utils/handle/fileHandle';
@@ -32,7 +32,7 @@ const Mateinfo = ({navigation, route}) => {
   const [otherUserInfo, setOtherUserInfo] = useState({});
   const getOtherUserInfo = async _userId => {
     try {
-      const res = await getUserdetail({id: _userId});
+      const res = await getUserInfo({id: _userId});
       if (res.success) {
         setOtherUserInfo(res.data);
       }

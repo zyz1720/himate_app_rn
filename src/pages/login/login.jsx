@@ -8,47 +8,68 @@ import {
   Checkbox,
   Colors,
 } from 'react-native-ui-lib';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Entypo from 'react-native-vector-icons/Entypo';
-import Feather from 'react-native-vector-icons/Feather';
-import {
-  AccountuserLogin,
-  CodeuserLogin,
-  getCodeBymail,
-  userRegMail,
-} from '../../api/user';
+import {getEmailCode, getImgCaptcha} from '../../api/common';
+import {userLoginAccount, userLoginCode} from '../../api/login';
+import {userReg} from '../../api/user';
 import {useSelector, useDispatch} from 'react-redux';
 import {setIsLogin} from '../../stores/store_slice/userStore';
 import {useToast} from '../../components/common/Toast';
 import {ValidateMail} from '../../utils/common/base';
-import PasswordEye from '../../components/about_input/PasswordEye';
 import {displayName as appDisplayName} from '../../../app.json';
+import {SvgXml} from 'react-native-svg';
+import Animated, {FadeInUp, FadeInLeft} from 'react-native-reanimated';
+import PasswordEye from '../../components/about_input/PasswordEye';
+import BaseDialog from '../../components/common/BaseDialog';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Entypo from 'react-native-vector-icons/Entypo';
+import Feather from 'react-native-vector-icons/Feather';
 
 const Login = ({navigation}) => {
   const {showToast} = useToast();
+  const dispatch = useDispatch();
+
   const themeColor = useSelector(state => state.settingStore.themeColor);
   // baseConfig
   const {STATIC_URL} = useSelector(state => state.baseConfigStore.baseConfig);
   /* 验证码倒计时 */
-  const [seedflag, setSeedflag] = useState(false);
+  const [sendFlag, setSendFlag] = useState(false);
   const [codetext, setCodetext] = useState('发送验证码');
+
   let time = 60;
   const addTimer = () => {
-    setSeedflag(true);
+    setSendFlag(true);
     const timer = setInterval(() => {
       time -= 1;
       setCodetext(time + 's');
       if (time === 0) {
         clearInterval(timer);
         time = 60;
-        setSeedflag(false);
+        setSendFlag(false);
         setCodetext('发送验证码');
       }
     }, 1000);
   };
 
+  /*获取图片验证码 */
+  const [imgCodeVisible, setImgCodeVisible] = useState(false);
+  const [captchaId, setCaptchaId] = useState(null);
+  const [imgCode, setImgCode] = useState(null);
+  const [captchaImg, setCaptchaImg] = useState(null);
+  const getImgCode = async () => {
+    try {
+      const res = await getImgCaptcha();
+      if (res.code === 0) {
+        const {captcha_id, captcha_img} = res.data;
+        setCaptchaId(captcha_id);
+        setCaptchaImg(captcha_img);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   /* 发送验证码 */
-  const seedCode = async () => {
+  const sendCode = async () => {
     if (account === null || account === '') {
       showToast('请输入邮箱！', 'error');
       return;
@@ -56,10 +77,16 @@ const Login = ({navigation}) => {
     if (!emailValidate(account)) {
       return;
     }
-    addTimer();
     try {
-      const mailRes = await getCodeBymail(account);
-      showToast(mailRes.message, mailRes.success ? 'success' : 'error');
+      const emailRes = await getEmailCode({
+        email: account,
+        captchaId: captchaId,
+        captchaCode: imgCode,
+      });
+      if (emailRes.code === 0) {
+        addTimer();
+      }
+      showToast(emailRes.message, emailRes.code === 0 ? 'success' : 'error');
     } catch (error) {
       console.error(error);
     }
@@ -71,86 +98,86 @@ const Login = ({navigation}) => {
    * 2，注册账号
    * 3，忘记密码（验证码登录）
    */
-  const [controlcode, setControlcode] = useState(1);
+  const [controlCode, setControlCode] = useState(1);
   const [account, setAccount] = useState(null);
   const [password, setPassword] = useState(null);
-  const [repassword, setRepassword] = useState(null);
+  const [rePassword, setRePassword] = useState(null);
   const [code, setCode] = useState(null);
 
-  const dispatch = useDispatch();
-  /* 保存Token，userId 到redux */
-  const saveInfo = userData => {
-    dispatch(setIsLogin(userData));
-  };
-
   /* 用户登录 */
-  const [Butdisabled, setButdisabled] = useState(false);
+  const [butDisabled, setButDisabled] = useState(false);
   const userLogin = async () => {
     if (!agreeFlag) {
       showToast('请先阅读并同意协议！', 'error');
       return;
     }
-    if (controlcode === 1 || controlcode === 2) {
+    if (controlCode === 1 || controlCode === 2) {
       if (accountValidate(account) && passwordValidate(password)) {
         try {
-          setButdisabled(true);
-          let res = null;
-          if (ValidateMail(account)) {
-            res = await AccountuserLogin({account, password});
-          } else {
-            res = await AccountuserLogin({self_account: account, password});
+          setButDisabled(true);
+          const loginRes = await userLoginAccount({
+            account,
+            password,
+          });
+          if (loginRes.code === 0) {
+            dispatch(setIsLogin(loginRes.data));
           }
-          if (res.success) {
-            saveInfo(res.data);
-          }
-          showToast(res.message, res.success ? 'success' : 'error');
-          setButdisabled(false);
+          showToast(
+            loginRes.message,
+            loginRes.code === 0 ? 'success' : 'error',
+          );
         } catch (error) {
           console.error(error);
-          setButdisabled(false);
+        } finally {
+          setButDisabled(false);
         }
       }
     }
-    if (controlcode === 3) {
+    if (controlCode === 3) {
       if (emailValidate(account) && codeValidate(code)) {
         try {
-          setButdisabled(true);
-          const res = await CodeuserLogin({account, code});
-          if (res.success) {
-            saveInfo(res.data);
+          setButDisabled(true);
+          const loginRes = await userLoginCode({account, code});
+          if (loginRes.code === 0) {
+            dispatch(setIsLogin(loginRes.data));
           }
-          showToast(res.message, res.success ? 'success' : 'error');
-          setButdisabled(false);
+          showToast(
+            loginRes.message,
+            loginRes.code === 0 ? 'success' : 'error',
+          );
         } catch (error) {
           console.error(error);
-          setButdisabled(false);
+        } finally {
+          setButDisabled(false);
         }
       }
     }
   };
 
   /* 用户注册 */
-  const userReg = async () => {
+  const userRegFunc = async () => {
     if (
       emailValidate(account) &&
       codeValidate(code) &&
       passwordValidate(password) &&
-      repassValidate(password, repassword)
+      rePassValidate(password, rePassword)
     ) {
       try {
-        setButdisabled(true);
-        const regRes = await userRegMail({account, password, code});
-        if (regRes.success) {
+        setButDisabled(true);
+        const regRes = await userReg({account, password, code});
+        if (regRes.code === 0) {
           const timer = setTimeout(() => {
             userLogin();
+            showToast('注册成功！已自动登录', 'success');
             clearTimeout(timer);
           }, 1000);
+        } else {
+          showToast(regRes.message, 'error');
         }
-        showToast(regRes.message, regRes.success ? 'success' : 'error');
-        setButdisabled(false);
       } catch (error) {
         console.error(error);
-        setButdisabled(false);
+      } finally {
+        setButDisabled(false);
       }
     }
   };
@@ -168,15 +195,6 @@ const Login = ({navigation}) => {
     return true;
   };
 
-  /* 邮箱校验 */
-  const emailValidate = mail => {
-    if (ValidateMail(mail)) {
-      return true;
-    }
-    showToast('请输入正确的邮箱号！', 'error');
-    return false;
-  };
-
   /*  密码校验 */
   const passwordValidate = _password => {
     if (!_password) {
@@ -188,6 +206,15 @@ const Login = ({navigation}) => {
       return false;
     }
     return true;
+  };
+
+  /* 邮箱校验 */
+  const emailValidate = mail => {
+    if (ValidateMail(mail)) {
+      return true;
+    }
+    showToast('请输入正确的邮箱号！', 'error');
+    return false;
   };
 
   /* 验证码校验 */
@@ -204,8 +231,8 @@ const Login = ({navigation}) => {
   };
 
   /* 密码二次确认 */
-  const repassValidate = (oldpassword, newpassword) => {
-    if (oldpassword !== newpassword) {
+  const rePassValidate = (old_password, new_password) => {
+    if (old_password !== new_password) {
       showToast('两次输入的密码不同，请再次确认！', 'warn');
       return false;
     }
@@ -213,7 +240,7 @@ const Login = ({navigation}) => {
   };
 
   // 显示隐藏密码
-  const [hideflag, setHideflag] = useState(true);
+  const [hideFlag, setHideFlag] = useState(true);
   const [agreeFlag, setAgreeFlag] = useState(false);
 
   return (
@@ -237,35 +264,42 @@ const Login = ({navigation}) => {
         <TextField
           text70
           style={styles.input}
-          placeholder={controlcode === 1 ? '请输入账号/邮箱' : '请输入邮箱'}
+          placeholder={controlCode === 1 ? '请输入账号/邮箱' : '请输入邮箱'}
           placeholderTextColor={Colors.grey40}
           onChangeText={value => setAccount(value)}
         />
       </View>
 
-      {controlcode !== 1 ? (
-        <View marginT-26 style={[styles.inputBox, {borderColor: themeColor}]}>
-          <FontAwesome name="key" color={Colors.grey40} size={20} />
-          <TextField
-            text70
-            style={styles.input}
-            placeholderTextColor={Colors.grey40}
-            placeholder="请输入验证码"
-            onChangeText={value => setCode(value)}
-          />
-          <Button
-            style={styles.seedbut}
-            size="xSmall"
-            link
-            disabled={seedflag}
-            color={Colors.primary}
-            label={codetext}
-            onPress={seedCode}
-          />
-        </View>
+      {controlCode !== 1 ? (
+        <Animated.View entering={FadeInUp}>
+          <View marginT-26 style={[styles.inputBox, {borderColor: themeColor}]}>
+            <FontAwesome name="key" color={Colors.grey40} size={20} />
+            <TextField
+              text70
+              style={styles.input}
+              placeholderTextColor={Colors.grey40}
+              placeholder="请输入验证码"
+              onChangeText={value => setCode(value)}
+            />
+            <Button
+              style={styles.sendBut}
+              size="xSmall"
+              link
+              disabled={sendFlag}
+              color={Colors.primary}
+              label={codetext}
+              onPress={() => {
+                if (emailValidate(account)) {
+                  getImgCode();
+                  setImgCodeVisible(true);
+                }
+              }}
+            />
+          </View>
+        </Animated.View>
       ) : null}
 
-      {controlcode !== 3 ? (
+      {controlCode !== 3 ? (
         <View marginT-26 style={[styles.inputBox, {borderColor: themeColor}]}>
           <FontAwesome name="keyboard-o" color={Colors.grey40} size={20} />
           <TextField
@@ -273,109 +307,71 @@ const Login = ({navigation}) => {
             style={styles.input}
             placeholderTextColor={Colors.grey40}
             placeholder="请输入密码"
-            secureTextEntry={hideflag}
+            secureTextEntry={hideFlag}
             onChangeText={value => setPassword(value)}
           />
-          <PasswordEye Flag={setHideflag} Float={true} right={20} />
+          <PasswordEye Flag={setHideFlag} Float={true} right={20} />
         </View>
       ) : null}
 
-      {controlcode === 2 ? (
-        <View marginT-26 style={[styles.inputBox, {borderColor: themeColor}]}>
-          <FontAwesome name="check-square-o" color={Colors.grey40} size={20} />
-          <TextField
-            text70
-            style={styles.input}
-            placeholderTextColor={Colors.grey40}
-            placeholder="请再次确认密码"
-            onChangeText={value => setRepassword(value)}
-            secureTextEntry={true}
-          />
-        </View>
+      {controlCode === 2 ? (
+        <Animated.View entering={FadeInUp}>
+          <View marginT-26 style={[styles.inputBox, {borderColor: themeColor}]}>
+            <FontAwesome
+              name="check-square-o"
+              color={Colors.grey40}
+              size={20}
+            />
+            <TextField
+              text70
+              style={styles.input}
+              placeholderTextColor={Colors.grey40}
+              placeholder="请再次确认密码"
+              onChangeText={value => setRePassword(value)}
+              secureTextEntry={true}
+            />
+          </View>
+        </Animated.View>
       ) : null}
 
       <View marginT-20>
         <View flexG row spread>
-          {controlcode === 3 ? (
-            <Button
-              style={styles.button}
-              link
-              text80
-              grey40
-              label="账号登录"
-              onPress={() => {
-                setControlcode(1);
-              }}
-            />
-          ) : (
-            <Button
-              style={styles.button}
-              link
-              text80
-              grey30
-              label="忘记密码?"
-              onPress={() => {
-                setControlcode(3);
-              }}
-            />
-          )}
-
-          {controlcode === 2 ? (
-            <Button
-              style={styles.button}
-              link
-              text80
-              orange30
-              label="账号登录"
-              onPress={() => {
-                setControlcode(1);
-              }}
-            />
-          ) : (
-            <Button
-              style={styles.button}
-              link
-              text80
-              orange30
-              label="注册"
-              onPress={() => {
-                setControlcode(2);
-              }}
-            />
-          )}
+          <Button
+            style={styles.button}
+            link
+            text80
+            linkColor={controlCode === 3 ? Colors.primary : Colors.grey40}
+            label={controlCode === 3 ? '账号登录' : '忘记密码?'}
+            onPress={() => {
+              controlCode === 3 ? setControlCode(1) : setControlCode(3);
+            }}
+          />
+          <Button
+            style={styles.button}
+            link
+            text80
+            orange30
+            label={controlCode === 2 ? '账号登录' : '注册'}
+            onPress={() => {
+              controlCode === 2 ? setControlCode(1) : setControlCode(2);
+            }}
+          />
         </View>
-        {controlcode !== 2 ? (
-          <Button
-            marginT-20
-            label="登录"
-            disabled={Butdisabled}
-            backgroundColor={Colors.primary}
-            disabledBackgroundColor={Colors.primary}
-            iconOnRight={true}
-            iconSource={
-              Butdisabled
-                ? () => <ActivityIndicator color={Colors.white} />
-                : null
-            }
-            // iconStyle={{marginLeft: 20}}
-            onPress={userLogin}
-          />
-        ) : (
-          <Button
-            marginT-20
-            label="注册"
-            disabled={Butdisabled}
-            backgroundColor={Colors.primary}
-            disabledBackgroundColor={Colors.primary}
-            iconOnRight={true}
-            iconSource={
-              Butdisabled
-                ? () => <ActivityIndicator color={Colors.white} />
-                : null
-            }
-            onPress={userReg}
-          />
-        )}
+
+        <Button
+          marginT-20
+          label={controlCode === 2 ? '注册' : '登录'}
+          disabled={butDisabled}
+          backgroundColor={Colors.primary}
+          disabledBackgroundColor={Colors.primary}
+          iconOnRight={true}
+          iconSource={
+            butDisabled ? <ActivityIndicator color={Colors.white} /> : null
+          }
+          onPress={() => {
+            controlCode === 2 ? userRegFunc() : userLogin();
+          }}
+        />
       </View>
       <View marginT-26 flexS row center>
         <Checkbox
@@ -400,6 +396,40 @@ const Login = ({navigation}) => {
           }}
         />
       </View>
+
+      <BaseDialog
+        IsButton={true}
+        Fun={sendCode}
+        Visible={imgCodeVisible}
+        SetVisible={setImgCodeVisible}
+        MainText={'发送验证码'}
+        Body={
+          <View>
+            <View height={80}>
+              <SvgXml width="100%" height="100%" xml={captchaImg} />
+            </View>
+            <Button
+              marginT-8
+              label="看不清？换一张"
+              link
+              disabled={sendFlag}
+              text80L
+              linkColor={Colors.primary}
+              onPress={getImgCode}
+            />
+            <TextField
+              placeholder={'请输入图片验证码'}
+              text70L
+              floatingPlaceholder
+              onChangeText={value => {
+                setImgCode(value);
+              }}
+              maxLength={4}
+              showCharCounter={true}
+            />
+          </View>
+        }
+      />
     </View>
   );
 };
@@ -437,7 +467,7 @@ const styles = StyleSheet.create({
     padding: 8,
     width: 300,
   },
-  seedbut: {
+  sendBut: {
     position: 'absolute',
     right: 16,
   },

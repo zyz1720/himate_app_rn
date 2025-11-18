@@ -5,11 +5,10 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useToast} from '../../../components/common/Toast';
 import PasswordEye from '../../../components/about_input/PasswordEye';
 import {
-  getUserdetail,
-  EditUserInfo,
-  mailValidate,
-  getCodeBymail,
-  userLogOff,
+  editUserAccount,
+  editUserPassword,
+  editUserInfo,
+  getUserInfo,
 } from '../../../api/user';
 import {useDispatch} from 'react-redux';
 import {setUserInfo as setUserData} from '../../../stores/store_slice/userStore';
@@ -35,9 +34,8 @@ const Edituser = ({route}) => {
   const dataInit = async () => {
     setRefreshing(true);
     try {
-      const res = await getUserdetail({id: userId});
-      // console.log(res);
-      if (res.success) {
+      const res = await getUserInfo();
+      if (res.code === 0) {
         const {account} = res.data;
         setUserInfo({account});
         dispatch(setUserData(userId));

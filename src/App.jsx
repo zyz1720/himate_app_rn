@@ -2,9 +2,6 @@ import React from 'react';
 import RootView from './router';
 import {Provider} from 'react-redux';
 import {store} from './stores';
-import ToastProvider from './components/common/Toast';
-import MusicCtrlProvider from './components/music/MusicController';
-import SocketProvider from './utils/common/socket';
 import {RealmProvider} from '@realm/react';
 import {
   ChatMsg,
@@ -12,6 +9,9 @@ import {
   MusicInfo,
   LocalMusic,
 } from './constants/realm_model';
+import ToastProvider from './components/common/Toast';
+import MusicCtrlProvider from './components/music/MusicController';
+import SocketProvider from './utils/common/socket';
 
 const App = () => {
   return (
