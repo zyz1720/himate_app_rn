@@ -1,3 +1,8 @@
+/**
+ * 解析颜色字符串为RGB对象
+ * @param {string} color 颜色字符串 (hex, rgb, rgba)
+ * @returns {Object} {r, g, b} 颜色通道值
+ */
 export const parseColor = color => {
   // 处理hex格式 (#fff, #ffffff)
   if (color.startsWith('#')) {
@@ -31,6 +36,13 @@ export const parseColor = color => {
   throw new Error('Unsupported color format');
 };
 
+/**
+ * 将RGB颜色转换为HSL颜色空间
+ * @param {number} r 红色通道值 (0-255)
+ * @param {number} g 绿色通道值 (0-255)
+ * @param {number} b 蓝色通道值 (0-255)
+ * @returns {Array} [h, s, l] 色相、饱和度、亮度
+ */
 export const rgbToHsl = (r, g, b) => {
   (r /= 255), (g /= 255), (b /= 255);
   const max = Math.max(r, g, b),
@@ -60,6 +72,11 @@ export const rgbToHsl = (r, g, b) => {
   return [h, s, l];
 };
 
+/**
+ * 根据HSL颜色值计算白度分数
+ * @param {string} color 颜色字符串 (hex, rgb, rgba)
+ * @returns {number} 白度分数 (0-100)
+ */
 export const getWhitenessScoreByHsl = color => {
   const rgb = parseColor(color);
   const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
@@ -69,6 +86,11 @@ export const getWhitenessScoreByHsl = color => {
   return hsl[2] * 100 - hsl[1] * 50;
 };
 
+/**
+ * 根据RGB颜色值计算白度分数
+ * @param {string} color 颜色字符串 (hex, rgb, rgba)
+ * @returns {number} 白度分数 (0-100)
+ */
 export const getWhitenessScore = color => {
   // 将颜色转换为RGB格式
   const rgb = parseColor(color);
@@ -85,6 +107,11 @@ export const getWhitenessScore = color => {
   return 100 - (distance / 441.67) * 100;
 };
 
+/**
+ * 根据RGB颜色值计算白度分数 (基于相对亮度)
+ * @param {string} color 颜色字符串 (hex, rgb, rgba)
+ * @returns {number} 白度分数 (0-100)
+ */
 export const getWhitenessScoreByLuminance = color => {
   const rgb = parseColor(color);
 

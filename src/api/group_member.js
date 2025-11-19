@@ -1,21 +1,21 @@
-import instance from '../utils/request/request';
+import instance from '@utils/request';
 
-// 创建群成员
-export const addGroupMember = form =>
-  instance.post('api/groupMember/add', form);
+// 邀请群成员
+export const addGroupMember = data =>
+  instance.post('app/group-member/invite', data);
 
-// 修改群群成员信息
-export const editGroupMember = form =>
-  instance.put('api/groupMember/edit', form);
+// 修改群备注
+export const editGroupMember = data =>
+  instance.put('app/group-member/update', data);
 
-// 加入的群列表
-export const getAllJoinGroupList = data =>
-  instance.get('api/groupMember/joinGroup', {params: data});
+// 修改群成员权限
+export const editGroupMemberAuth = data =>
+  instance.put('app/group-member/auth', data);
 
-// 删除群成员
+// 踢出群成员
 export const deleteGroupMember = data =>
-  instance.delete('api/groupMember/del', {params: data});
+  instance.delete('app/group-member/remove', data);
 
-// 删除群的所有群员
-export const deleteAllGroupMember = data =>
-  instance.delete('api/groupMember/delMore', {params: data});
+// 退出群聊
+export const exitGroup = groupId =>
+  instance.delete(`app/group-member/${groupId}`);

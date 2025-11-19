@@ -1,18 +1,64 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {getMusicDetail} from '../../api/music';
-import {addStorage, getKeyStorage} from '../../utils/common/localStorage';
-import {isEmptyObject} from '../../utils/common/base';
+import {getMusicDetail} from '@api/music';
+import {create} from 'zustand';
+import {persist, createJSONStorage} from 'zustand/middleware';
+import {isEmptyObject} from '@utils/common/object_utils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const defaultState = {
-  playingMusic: {},
-  playList: [],
-  showMusicCtrl: false,
-  closeTime: 0,
-  isClosed: false,
-  randomNum: {min: 0, max: 1},
-  isRandomPlay: false,
-  switchCount: 0,
+  playingMusic: {}, // 当前播放音乐
+  playList: [], // 播放列表
+  showMusicCtrl: false, // 是否显示音乐控制器
+  closeTime: 0, // 关闭时间
+  isClosed: false, // 是否关闭
+  randomNum: {min: 0, max: 1}, // 随机数范围
+  isRandomPlay: false, // 是否随机播放
+  switchCount: 0, // 切换次数
 };
+
+export const useMusicStore = create()(
+  persist(
+    set => ({
+      ...defaultState,
+      setPlayList: playList => set({playList}),
+      addPlayList: (playList = []) =>
+        set(state => {
+          playList.forEach(item => {
+            if (!state.playList.some(e => e?.id === item?.id)) {
+              state.playList.push(item);
+            }
+          });
+          return state;
+        }),
+      unshiftPlayList: (playList = []) =>
+        set(state => {
+          playList.forEach(item => {
+            if (!state.playList.some(e => e?.id === item?.id)) {
+              state.playList.unshift(item);
+            }
+          });
+          return state;
+        }),
+      removeMusic: (playList = []) =>
+        set(state => {
+          playList.forEach(item => {
+            const index = state.playList.findIndex(e => e?.id === item?.id);
+            if (index > -1) {
+              state.playList.splice(index, 1);
+            }
+          });
+          return state;
+        }),
+      setShowMusicCtrl: showMusicCtrl => set({showMusicCtrl}),
+    }),
+    {
+      name: 'music-storage',
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: state => ({
+        switchCount: state.switchCount,
+      }),
+    },
+  ),
+);
 
 export const musicSlice = createSlice({
   name: 'musicStore',

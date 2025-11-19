@@ -2,11 +2,11 @@ import axios from 'axios';
 import {
   COULD_URL,
   COULD_SECRET,
-  BASE_URL,
-  STATIC_URL,
-  SOCKET_URL,
-  FAST_STATIC_URL,
   MSG_SECRET,
+  BASE_URL,
+  SOCKET_URL,
+  STATIC_URL,
+  FAST_STATIC_URL,
 } from '@env';
 
 // 默认配置对象
@@ -16,15 +16,13 @@ export const defaultConfig = {
   SOCKET_URL,
   STATIC_URL,
   FAST_STATIC_URL,
-  LOW_STATIC_URL: STATIC_URL,
-  THUMBNAIL_URL: `${BASE_URL}thumbnails/`,
 };
 
 /**
- * 获取基础配置
+ * 获取app配置
  * @returns {Promise<Object>} 配置对象
  */
-export const getBaseConfig = async () => {
+export const getAppConfig = async () => {
   if (!COULD_URL) {
     return defaultConfig;
   }
@@ -33,11 +31,7 @@ export const getBaseConfig = async () => {
       headers: {Authorization: COULD_SECRET},
     });
     const config = response.data;
-    return {
-      ...config,
-      LOW_STATIC_URL: config.STATIC_URL,
-      THUMBNAIL_URL: `${config.BASE_URL}thumbnails/`,
-    };
+    return config;
   } catch (error) {
     console.error('获取云端配置失败:', error);
     return defaultConfig;

@@ -1,4 +1,4 @@
-import instance from '../utils/request/request';
+import instance from '@utils/request';
 
 // 用户注册
 export const userReg = data => instance.post('app/user/reg', data);

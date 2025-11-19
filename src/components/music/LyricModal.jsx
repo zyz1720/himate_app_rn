@@ -23,7 +23,7 @@ import Animated, {FadeInUp, FadeOutDown} from 'react-native-reanimated';
 import {getColors} from 'react-native-image-colors';
 import {getWhitenessScore} from '../../utils/handle/colorHandle';
 import LrcView from './LrcView';
-import KeepAwake from '@sayem314/react-native-keep-awake';
+import { KeepAwake } from 'expo-keep-awake';
 
 const LyricModal = React.memo(props => {
   const {

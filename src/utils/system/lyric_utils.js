@@ -1,6 +1,11 @@
-import {isEmptyString} from '../common/base';
+import {isEmptyString} from '@utils/common/string_utils';
+import {mergeArraysByIndex} from '@utils/common/array_utils';
 
-// 解析普通歌词函数
+/**
+ * 解析普通歌词函数
+ * @param {string} lrc 普通歌词字符串
+ * @returns {Array} 解析后的歌词数组
+ */
 export const parserLrc = lrc => {
   if (!lrc) {
     return [];
@@ -22,7 +27,11 @@ export const parserLrc = lrc => {
     .filter(line => line !== null && !isEmptyString(line.text));
 };
 
-// 解析逐字歌词函数
+/**
+ * 解析逐字歌词函数
+ * @param {string} lyricsString 逐字歌词字符串
+ * @returns {Array} 解析后的逐字歌词数组
+ */
 export const parseYrcs = lyricsString => {
   if (!lyricsString) {
     return [];
@@ -68,6 +77,11 @@ export const parseYrcs = lyricsString => {
     .filter(line => line !== null);
 };
 
+/**
+ * 格式化歌词函数
+ * @param {object} Music 音乐对象
+ * @returns {object} 格式化后的歌词对象
+ */
 export const formatLrc = Music => {
   const {music_lyric, music_trans, music_yrc, music_roma} = Music || {};
 
@@ -101,28 +115,4 @@ export const formatLrc = Music => {
     haveTrans: transLyrics.length > 0,
     haveRoma: romaLyricsMap.length > 0,
   };
-};
-
-export const mergeArraysByIndex = (array1 = [], array2 = [], array3 = []) => {
-  const maxLength = array1.length;
-  if (maxLength === 0) {
-    return [];
-  }
-
-  const merge = (arr1, arr2) => {
-    return Array.from({length: maxLength}, (_, index) => ({
-      ...arr1[index],
-      ...arr2[index],
-    }));
-  };
-
-  if (array2.length > 0 && array3.length > 0) {
-    return merge(merge(array1, array2), array3);
-  }
-
-  if (array2.length > 0) {
-    return merge(array1, array2);
-  }
-
-  return array1;
 };

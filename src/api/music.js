@@ -1,35 +1,20 @@
-import instance from '../utils/request/request';
-
-// 添加歌单
-export const addFavorities = form => instance.post('api/favorites/add', form);
-
-// 歌单列表
-export const getFavoritesList = data =>
-  instance.get('/api/favorites/list', {params: data});
-
-// 歌单详情
-export const getFavoritesDetail = data =>
-  instance.get('api/favorites/detail', {params: data});
-
-// 修改歌单
-export const updateFavorites = data => instance.put('api/favorites/edit', data);
-
-// 删除歌单
-export const deleteFavorites = data =>
-  instance.delete('api/favorites/del', {data});
-
-// 我的收藏
-export const editDefaultFavorites = data =>
-  instance.post('api/favorites/default', data);
+import instance from '@utils/request';
 
 // 音乐列表
-export const getMusicList = data =>
-  instance.get('api/music/list', {params: data});
+export const getMusic = params => instance.get('app/music', {params});
 
 // 音乐详情
-export const getMusicDetail = data =>
-  instance.get('api/music/detail', {params: data});
+export const getMusicDetail = id => instance.get(`app/music/detail/${id}`);
+
+// 收藏音乐
+export const likeMusic = data => instance.get('app/music/default', data);
+
+// 添加音乐到收藏夹
+export const favoritesMusic = data => instance.get('app/music/favorites', data);
+
+// 移除音乐收藏
+export const removeFavoritesMusic = data =>
+  instance.delete('app/music/favorites', data);
 
 // 第三方歌单导入
-export const importFavorites = data =>
-  instance.post('api/musicMore/sync', data);
+export const importFavorites = url => instance.get(`music-api/sync/${url}`);

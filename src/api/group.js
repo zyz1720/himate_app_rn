@@ -1,14 +1,17 @@
-import instance from '../utils/request/request';
+import instance from '@utils/request';
 
 // 创建群组
-export const addGroup = form => instance.post('api/group/add', form);
+export const addGroup = data => instance.post('app/group', data);
+
+// 群组列表
+export const getGroupList = params => instance.get('app/group', {params});
 
 // 修改群组信息
-export const editGroup = form => instance.put('api/group/edit', form);
+export const editGroup = (id, data) => instance.put(`app/group/${id}`, data);
 
 // 群组详情
-export const getGroupDetail = data =>
-  instance.get('api/group/detail', {params: data});
+export const getGroupDetail = params =>
+  instance.get('app/group/detail', {params});
 
-// 删除群组
-export const deleteGroup = data => instance.delete('api/group/del', {data});
+// 解散群组
+export const deleteGroup = id => instance.delete(`app/group/${id}`);

@@ -1,23 +1,25 @@
-import instance from '../utils/request/request';
+import instance from '@utils/request';
 
 // 添加好友
-export const addmate = form => instance.post('api/mate/add', form);
-
-// 修改好友信息
-export const editmate = form => instance.put('api/mate/edit', form);
+export const addMate = data => instance.post('app/mate', data);
 
 // 删除好友
-export const deletemate = data =>
-  instance.delete('api/mate/del', {params: data});
+export const deleteMate = id => instance.delete(`app/mate/${id}`);
 
 // 好友列表
-export const getmatelist = data =>
-  instance.get('api/mate/list', {params: data});
+export const getMateList = () => instance.get('app/mate/friend');
 
 // 申请好友列表
-export const getapplylist = data =>
-  instance.get('api/mate/applylist', {params: data});
+export const getApplyList = () => instance.get('app/mate/waiting');
 
-// 好友关系
-export const getmateStatus = data =>
-  instance.get('api/mate/ismate', {params: data});
+// 已拒绝好友列表
+export const getRejectedList = () => instance.get('app/mate/rejected');
+
+// 修改好友备注
+export const editMateRemarks = id => instance.put(`app/mate/remarks/${id}`);
+
+// 同意好友申请
+export const agreeMateApply = id => instance.put(`app/mate/agree/${id}`);
+
+// 拒绝好友申请
+export const refuseMateApply = id => instance.put(`app/mate/refuse/${id}`);

@@ -6,7 +6,7 @@ export const fullHeight = Dimensions.get('window').height;
 export const statusBarHeight = StatusBar.currentHeight;
 
 export const themeColors = {
-  primary: '#5A48F4',
+  primary: '#2f54eb',
   geekblue: '#2f54eb',
   magenta: '#eb2f96',
   success: Colors.green40,
@@ -18,9 +18,4 @@ export const themeColors = {
   hyalineGrey: 'rgba(0,0,0,0.4)',
   background: '#f0f0f2',
   lyricColor: Colors.white,
-};
-
-/* 设置系统主题色 */
-export const SystemThemeInit = color => {
-  Colors.loadColors({...themeColors, primary: color || themeColors.primary});
 };

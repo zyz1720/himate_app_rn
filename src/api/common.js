@@ -1,7 +1,4 @@
-import instance from '../utils/request/request';
-
-// 获取会话房间名称
-export const getBaseConst = () => instance.get('api/BaseConst');
+import instance from '@utils/request';
 
 // 获取图片验证码
 export const getImgCaptcha = () => instance.get('captcha');

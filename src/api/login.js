@@ -1,4 +1,4 @@
-import instance from '../utils/request/request';
+import instance from '@utils/request';
 
 // 账号登录
 export const userLoginAccount = data =>

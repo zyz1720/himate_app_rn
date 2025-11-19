@@ -14,7 +14,7 @@ import {userReg} from '../../api/user';
 import {useSelector, useDispatch} from 'react-redux';
 import {setIsLogin} from '../../stores/store_slice/userStore';
 import {useToast} from '../../components/common/Toast';
-import {ValidateMail} from '../../utils/common/base';
+import {validateEmail} from '../../utils/common/base';
 import {displayName as appDisplayName} from '../../../app.json';
 import {SvgXml} from 'react-native-svg';
 import Animated, {FadeInUp, FadeInLeft} from 'react-native-reanimated';
@@ -209,8 +209,8 @@ const Login = ({navigation}) => {
   };
 
   /* 邮箱校验 */
-  const emailValidate = mail => {
-    if (ValidateMail(mail)) {
+  const emailValidate = email => {
+    if (validateEmail(email)) {
       return true;
     }
     showToast('请输入正确的邮箱号！', 'error');

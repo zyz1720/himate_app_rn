@@ -12,7 +12,7 @@ import {
 } from '../../../api/user';
 import {useDispatch} from 'react-redux';
 import {setUserInfo as setUserData} from '../../../stores/store_slice/userStore';
-import {ValidateMail} from '../../../utils/common/base';
+import {validateEmail} from '../../../utils/common/base';
 import BaseDialog from '../../../components/common/BaseDialog';
 import {clearStorage} from '../../../utils/common/localStorage';
 import {clearUserStore} from '../../../stores/store_slice/userStore';
@@ -97,7 +97,7 @@ const Edituser = ({route}) => {
       showToast('请输入要修改的内容！', 'error');
       return;
     }
-    if (trueKey === 'account' && !ValidateMail(trueValue)) {
+    if (trueKey === 'account' && !validateEmail(trueValue)) {
       showToast('请输入正确的邮箱号', 'error');
       return;
     }
@@ -226,7 +226,7 @@ const Edituser = ({route}) => {
                 placeholderTextColor={Colors.grey50}
                 validate={[
                   value => value.length !== 0,
-                  value => ValidateMail(value),
+                  value => validateEmail(value),
                 ]}
                 validationMessage={['账号不能为空！', '请输入正确的邮箱号']}
                 value={usermail}

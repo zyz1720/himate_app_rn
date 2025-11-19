@@ -1,20 +1,16 @@
-import instance from '../utils/request/request';
+import instance from '@utils/request';
 
-// 获取用户上传的文件列表
-export const getUserUploadFiles = data =>
-  instance.get('api/file/list', {params: data});
+// 获取用户的文件列表
+export const getFiles = params => instance.get('app/file', {params});
 
-// 删除用户上传的文件
-export const delUserUploadFiles = data =>
-  instance.delete('api/file/del', {data});
+// 删除用户的文件
+export const delFile = id => instance.delete(`app/file/${id}`);
 
-// 获取用户所有消息
-export const getUserMsgList = data =>
-  instance.get('api/chat/list', {params: data});
+// 删除用户的多个文件
+export const delFiles = data => instance.delete('app/file/batch', {data});
 
-// 删除用户消息
-export const delUserMsgs = data => instance.delete('api/chat/del', {data});
+// 获取用户的消息列表
+export const getUserMsgs = params => instance.get('app/message', {params});
 
-// 删除会话下的所有消息
-export const delSessionMsgs = data =>
-  instance.delete('api/chat/delMore', {params: data});
+// 删除用户的多个消息
+export const delUserMsgs = data => instance.delete('app/message', data);

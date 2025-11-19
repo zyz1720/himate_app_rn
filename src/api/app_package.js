@@ -1,5 +1,6 @@
-import instance from '../utils/request/request';
+import instance from '@utils/request';
+import {displayName} from '@root/app.json';
 
-// app详情
-export const getAppPackageDetail = data =>
-  instance.get('api/appPackage/detail', {params: data});
+// 获取app版本
+export const getAppVersion = () =>
+  instance.get(`app/app-package/${displayName}`);
