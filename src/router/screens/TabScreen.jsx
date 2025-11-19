@@ -7,7 +7,6 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
 import {Colors, TouchableOpacity} from 'react-native-ui-lib';
-import {useSelector} from 'react-redux';
 
 const Tab = createBottomTabNavigator();
 

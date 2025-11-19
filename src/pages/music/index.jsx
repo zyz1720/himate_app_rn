@@ -17,8 +17,7 @@ import {
   Slider,
 } from 'react-native-ui-lib';
 import {FlatList, StyleSheet, Vibration} from 'react-native';
-import {useSelector, useDispatch} from 'react-redux';
-import {useToast} from '../../components/common/Toast';
+import {useToast} from '../../utils/hooks/useToast';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -28,14 +27,9 @@ import {
   addFavorities,
   deleteFavorites,
 } from '../../api/music';
-import BaseDialog from '../../components/common/BaseDialog';
+import BaseDialog from '@components/common/BaseDialog';
 import {useRealm} from '@realm/react';
 import dayjs from 'dayjs';
-import {
-  setCloseTime,
-  setIsRandomPlay,
-  setRandomNum,
-} from '../../stores/store_slice/musicStore';
 import {getMusicList, importFavorites} from '../../api/music';
 import {useIsFocused} from '@react-navigation/native';
 
@@ -192,7 +186,10 @@ const Music = ({navigation}) => {
 
   /* 获取最近播放数据 */
   const getLocalMusicInfo = () => {
-    const playHistory = realm.objects('MusicInfo').sorted('updateAt', true).toJSON();
+    const playHistory = realm
+      .objects('MusicInfo')
+      .sorted('updateAt', true)
+      .toJSON();
     if (playHistory.length > 0) {
       const latelyMusic = playHistory[0];
       const endDate = dayjs(Number(latelyMusic.updateAt));
@@ -563,14 +560,13 @@ const Music = ({navigation}) => {
         />
       </View>
       <BaseDialog
-        IsButton={true}
-        Fun={() => {
+        onConfirm={() => {
           submitData();
         }}
-        Visible={showAddDialog}
-        SetVisible={setShowAddDialog}
-        MainText={'新建歌单'}
-        Body={
+        visible={showAddDialog}
+        setVisible={setShowAddDialog}
+        description={'新建歌单'}
+        renderBody={
           <View>
             <TextField
               text70
@@ -587,15 +583,14 @@ const Music = ({navigation}) => {
         }
       />
       <BaseDialog
-        IsButton={true}
-        Fun={() => {
+        onConfirm={() => {
           onImport();
           setShowImportDialog(false);
         }}
-        Visible={showImportDialog}
-        SetVisible={setShowImportDialog}
-        MainText={'导入外部歌单'}
-        Body={
+        visible={showImportDialog}
+        setVisible={setShowImportDialog}
+        description={'导入外部歌单'}
+        renderBody={
           <View>
             <Text marginT-2 text90L blue40>
               暂只支持QQ音乐，同名歌单将覆盖原歌单
@@ -614,16 +609,14 @@ const Music = ({navigation}) => {
         }
       />
       <BaseDialog
-        IsWarning={true}
-        Title={true}
-        IsButton={true}
-        Fun={() => {
+        title={true}
+        onConfirm={() => {
           delFavorites();
           setDelVisible(false);
         }}
-        Visible={delVisible}
-        SetVisible={setDelVisible}
-        MainText={`您确定要删除 ${delName} 吗？`}
+        visible={delVisible}
+        setVisible={setDelVisible}
+        description={`您确定要删除 ${delName} 吗？`}
       />
       <Dialog
         visible={showAlarmDialog}

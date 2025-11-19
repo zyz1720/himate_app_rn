@@ -10,15 +10,10 @@ import {
   Button,
 } from 'react-native-ui-lib';
 import {StyleSheet, ScrollView} from 'react-native';
-import {useSelector, useDispatch} from 'react-redux';
-import {useToast} from '../../../components/common/Toast';
+import {useToast} from '../../../utils/hooks/useToast';
 import {getFavoritesDetail, updateFavorites} from '../../../api/music';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import BaseSheet from '../../../components/common/BaseSheet';
-import {
-  requestCameraPermission,
-  requestFolderPermission,
-} from '../../../stores/store_slice/permissionStore';
 import ImagePicker from 'react-native-image-crop-picker';
 import {UploadFile} from '../../../utils/handle/fileHandle';
 import {getfileFormdata} from '../../../utils/common/base';

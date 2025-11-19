@@ -1,30 +1,29 @@
 import axios from 'axios';
-import {httpErrorMsg} from '../../constants/error_msg.js';
-import {store} from '../../stores/index.js';
-import {clearUserStore} from '../../stores/store_slice/userStore.js';
-import {requestBaseConfig} from '../../stores/store_slice/baseConfigStore.js';
-import {setErrorMsg} from '../../stores/store_slice/errorMsgStore.js';
+import {useUserStore} from '@store/userStore.js';
+import {useConfigStore} from '@store/configStore.js';
+import {useErrorMsgStore} from '@store/errorMsgStore.js';
 import {API_PREFIX} from '@env';
+import i18n from 'i18next';
 
-const {BASE_URL} = store.getState().baseConfigStore.baseConfig;
+const {envConfig, access_token, token_type} = useConfigStore.getState();
+const {setErrorMsg} = useErrorMsgStore.getState();
+const {logout} = useUserStore.getState();
 
 // 创建axios实例
-console.log('BASE_URL ', BASE_URL);
+console.log('BASE_URL ', envConfig?.BASE_URL);
 
 const instance = axios.create({
-  baseURL: BASE_URL + API_PREFIX,
+  baseURL: envConfig?.BASE_URL + API_PREFIX,
   timeout: 30000,
 });
 
 // 添加请求拦截器
 instance.interceptors.request.use(
-  function (config) {
-    const {access_token, token_type} = store.getState().userStore;
-
+  function (requestConfig) {
     if (access_token && token_type) {
-      config.headers.Authorization = token_type + ' ' + access_token;
+      requestConfig.headers.Authorization = token_type + ' ' + access_token;
     }
-    return config;
+    return requestConfig;
   },
   function (error) {
     return Promise.reject(error);
@@ -43,26 +42,22 @@ instance.interceptors.response.use(
   function (error) {
     console.error(error);
 
-    let {message} = error;
-    if (message === 'Network Error') {
-      message = '网络连接异常';
-    } else if (message.includes('timeout')) {
-      message = '网络请求超时';
-    } else if (message.includes('Request failed with status code')) {
-      const errCode = message.substr(message.length - 3);
-
-      if (errCode === '401') {
-        message = httpErrorMsg[errCode];
-        store.dispatch(clearUserStore());
-      } else if (errCode === '404') {
-        message = httpErrorMsg[errCode];
-        store.dispatch(requestBaseConfig());
-      } else {
-        message = error.response.data.message || httpErrorMsg[errCode];
+    let {message} = error?.response?.data || {};
+    const status = error?.response?.status || 0;
+    if (!message) {
+      if (message === 'Network Error') {
+        message = i18n.t('httpError.network');
+      } else if (message.includes('timeout')) {
+        message = i18n.t('httpError.timeout');
+      } else if (message.includes('Request failed with status code')) {
+        const errCode = message.substr(message.length - 3);
+        message = i18n.t('httpError.status', {code: errCode});
       }
     }
-    error.message = message;
-    store.dispatch(setErrorMsg(message));
+    if (status === 401) {
+      logout();
+    }
+    setErrorMsg(message);
     return Promise.reject(error);
   },
 );

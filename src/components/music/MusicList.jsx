@@ -12,17 +12,10 @@ import {
   Dialog,
   ProgressBar,
 } from 'react-native-ui-lib';
-import {useSelector, useDispatch} from 'react-redux';
 import {statusBarHeight, fullHeight} from '../../styles';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import {
-  setPlayingMusic,
-  setPlayList,
-  addPlayList,
-  unshiftPlayList,
-} from '../../stores/store_slice/musicStore';
-import {useToast} from '../common/Toast';
+import {useToast} from '../../utils/hooks/useToast';
 import {isEmptyObject} from '../../utils/common/base';
 import {
   editDefaultFavorites,
@@ -524,7 +517,7 @@ const MusicList = props => {
         }}>
         <View
           height={fullHeight + statusBarHeight}
-          backgroundColor={Colors.hyalineGrey}>
+          backgroundColor={Colors.black4}>
           <View height={fullHeight * 0.46} style={styles.CtrlModal} padding-12>
             <TouchableOpacity
               style={styles.musicBut}
@@ -591,7 +584,7 @@ const MusicList = props => {
         }}>
         <View
           height={fullHeight + statusBarHeight}
-          backgroundColor={Colors.hyalineGrey}>
+          backgroundColor={Colors.black4}>
           <View height={fullHeight * 0.6} style={styles.CtrlModal} padding-12>
             <View row spread centerV paddingH-6>
               <TouchableOpacity

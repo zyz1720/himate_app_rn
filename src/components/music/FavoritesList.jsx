@@ -10,36 +10,37 @@ import {
   Card,
   Image,
 } from 'react-native-ui-lib';
-import {useSelector} from 'react-redux';
-import {fullHeight, fullWidth} from '../../styles';
+import {useConfigStore} from '@store/configStore';
+import {fullHeight, fullWidth} from '@style/index';
+import {useTranslation} from 'react-i18next';
 
 const FavoritesList = props => {
-  const {List = [], OnEndReached = () => {}, OnPress = () => {}} = props;
-  // baseConfig
-  const {STATIC_URL, THUMBNAIL_URL} = useSelector(
-    state => state.baseConfigStore.baseConfig,
-  );
+  const {list = [], onEndReached = () => {}, onPress = () => {}} = props;
+
+  const {t} = useTranslation();
+
+  const {envConfig} = useConfigStore();
 
   return (
     <View height={fullHeight * 0.9}>
       <GridList
-        data={List}
+        data={list}
         numColumns={2}
         containerWidth={fullWidth - 24}
         keyExtractor={(item, index) => item + index}
         onEndReachedThreshold={0.6}
         onEndReached={() => {
-          OnEndReached();
+          onEndReached();
         }}
         renderItem={({item}) => (
           <Card flexS centerV enableShadow={true} padding-12>
             <TouchableOpacity
               onPress={() => {
-                OnPress(item);
+                onPress(item);
               }}>
               <View row>
                 <Image
-                  source={{uri: THUMBNAIL_URL + item.favorites_cover}}
+                  source={{uri: envConfig.THUMBNAIL_URL + item.favorites_cover}}
                   style={styles.image}
                 />
                 <View bottom>
@@ -70,7 +71,7 @@ const FavoritesList = props => {
                     <Avatar
                       size={26}
                       source={{
-                        uri: STATIC_URL + item.creator_avatar,
+                        uri: envConfig.STATIC_URL + item.creator_avatar,
                       }}
                     />
                   </View>
@@ -82,15 +83,15 @@ const FavoritesList = props => {
         ListEmptyComponent={
           <View marginT-16 center>
             <Text text90L grey40>
-              还没有发现歌单{' T_T'}
+              {t('empty.favorites')}
             </Text>
           </View>
         }
         ListFooterComponent={
-          List.length > 8 ? (
+          list.length > 8 ? (
             <View marginB-80 padding-12 center>
               <Text text90L grey40>
-                已经到底啦 ~
+                {t('common.footer')}
               </Text>
             </View>
           ) : null

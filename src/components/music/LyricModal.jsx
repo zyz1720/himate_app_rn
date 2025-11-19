@@ -5,7 +5,6 @@ import {
   ImageBackground,
   useWindowDimensions,
 } from 'react-native';
-import {useSelector} from 'react-redux';
 import {
   View,
   Text,
@@ -17,432 +16,17 @@ import {
 } from 'react-native-ui-lib';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {fullHeight, fullWidth, statusBarHeight} from '../../styles';
-import {formatMilliseconds, isEmptyString} from '../../utils/common/base';
+import {fullHeight, fullWidth, statusBarHeight} from '@style/index';
+import {isEmptyString} from '@utils/common/string_utils';
+import {formatMilliseconds} from '@utils/common/time_utils';
 import Animated, {FadeInUp, FadeOutDown} from 'react-native-reanimated';
 import {getColors} from 'react-native-image-colors';
-import {getWhitenessScore} from '../../utils/handle/colorHandle';
+import {getWhitenessScore} from '@utils/system/color_utils';
+import {KeepAwake} from 'expo-keep-awake';
+import {useUserStore} from '@store/userStore';
+import {useConfigStore} from '@store/configStore';
+import {useTranslation} from 'react-i18next';
 import LrcView from './LrcView';
-import { KeepAwake } from 'expo-keep-awake';
-
-const LyricModal = React.memo(props => {
-  const {
-    Visible = false,
-    Music = {},
-    IsPlaying = false,
-    IsFavorite = false,
-    OnFavorite = () => {},
-    PlayMode = 'order',
-    OnClose = () => {},
-    CurPosition = 0,
-    Duration = 0,
-    OnSliderChange = () => {},
-    OnChangeMode = () => {},
-    OnBackWard = () => {},
-    OnPlay = () => {},
-    OnForWard = () => {},
-    OnMain = () => {},
-  } = props;
-
-  // 屏幕变化监听
-  const {width, height} = useWindowDimensions();
-  const [isHorizontal, setIsHorizontal] = useState(width > height);
-  useEffect(() => {
-    setIsHorizontal(width > height);
-  }, [width, height]);
-
-  // Redux selectors
-  const {STATIC_URL} = useSelector(state => state.baseConfigStore.baseConfig);
-  const userInfo = useSelector(state => state.userStore.userInfo);
-
-  const {musicMore = {}} = Music || {};
-  const [nowLyric, setNowLyric] = useState('');
-
-  // 颜色计算 - 只在相关依赖变化时执行
-  useEffect(() => {
-    if (!musicMore?.music_cover) {
-      return;
-    }
-
-    getColors(STATIC_URL + musicMore.music_cover, {
-      fallback: '#ffffff',
-      cache: true, // 启用缓存
-    }).then(res => {
-      const platform = res.platform;
-      const colorValue = platform === 'android' ? res.average : res.background;
-      const num = getWhitenessScore(colorValue);
-      Colors.loadColors({
-        lyricColor: num > 76 ? Colors.grey10 : Colors.white,
-      });
-    });
-  }, [musicMore?.music_cover]);
-
-  // 记忆化回调函数
-  const handleFavorite = useCallback(() => {
-    OnFavorite(Music.id, IsFavorite);
-  }, [OnFavorite, Music.id, IsFavorite]);
-
-  // 艺术家字符串
-  const artistsString = useMemo(
-    () => Music?.artists?.join(' / ') || '未知歌手',
-    [Music?.artists],
-  );
-
-  // 当前时间和总时长格式化
-  const currentTimeFormatted = useMemo(
-    () => formatMilliseconds(CurPosition),
-    [CurPosition],
-  );
-
-  const durationFormatted = useMemo(
-    () => formatMilliseconds(Duration),
-    [Duration],
-  );
-
-  // 歌词动画组件
-  const lyricAnimation = useMemo(() => {
-    if (isEmptyString(nowLyric)) {
-      return null;
-    }
-
-    return (
-      <Animated.View entering={FadeInUp} exiting={FadeOutDown} key={nowLyric}>
-        <Text
-          numberOfLines={1}
-          width={fullWidth * 0.8}
-          color={Colors.lyricColor}>
-          {nowLyric}
-        </Text>
-      </Animated.View>
-    );
-  }, [nowLyric]);
-
-  return (
-    <Modal
-      animationType="slide"
-      hardwareAccelerated={true}
-      transparent={true}
-      visible={Visible}
-      statusBarTranslucent
-      onRequestClose={OnClose}>
-      <KeepAwake />
-      <View
-        height={fullHeight + statusBarHeight}
-        backgroundColor={Colors.hyalineGrey}>
-        <ImageBackground
-          blurRadius={50}
-          style={styles.backImage}
-          source={{
-            uri: STATIC_URL + (musicMore?.music_cover || userInfo?.user_avatar),
-          }}
-          resizeMode="cover">
-          <TouchableOpacity paddingT-48 paddingL-22 onPress={OnClose}>
-            <Ionicons name="chevron-down" color={Colors.lyricColor} size={24} />
-          </TouchableOpacity>
-          {isHorizontal ? (
-            <View flexS row spread>
-              {/* 第一页：音乐信息 */}
-              <View width={'50%'} paddingH-50>
-                <View flexS center marginT-8>
-                  <Image
-                    source={{
-                      uri:
-                        STATIC_URL +
-                        (musicMore?.music_cover ||
-                          'default_assets/default_music_cover.jpg'),
-                    }}
-                    style={[styles.HbigImage, {borderColor: Colors.lyricColor}]}
-                  />
-                </View>
-                <View flexS centerH>
-                  <View width={(fullWidth / 2) * 0.6}>
-                    <View row centerV spread marginT-24>
-                      <View flexS>
-                        <Text text60BO color={Colors.lyricColor}>
-                          {Music?.title ?? '还没有要播放的音乐 ~'}
-                        </Text>
-                        <Text marginT-6 color={Colors.lyricColor} text90L>
-                          {artistsString}
-                        </Text>
-                      </View>
-                      <TouchableOpacity
-                        style={styles.musicBut}
-                        onPress={handleFavorite}>
-                        <AntDesign
-                          name={IsFavorite ? 'heart' : 'hearto'}
-                          color={Colors.lyricColor}
-                          size={18}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                    <View marginT-8>
-                      <Slider
-                        value={CurPosition}
-                        minimumValue={0}
-                        disabled={!Duration}
-                        maximumValue={Duration || 100}
-                        maximumTrackTintColor={Colors.lyricColor}
-                        thumbTintColor={Colors.primary}
-                        thumbStyle={styles.thumbStyle}
-                        trackStyle={styles.trackStyle}
-                        disableActiveStyling={true}
-                        minimumTrackTintColor={Colors.primary}
-                        onValueChange={OnSliderChange}
-                      />
-                      <View row centerV spread>
-                        <Text text90L color={Colors.lyricColor}>
-                          {currentTimeFormatted}
-                        </Text>
-                        <Text text90L color={Colors.lyricColor}>
-                          {durationFormatted}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <View row centerV spread marginT-16>
-                      <TouchableOpacity
-                        style={styles.musicBut}
-                        onPress={OnChangeMode}>
-                        {PlayMode === 'order' ? (
-                          <Ionicons
-                            name="repeat"
-                            color={Colors.lyricColor}
-                            size={30}
-                          />
-                        ) : PlayMode === 'random' ? (
-                          <Ionicons
-                            name="shuffle"
-                            color={Colors.lyricColor}
-                            size={30}
-                          />
-                        ) : PlayMode === 'single' ? (
-                          <Ionicons
-                            name="reload"
-                            color={Colors.lyricColor}
-                            size={24}
-                          />
-                        ) : null}
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.musicBut}
-                        onPress={OnBackWard}>
-                        <Ionicons
-                          name="play-skip-back-sharp"
-                          color={Colors.lyricColor}
-                          size={24}
-                        />
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={OnPlay}>
-                        <Ionicons
-                          name={
-                            IsPlaying
-                              ? 'pause-circle-outline'
-                              : 'play-circle-outline'
-                          }
-                          color={Colors.lyricColor}
-                          size={64}
-                        />
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.musicBut}
-                        onPress={OnForWard}>
-                        <Ionicons
-                          name="play-skip-forward-sharp"
-                          color={Colors.lyricColor}
-                          size={24}
-                        />
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.musicBut}
-                        onPress={OnMain}>
-                        <AntDesign
-                          name="menu-fold"
-                          color={Colors.lyricColor}
-                          size={20}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-              </View>
-              {/* 第二页：歌词视图 */}
-              <View width={'50%'} paddingH-20 centerV>
-                <LrcView
-                  Music={musicMore}
-                  Cover={
-                    STATIC_URL +
-                    (musicMore?.music_cover ||
-                      'default_assets/default_music_cover.jpg')
-                  }
-                  IsHorizontal={true}
-                  CurrentTime={CurPosition}
-                  OnLyricsChange={setNowLyric}
-                />
-              </View>
-            </View>
-          ) : (
-            <Carousel
-              pageControlPosition={Carousel.pageControlPositions.UNDER}
-              pageControlProps={{
-                color: Colors.lyricColor,
-                inactiveColor: Colors.hyalineWhite,
-              }}
-              pageWidth={fullWidth}
-              itemSpacings={0}
-              containerMarginHorizontal={0}
-              initialPage={0}>
-              {/* 第一页：音乐信息 */}
-              <View>
-                <View flexS center marginT-40>
-                  <Image
-                    source={{
-                      uri:
-                        STATIC_URL +
-                        (musicMore?.music_cover ||
-                          'default_assets/default_music_cover.jpg'),
-                    }}
-                    style={[styles.bigImage, {borderColor: Colors.lyricColor}]}
-                  />
-                </View>
-                <View padding-26>
-                  <View row centerV spread marginT-12>
-                    <View flexS>
-                      <Text text60BO color={Colors.lyricColor}>
-                        {Music?.title ?? '还没有要播放的音乐 ~'}
-                      </Text>
-                      <Text marginT-6 color={Colors.lyricColor} text70>
-                        {artistsString}
-                      </Text>
-                    </View>
-                    <TouchableOpacity
-                      style={styles.musicBut}
-                      onPress={handleFavorite}>
-                      <AntDesign
-                        name={IsFavorite ? 'heart' : 'hearto'}
-                        color={Colors.lyricColor}
-                        size={22}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  {lyricAnimation}
-                  {Music?.sampleRate ? (
-                    <View marginT-12 row centerV spread>
-                      <Text color={Colors.lyricColor} text100L>
-                        采样率：{Music.sampleRate} Hz
-                      </Text>
-                      <Text color={Colors.lyricColor} text100L>
-                        比特率：{Music.bitrate} Hz
-                      </Text>
-                    </View>
-                  ) : null}
-                  <View marginT-16>
-                    <Slider
-                      value={CurPosition}
-                      minimumValue={0}
-                      disabled={!Duration}
-                      maximumValue={Duration || 100}
-                      maximumTrackTintColor={Colors.lyricColor}
-                      thumbTintColor={Colors.primary}
-                      thumbStyle={styles.thumbStyle}
-                      trackStyle={styles.trackStyle}
-                      disableActiveStyling={true}
-                      minimumTrackTintColor={Colors.primary}
-                      onValueChange={OnSliderChange}
-                    />
-                    <View row centerV spread>
-                      <Text text90L color={Colors.lyricColor}>
-                        {currentTimeFormatted}
-                      </Text>
-                      <Text text90L color={Colors.lyricColor}>
-                        {durationFormatted}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View row centerV spread marginT-8>
-                    <TouchableOpacity
-                      style={styles.musicBut}
-                      onPress={OnChangeMode}>
-                      {PlayMode === 'order' ? (
-                        <Ionicons
-                          name="repeat"
-                          color={Colors.lyricColor}
-                          size={30}
-                        />
-                      ) : PlayMode === 'random' ? (
-                        <Ionicons
-                          name="shuffle"
-                          color={Colors.lyricColor}
-                          size={30}
-                        />
-                      ) : PlayMode === 'single' ? (
-                        <Ionicons
-                          name="reload"
-                          color={Colors.lyricColor}
-                          size={24}
-                        />
-                      ) : null}
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.musicBut}
-                      onPress={OnBackWard}>
-                      <Ionicons
-                        name="play-skip-back-sharp"
-                        color={Colors.lyricColor}
-                        size={24}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={OnPlay}>
-                      <Ionicons
-                        name={
-                          IsPlaying
-                            ? 'pause-circle-outline'
-                            : 'play-circle-outline'
-                        }
-                        color={Colors.lyricColor}
-                        size={64}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.musicBut}
-                      onPress={OnForWard}>
-                      <Ionicons
-                        name="play-skip-forward-sharp"
-                        color={Colors.lyricColor}
-                        size={24}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.musicBut} onPress={OnMain}>
-                      <AntDesign
-                        name="menu-fold"
-                        color={Colors.lyricColor}
-                        size={20}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-
-              {/* 第二页：歌词视图 */}
-              <View>
-                <LrcView
-                  Music={musicMore}
-                  Cover={
-                    STATIC_URL +
-                    (musicMore?.music_cover ||
-                      'default_assets/default_music_cover.jpg')
-                  }
-                  CurrentTime={CurPosition}
-                  OnLyricsChange={setNowLyric}
-                />
-              </View>
-            </Carousel>
-          )}
-        </ImageBackground>
-      </View>
-    </Modal>
-  );
-});
 
 const styles = StyleSheet.create({
   musicBut: {
@@ -486,6 +70,417 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: Colors.white,
   },
+});
+
+const LyricModal = React.memo(props => {
+  const {
+    visible = false,
+    music = {},
+    isPlaying = false,
+    isLike = false,
+    onPressLike = () => {},
+    playMode = 'order',
+    onClose = () => {},
+    curPosition = 0,
+    duration = 0,
+    onSliderChange = () => {},
+    onModeChange = () => {},
+    onBackWard = () => {},
+    onPlay = () => {},
+    onForWard = () => {},
+    onPressMenu = () => {},
+  } = props;
+
+  const {t} = useTranslation();
+
+  // 屏幕变化监听
+  const {width, height} = useWindowDimensions();
+  const [isHorizontal, setIsHorizontal] = useState(width > height);
+  useEffect(() => {
+    setIsHorizontal(width > height);
+  }, [width, height]);
+
+  const {userInfo} = useUserStore();
+  const {envConfig} = useConfigStore();
+
+  const {musicExtra = {}} = music || {};
+  const [nowLyric, setNowLyric] = useState('');
+
+  // 颜色计算 - 只在相关依赖变化时执行
+  useEffect(() => {
+    if (!musicExtra?.music_cover) {
+      return;
+    }
+
+    getColors(envConfig.STATIC_URL + musicExtra.music_cover, {
+      fallback: Colors.black,
+      cache: true, // 启用缓存
+    }).then(res => {
+      const platform = res.platform;
+      const colorValue = platform === 'android' ? res.average : res.background;
+      const num = getWhitenessScore(colorValue);
+      Colors.loadColors({
+        lyricColor: num > 76 ? Colors.grey10 : Colors.white,
+      });
+    });
+  }, [musicExtra?.music_cover]);
+
+  // 记忆化回调函数
+  const handleFavorite = useCallback(() => {
+    onPressLike(music.id, isLike);
+  }, [onPressLike, music.id, isLike]);
+
+  // 艺术家字符串
+  const artistsString = useMemo(
+    () => music?.artists?.join(' / ') || '未知歌手',
+    [music?.artists],
+  );
+
+  // 当前时间和总时长格式化
+  const currentTimeFormatted = useMemo(
+    () => formatMilliseconds(curPosition),
+    [curPosition],
+  );
+
+  const durationFormatted = useMemo(
+    () => formatMilliseconds(duration),
+    [duration],
+  );
+
+  // 歌词动画组件
+  const lyricAnimation = useMemo(() => {
+    if (isEmptyString(nowLyric)) {
+      return null;
+    }
+
+    return (
+      <Animated.View entering={FadeInUp} exiting={FadeOutDown} key={nowLyric}>
+        <Text
+          numberOfLines={1}
+          width={fullWidth * 0.8}
+          color={Colors.lyricColor}>
+          {nowLyric}
+        </Text>
+      </Animated.View>
+    );
+  }, [nowLyric]);
+
+  return (
+    <Modal
+      animationType="slide"
+      hardwareAccelerated={true}
+      transparent={true}
+      visible={visible}
+      statusBarTranslucent
+      onRequestClose={onClose}>
+      <KeepAwake />
+      <View
+        height={fullHeight + statusBarHeight}
+        backgroundColor={Colors.black4}>
+        <ImageBackground
+          blurRadius={50}
+          style={styles.backImage}
+          source={{
+            uri:
+              envConfig.STATIC_URL +
+              (musicExtra?.music_cover || userInfo?.user_avatar),
+          }}
+          resizeMode="cover">
+          <TouchableOpacity paddingT-48 paddingL-22 onPress={onClose}>
+            <Ionicons name="chevron-down" color={Colors.lyricColor} size={24} />
+          </TouchableOpacity>
+          {isHorizontal ? (
+            <View flexS row spread>
+              {/* 第一页：音乐信息 */}
+              <View width={'50%'} paddingH-50>
+                <View flexS center marginT-8>
+                  <Image
+                    source={{
+                      uri: envConfig.STATIC_URL + musicExtra?.music_cover,
+                    }}
+                    errorSource={{uri: '@assets/images/empty.jpg'}}
+                    style={[styles.HbigImage, {borderColor: Colors.lyricColor}]}
+                  />
+                </View>
+                <View flexS centerH>
+                  <View width={(fullWidth / 2) * 0.6}>
+                    <View row centerV spread marginT-24>
+                      <View flexS>
+                        <Text text60BO color={Colors.lyricColor}>
+                          {music?.title || t('empty.play_music')}
+                        </Text>
+                        <Text marginT-6 color={Colors.lyricColor} text90L>
+                          {artistsString}
+                        </Text>
+                      </View>
+                      <TouchableOpacity
+                        style={styles.musicBut}
+                        onPress={handleFavorite}>
+                        <AntDesign
+                          name={isLike ? 'heart' : 'hearto'}
+                          color={Colors.lyricColor}
+                          size={18}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    <View marginT-8>
+                      <Slider
+                        value={curPosition}
+                        minimumValue={0}
+                        disabled={!duration}
+                        maximumValue={duration || 100}
+                        maximumTrackTintColor={Colors.lyricColor}
+                        thumbTintColor={Colors.primary}
+                        thumbStyle={styles.thumbStyle}
+                        trackStyle={styles.trackStyle}
+                        disableActiveStyling={true}
+                        minimumTrackTintColor={Colors.primary}
+                        onValueChange={onSliderChange}
+                      />
+                      <View row centerV spread>
+                        <Text text90L color={Colors.lyricColor}>
+                          {currentTimeFormatted}
+                        </Text>
+                        <Text text90L color={Colors.lyricColor}>
+                          {durationFormatted}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View row centerV spread marginT-16>
+                      <TouchableOpacity
+                        style={styles.musicBut}
+                        onPress={onModeChange}>
+                        {playMode === 'order' ? (
+                          <Ionicons
+                            name="repeat"
+                            color={Colors.lyricColor}
+                            size={30}
+                          />
+                        ) : playMode === 'random' ? (
+                          <Ionicons
+                            name="shuffle"
+                            color={Colors.lyricColor}
+                            size={30}
+                          />
+                        ) : playMode === 'single' ? (
+                          <Ionicons
+                            name="reload"
+                            color={Colors.lyricColor}
+                            size={24}
+                          />
+                        ) : null}
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.musicBut}
+                        onPress={onBackWard}>
+                        <Ionicons
+                          name="play-skip-back-sharp"
+                          color={Colors.lyricColor}
+                          size={24}
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={onPlay}>
+                        <Ionicons
+                          name={
+                            isPlaying
+                              ? 'pause-circle-outline'
+                              : 'play-circle-outline'
+                          }
+                          color={Colors.lyricColor}
+                          size={64}
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.musicBut}
+                        onPress={onForWard}>
+                        <Ionicons
+                          name="play-skip-forward-sharp"
+                          color={Colors.lyricColor}
+                          size={24}
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.musicBut}
+                        onPress={onPressMenu}>
+                        <AntDesign
+                          name="menu-fold"
+                          color={Colors.lyricColor}
+                          size={20}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </View>
+              {/* 第二页：歌词视图 */}
+              <View width={'50%'} paddingH-20 centerV>
+                <LrcView
+                  music={musicExtra}
+                  Cover={envConfig.STATIC_URL + musicExtra?.music_cover}
+                  IsHorizontal={true}
+                  CurrentTime={curPosition}
+                  OnLyricsChange={setNowLyric}
+                />
+              </View>
+            </View>
+          ) : (
+            <Carousel
+              pageControlPosition={Carousel.pageControlPositions.UNDER}
+              pageControlProps={{
+                color: Colors.lyricColor,
+                inactiveColor: Colors.white4,
+              }}
+              pageWidth={fullWidth}
+              itemSpacings={0}
+              containerMarginHorizontal={0}
+              initialPage={0}>
+              {/* 第一页：音乐信息 */}
+              <View>
+                <View flexS center marginT-40>
+                  <Image
+                    source={{
+                      uri: envConfig.STATIC_URL + musicExtra?.music_cover,
+                    }}
+                    style={[styles.bigImage, {borderColor: Colors.lyricColor}]}
+                  />
+                </View>
+                <View padding-26>
+                  <View row centerV spread marginT-12>
+                    <View flexS>
+                      <Text text60BO color={Colors.lyricColor}>
+                        {music?.title || t('empty.play_music')}
+                      </Text>
+                      <Text marginT-6 color={Colors.lyricColor} text70>
+                        {artistsString}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.musicBut}
+                      onPress={handleFavorite}>
+                      <AntDesign
+                        name={isLike ? 'heart' : 'hearto'}
+                        color={Colors.lyricColor}
+                        size={22}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  {lyricAnimation}
+                  {music?.sample_rate ? (
+                    <View marginT-12 row centerV spread>
+                      <Text color={Colors.lyricColor} text100L>
+                        {t('music.sample_rate', {rate: music.sample_rate})}
+                      </Text>
+                      <Text color={Colors.lyricColor} text100L>
+                        {t('music.bitrate', {rate: music.bitrate})}
+                      </Text>
+                    </View>
+                  ) : null}
+                  <View marginT-16>
+                    <Slider
+                      value={curPosition}
+                      minimumValue={0}
+                      disabled={!duration}
+                      maximumValue={duration || 100}
+                      maximumTrackTintColor={Colors.lyricColor}
+                      thumbTintColor={Colors.primary}
+                      thumbStyle={styles.thumbStyle}
+                      trackStyle={styles.trackStyle}
+                      disableActiveStyling={true}
+                      minimumTrackTintColor={Colors.primary}
+                      onValueChange={onSliderChange}
+                    />
+                    <View row centerV spread>
+                      <Text text90L color={Colors.lyricColor}>
+                        {currentTimeFormatted}
+                      </Text>
+                      <Text text90L color={Colors.lyricColor}>
+                        {durationFormatted}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View row centerV spread marginT-8>
+                    <TouchableOpacity
+                      style={styles.musicBut}
+                      onPress={onModeChange}>
+                      {playMode === 'order' ? (
+                        <Ionicons
+                          name="repeat"
+                          color={Colors.lyricColor}
+                          size={30}
+                        />
+                      ) : playMode === 'random' ? (
+                        <Ionicons
+                          name="shuffle"
+                          color={Colors.lyricColor}
+                          size={30}
+                        />
+                      ) : playMode === 'single' ? (
+                        <Ionicons
+                          name="reload"
+                          color={Colors.lyricColor}
+                          size={24}
+                        />
+                      ) : null}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.musicBut}
+                      onPress={onBackWard}>
+                      <Ionicons
+                        name="play-skip-back-sharp"
+                        color={Colors.lyricColor}
+                        size={24}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={onPlay}>
+                      <Ionicons
+                        name={
+                          isPlaying
+                            ? 'pause-circle-outline'
+                            : 'play-circle-outline'
+                        }
+                        color={Colors.lyricColor}
+                        size={64}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.musicBut}
+                      onPress={onForWard}>
+                      <Ionicons
+                        name="play-skip-forward-sharp"
+                        color={Colors.lyricColor}
+                        size={24}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.musicBut}
+                      onPress={onPressMenu}>
+                      <AntDesign
+                        name="menu-fold"
+                        color={Colors.lyricColor}
+                        size={20}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+
+              {/* 第二页：歌词视图 */}
+              <View>
+                <LrcView
+                  music={musicExtra}
+                  Cover={envConfig.STATIC_URL + musicExtra?.music_cover}
+                  CurrentTime={curPosition}
+                  OnLyricsChange={setNowLyric}
+                />
+              </View>
+            </Carousel>
+          )}
+        </ImageBackground>
+      </View>
+    </Modal>
+  );
 });
 
 export default LyricModal;

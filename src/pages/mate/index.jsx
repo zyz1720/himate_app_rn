@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {View, Colors} from 'react-native-ui-lib';
 import {getmatelist, getapplylist} from '../../api/mate';
-import {useSelector} from 'react-redux';
 import {useIsFocused} from '@react-navigation/native';
 import ListItem from '../../components/common/ListItem';
 import MateList from '../../components/mate/MateList';
@@ -56,7 +55,7 @@ const Mate = ({navigation}) => {
             IconColor={Colors.primary}
             IsBadge={true}
             BadgeCount={applycount}
-            Fun={() => {
+            onConfirm={() => {
               navigation.navigate('Newmate');
             }}
           />
@@ -66,7 +65,7 @@ const Mate = ({navigation}) => {
               IconName={'group'}
               IconColor={Colors.success}
               IconSize={20}
-              Fun={() => {
+              onConfirm={() => {
                 navigation.navigate('Grouplist');
               }}
             />
@@ -78,7 +77,7 @@ const Mate = ({navigation}) => {
           OnEndReached={() => {
             setPageNum(prev => prev + 1);
           }}
-          Fun={item => {
+          onConfirm={item => {
             navigation.navigate('Mateinfo', {
               uid: item.uid,
             });

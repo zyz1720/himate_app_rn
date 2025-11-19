@@ -9,15 +9,14 @@ import {
   TouchableOpacity,
   TextField,
 } from 'react-native-ui-lib';
-import {useSelector} from 'react-redux';
-import {useToast} from '../../../components/common/Toast';
+import {useToast} from '../../../utils/hooks/useToast';
 import {
   editmate,
   deletemate,
   getmatelist,
   getapplylist,
 } from '../../../api/mate';
-import BaseDialog from '../../../components/common/BaseDialog';
+import BaseDialog from '@components/common/BaseDialog';
 
 const Newmate = ({navigation}) => {
   const userId = useSelector(state => state.userStore.userId);
@@ -73,7 +72,7 @@ const Newmate = ({navigation}) => {
   };
 
   /*  同意好友申请 */
-  const [remarkisVisible, setRemarkIsVisible] = React.useState(false);
+  const [remarkVisible, setRemarkVisible] = React.useState(false);
   const [remark, setRemark] = React.useState('');
   const [mateId, setMateId] = React.useState(null);
   const agreeOrRefuseApply = (status, Id) => {
@@ -96,13 +95,13 @@ const Newmate = ({navigation}) => {
   };
 
   /* 删除好友申请 */
-  const [deleteisVisible, setDeleteIsVisible] = useState(false);
+  const [deleteVisible, setDeleteVisible] = useState(false);
   const [deleteId, setDeleteId] = React.useState(null);
   const deleteApplyInfo = async delete_id => {
     try {
       const delRes = await deletemate({id: delete_id});
       if (delRes.success) {
-        setDeleteIsVisible(false);
+        setDeleteVisible(false);
         getWaitinglist(userId);
         getRefusedlist(userId);
       }
@@ -156,7 +155,7 @@ const Newmate = ({navigation}) => {
           size={Button.sizes.xSmall}
           backgroundColor={Colors.primary}
           onPress={() => {
-            setRemarkIsVisible(true);
+            setRemarkVisible(true);
             setMateId(item.id);
           }}
         />
@@ -217,7 +216,7 @@ const Newmate = ({navigation}) => {
           outlineColor={Colors.error}
           size={Button.sizes.xSmall}
           onPress={() => {
-            setDeleteIsVisible(true);
+            setDeleteVisible(true);
             setDeleteId(item.id);
           }}
         />
@@ -269,14 +268,13 @@ const Newmate = ({navigation}) => {
       )}
 
       <BaseDialog
-        IsButton={true}
-        Fun={() => {
+        onConfirm={() => {
           agreeOrRefuseApply('agreed');
         }}
-        Visible={remarkisVisible}
-        SetVisible={setRemarkIsVisible}
-        MainText={'好友备注'}
-        Body={
+        visible={remarkVisible}
+        setVisible={setRemarkVisible}
+        description={'好友备注'}
+        renderBody={
           <TextField
             marginT-8
             placeholder={'请输入好友备注'}
@@ -290,27 +288,23 @@ const Newmate = ({navigation}) => {
         }
       />
       <BaseDialog
-        IsWarning={true}
-        Title={true}
-        IsButton={true}
-        Fun={() => {
+        title={true}
+        onConfirm={() => {
           agreeOrRefuseApply('refused', refusedId);
         }}
-        Visible={refusedVisible}
-        SetVisible={setRefusedVisible}
-        MainText={'您确定要拒绝该好友申请？'}
+        visible={refusedVisible}
+        setVisible={setRefusedVisible}
+        description={'您确定要拒绝该好友申请？'}
       />
 
       <BaseDialog
-        IsWarning={true}
-        Title={true}
-        IsButton={true}
-        Fun={() => {
+        title={true}
+        onConfirm={() => {
           deleteApplyInfo(deleteId);
         }}
-        Visible={deleteisVisible}
-        SetVisible={setDeleteIsVisible}
-        MainText={'您确定要删除该好友申请？'}
+        visible={deleteVisible}
+        setVisible={setDeleteVisible}
+        description={'您确定要删除该好友申请？'}
       />
     </View>
   );

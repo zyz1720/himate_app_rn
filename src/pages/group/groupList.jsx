@@ -7,8 +7,7 @@ import {
   Colors,
   TouchableOpacity,
 } from 'react-native-ui-lib';
-import {useSelector} from 'react-redux';
-import {useToast} from '../../components/common/Toast';
+import {useToast} from '../../utils/hooks/useToast';
 import dayjs from 'dayjs';
 import {getAllJoinGroupList} from '../../api/group_member';
 import FullScreenLoading from '../../components/common/FullScreenLoading';

@@ -9,25 +9,13 @@ import {
   ColorPicker,
   Switch,
 } from 'react-native-ui-lib';
-import {useToast} from '../../components/common/Toast';
+import {useToast} from '../../utils/hooks/useToast';
 import ListItem from '../../components/common/ListItem';
-import {useSelector, useDispatch} from 'react-redux';
-import {
-  setIsFullScreen,
-  setPrimaryColor,
-  setToastType,
-  setIsPlaySound,
-  setNotSaveMsg,
-  setIsFastStatic,
-  setIsEncryptMsg,
-  setIsMusicApp,
-} from '../../stores/store_slice/settingStore';
 import BaseColorPicker from '../../components/setting/BaseColoerPciker';
 import BaseSheet from '../../components/common/BaseSheet';
 import {addStorage} from '../../utils/common/localStorage';
 import {playSystemSound} from '../../utils/common/notification';
 import {displayName as appDisplayName} from '../../../app.json';
-import {setBaseConfig} from '../../stores/store_slice/baseConfigStore';
 import {getBaseConfig} from '../../api/base_config';
 import {deepClone} from '../../utils/common/base';
 import {getStorage} from '../../utils/common/localStorage';
@@ -121,7 +109,7 @@ const Setting = ({navigation}) => {
             ItemName={'主题颜色'}
             IconName={'dropbox'}
             IconColor={themeColor}
-            Fun={() => {
+            onConfirm={() => {
               setShowDialog(true);
             }}
           />
@@ -129,7 +117,7 @@ const Setting = ({navigation}) => {
             ItemName={'提示类型'}
             IconName={'question-circle'}
             IconColor={Colors.blue30}
-            Fun={() => {
+            onConfirm={() => {
               setShowToastType(true);
             }}
           />
@@ -150,7 +138,7 @@ const Setting = ({navigation}) => {
             ItemName={'默认应用'}
             IconName={'tablet'}
             IconColor={Colors.blue50}
-            Fun={() => {
+            onConfirm={() => {
               setShowDefaultApp(true);
             }}
           />
@@ -160,7 +148,7 @@ const Setting = ({navigation}) => {
             ItemName={'消息铃声'}
             IconName={'volume-up'}
             IconColor={Colors.cyan30}
-            Fun={() => {
+            onConfirm={() => {
               setShowAudio(true);
             }}
           />
@@ -210,7 +198,7 @@ const Setting = ({navigation}) => {
             ItemName={'权限管理'}
             IconName={'lock'}
             IconColor={Colors.red40}
-            Fun={() => {
+            onConfirm={() => {
               navigation.navigate('Permissions');
             }}
           />
@@ -218,7 +206,7 @@ const Setting = ({navigation}) => {
             ItemName={'存储位置'}
             IconName={'folder'}
             IconColor={Colors.blue40}
-            Fun={() => {
+            onConfirm={() => {
               setShowFileLocation(true);
             }}
           />
@@ -247,7 +235,7 @@ const Setting = ({navigation}) => {
         <Card padding-16 row left style={{flexWrap: 'wrap'}}>
           <BaseColorPicker
             SlectColor={themeColor}
-            Fun={item => {
+            onConfirm={item => {
               dispatch(setPrimaryColor(item.color));
               showToast('设置成功！', 'success');
               setShowDialog(false);
@@ -276,9 +264,9 @@ const Setting = ({navigation}) => {
         Actions={[
           {
             label: '系统默认',
-            color: toastType === 'System' ? Colors.primary : Colors.grey30,
+            color: toastType === 'system' ? Colors.primary : Colors.grey30,
             onPress: () => {
-              dispatch(setToastType('System'));
+              dispatch(setToastType('system'));
               showToast('设置成功！', 'success', true);
               setShowToastType(false);
             },

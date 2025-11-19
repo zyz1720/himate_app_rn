@@ -1,7 +1,7 @@
 import React, {useEffect, useCallback} from 'react';
 import {StyleSheet} from 'react-native';
 import {View, Text, Colors} from 'react-native-ui-lib';
-import {fullWidth} from '../../styles';
+import {fullWidth} from '@style/index';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -9,23 +9,31 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 
-// 预定义隐藏文本，避免每次渲染都重新创建
 const HIDDEN_TEXTS = ['//', '本翻译作品'];
+
+const styles = StyleSheet.create({
+  lyricViewAbs: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    overflow: 'hidden',
+  },
+});
 
 const LrcItem = React.memo(
   props => {
     const {
-      Item = {},
-      Index = 0,
-      NowIndex = 0,
-      Progress = 0,
-      VisibleChars = [],
-      FullText = '',
-      YrcVisible = false,
-      TransVisible = false,
-      RomaVisible = false,
-      OnItemLayout = () => {},
-      IsHorizontal = false,
+      item = {},
+      index = 0,
+      nowIndex = 0,
+      progress = 0,
+      displayChars = [],
+      fullText = '',
+      yrcVisible = false,
+      transVisible = false,
+      romaVisible = false,
+      onItemLayout = () => {},
+      isHorizontal = false,
     } = props;
 
     // 共享动画值
@@ -42,9 +50,9 @@ const LrcItem = React.memo(
       height: 24,
     });
 
-    const itemLayout = index => event => {
+    const itemLayout = _index => event => {
       const {height} = event.nativeEvent.layout;
-      OnItemLayout(index, height);
+      onItemLayout(_index, height);
     };
 
     // 处理文本布局
@@ -84,20 +92,20 @@ const LrcItem = React.memo(
 
     // 更新动画效果
     useEffect(() => {
-      const isActive = NowIndex === Index;
-      const isAdjacent = Math.abs(NowIndex - Index) === 1;
-      const isNearby = Math.abs(NowIndex - Index) === 2;
+      const isActive = nowIndex === index;
+      const isAdjacent = Math.abs(nowIndex - index) === 1;
+      const isNearby = Math.abs(nowIndex - index) === 2;
 
       // 批量更新动画值
       if (isActive) {
         scale.value = withTiming(1.3, {duration: 200});
         paddingH.value = withTiming(
-          IsHorizontal ? (fullWidth / 2) * 0.1 : fullWidth * 0.105,
+          isHorizontal ? (fullWidth / 2) * 0.1 : fullWidth * 0.105,
           {
             duration: 400,
           },
         );
-        textWidth.value = withTiming(Progress, {
+        textWidth.value = withTiming(progress, {
           duration: 390,
           easing: Easing.in,
         });
@@ -120,24 +128,24 @@ const LrcItem = React.memo(
         scale.value = withTiming(1, {duration: 200});
         paddingH.value = withTiming(0, {duration: 200});
       }
-    }, [Index, NowIndex, Progress]);
+    }, [index, nowIndex, progress]);
 
     return (
-      <View paddingV-12 paddingH-20 onLayout={itemLayout(Index)}>
-        {YrcVisible ? (
+      <View paddingV-12 paddingH-20 onLayout={itemLayout(index)}>
+        {yrcVisible ? (
           <Animated.View style={[{width: fullWidth * 0.95}, animatedStyle]}>
             <Text
               color={Colors.lyricColor}
               text70BO
               onLayout={handleTextLayout}>
-              {FullText}
+              {fullText}
             </Text>
             <Animated.View style={[styles.lyricViewAbs, yrcAnimatedStyle]}>
               <View
                 width={textDimensions?.width || 0}
                 height={textDimensions?.height || 0}>
                 <Text text70BO color={Colors.primary}>
-                  {VisibleChars}
+                  {displayChars}
                 </Text>
               </View>
             </Animated.View>
@@ -145,21 +153,21 @@ const LrcItem = React.memo(
         ) : (
           <Animated.Text style={animatedStyle}>
             <Text color={Colors.lyricColor} text70BO>
-              {Item.lyric}
+              {item.lyric}
             </Text>
           </Animated.Text>
         )}
-        {TransVisible && isTextVisible(Item.trans) && (
+        {transVisible && isTextVisible(item.trans) && (
           <Animated.Text style={transAnimatedStyle}>
             <Text color={Colors.lyricColor} text80L>
-              {Item.trans}
+              {item.trans}
             </Text>
           </Animated.Text>
         )}
-        {RomaVisible && isTextVisible(Item.roma) && (
+        {romaVisible && isTextVisible(item.roma) && (
           <Animated.Text style={transAnimatedStyle}>
             <Text color={Colors.lyricColor} text80L>
-              {Item.roma}
+              {item.roma}
             </Text>
           </Animated.Text>
         )}
@@ -169,26 +177,17 @@ const LrcItem = React.memo(
   (prevProps, nextProps) => {
     // 自定义比较函数，只在必要属性变化时重新渲染
     return (
-      prevProps.Item === nextProps.Item &&
-      prevProps.Index === nextProps.Index &&
-      prevProps.Progress === nextProps.Progress &&
-      prevProps.NowIndex === nextProps.NowIndex &&
-      prevProps.VisibleChars === nextProps.VisibleChars &&
-      prevProps.FullText === nextProps.FullText &&
-      prevProps.YrcVisible === nextProps.YrcVisible &&
-      prevProps.TransVisible === nextProps.TransVisible &&
-      prevProps.RomaVisible === nextProps.RomaVisible
+      prevProps.item === nextProps.item &&
+      prevProps.index === nextProps.index &&
+      prevProps.progress === nextProps.progress &&
+      prevProps.nowIndex === nextProps.nowIndex &&
+      prevProps.displayChars === nextProps.displayChars &&
+      prevProps.fullText === nextProps.fullText &&
+      prevProps.yrcVisible === nextProps.yrcVisible &&
+      prevProps.transVisible === nextProps.transVisible &&
+      prevProps.romaVisible === nextProps.romaVisible
     );
   },
 );
-
-const styles = StyleSheet.create({
-  lyricViewAbs: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    overflow: 'hidden',
-  },
-});
 
 export default LrcItem;

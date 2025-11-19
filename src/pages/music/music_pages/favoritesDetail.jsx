@@ -9,7 +9,6 @@ import {
 } from 'react-native-ui-lib';
 import {StyleSheet} from 'react-native';
 import {useIsFocused} from '@react-navigation/native';
-import {useSelector} from 'react-redux';
 import {getFavoritesDetail} from '../../../api/music';
 import MusicList from '../../../components/music/MusicList';
 import FavoriteModal from '../../../components/music/FavoriteModal';

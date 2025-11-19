@@ -10,28 +10,29 @@ import {
   PanningProvider,
   Checkbox,
 } from 'react-native-ui-lib';
-import {getFirstLetter} from '../../utils/common/base';
-import {useSelector} from 'react-redux';
+import {getFirstLetter} from '@utils/common/string_utils';
+import {useConfigStore} from '@store/configStore';
+import {useTranslation} from 'react-i18next';
 
 const MateList = props => {
   const {
-    OriginList = [],
-    Fun = () => {},
-    Height = '100%',
-    IsSelect = false,
-    SelectChange = () => {},
-    SelectedIds = [],
-    ExistMemberIds = [],
-    IsNew = false,
-    OnEndReached = () => {},
+    originalList = [],
+    onConfirm = () => {},
+    height = '100%',
+    allowSelect = false,
+    onSelectChange = () => {},
+    selectedIds = [],
+    excludeIds = [],
+    onEndReached = () => {},
   } = props;
 
-  // baseConfig
-  const {STATIC_URL} = useSelector(state => state.baseConfigStore.baseConfig);
+  const {t} = useTranslation();
+  const {envConfig} = useConfigStore();
 
   const [mateList, setMateList] = useState([]);
   const [alphabetList, setAlphabetList] = useState([]);
   const [scrollData, setScrollData] = useState([]);
+
   /* 处理为分组数据 */
   const toGroupList = list => {
     const newList = list.map(item => {
@@ -41,32 +42,26 @@ const MateList = props => {
       };
     });
     const newData = newList.reduce((accumulator, currentValue) => {
-      // 检查当前title是否已经存在于累积器中
       const foundIndex = accumulator.findIndex(
         item => item.title === currentValue.title,
       );
-
-      // 如果找到了对应的title，则把当前的data对象添加到对应的data数组中
       if (foundIndex !== -1) {
         accumulator[foundIndex].data.push(currentValue.data);
       } else {
-        // 如果没有找到对应的title，则创建一个新的对象并添加到累积器中
         accumulator.push({
           title: currentValue.title,
-          data: [currentValue.data], // 注意这里初始化为数组
+          data: [currentValue.data],
         });
       }
       return accumulator;
-    }, []); // 初始化累积器为空数组
+    }, []);
     newData.sort((a, b) => {
       if (a.title === '#') {
         return 1;
       }
-      // 如果b的title是'#'，则b应该排在a前面
       if (b.title === '#') {
         return -1;
       }
-      // 如果两个title都不是'#'，则按字母顺序排序
       return a.title.localeCompare(b.title);
     });
     const letterList = newData.map(item => {
@@ -80,16 +75,17 @@ const MateList = props => {
   };
 
   const [pressIndex, setPressIndex] = useState(-1);
-  const [HintVisible, setHintVisible] = useState(false);
+  const [hintVisible, setHintVisible] = useState(false);
   const [groupHeight, setGroupHeight] = useState(0);
+
   /* 滑动字母对应表 */
   const scrollSetting = list => {
     const newList = [];
-    const height = groupHeight / 2 - (20 * list.length) / 2 + 46;
+    const itemHeight = groupHeight / 2 - (20 * list.length) / 2 + 46;
     for (let i = 0; i < list.length; i++) {
       const element = {
-        min: Math.floor(height + i * 20),
-        max: Math.floor(height + (i + 1) * 20),
+        min: Math.floor(itemHeight + i * 20),
+        max: Math.floor(itemHeight + (i + 1) * 20),
         index: i,
       };
       newList.push(element);
@@ -116,25 +112,25 @@ const MateList = props => {
   };
 
   useEffect(() => {
-    const needRes = toGroupList(OriginList);
+    const needRes = toGroupList(originalList);
     setMateList(needRes.mList);
     setAlphabetList(needRes.letterList);
     setScrollData(scrollSetting(needRes.letterList));
-  }, [OriginList]);
+  }, [originalList]);
 
-  const [selectedItem, setSelectedItem] = useState(SelectedIds);
+  const [selectedItem, setSelectedItem] = useState(selectedIds);
   return (
     <>
       <SectionList
-        style={{height: Height}}
+        style={{height: height}}
         sections={mateList}
         keyExtractor={(item, index) => item + index}
         ref={Ref => setFlatListRef(Ref)}
         onEndReached={() => {
-          OnEndReached();
+          onEndReached();
         }}
         renderItem={({item}) =>
-          IsSelect ? (
+          allowSelect ? (
             <View flexS row centerV backgroundColor={Colors.white} padding-12>
               <Checkbox
                 marginR-12
@@ -142,21 +138,18 @@ const MateList = props => {
                 size={20}
                 borderRadius={10}
                 value={selectedItem.includes(item.uid)}
-                disabled={
-                  (IsNew && item.uid === selectedItem[0]) ||
-                  ExistMemberIds.includes(item.uid)
-                }
+                disabled={excludeIds.includes(item.uid)}
                 onValueChange={value => {
                   if (value) {
                     setSelectedItem(prevItem => {
                       const newItem = [...prevItem, item.uid];
-                      SelectChange(newItem);
+                      onSelectChange(newItem);
                       return newItem;
                     });
                   } else {
                     setSelectedItem(prevItem => {
                       const newItem = prevItem.filter(uid => uid !== item.uid);
-                      SelectChange(newItem);
+                      onSelectChange(newItem);
                       return newItem;
                     });
                   }
@@ -165,7 +158,7 @@ const MateList = props => {
               <View flexS row centerV>
                 <Avatar
                   source={{
-                    uri: STATIC_URL + item.avatar,
+                    uri: envConfig.STATIC_URL + item.avatar,
                   }}
                   size={40}
                 />
@@ -182,11 +175,11 @@ const MateList = props => {
               backgroundColor={Colors.white}
               padding-12
               onPress={() => {
-                Fun(item);
+                onConfirm(item);
               }}>
               <Avatar
                 source={{
-                  uri: STATIC_URL + item.avatar,
+                  uri: envConfig.STATIC_URL + item.avatar,
                 }}
                 size={40}
               />
@@ -206,7 +199,7 @@ const MateList = props => {
         ListEmptyComponent={
           <View marginT-16 center>
             <Text text90L grey40>
-              没有发现任何好友{' T_T'}
+              {t('empty.mate')}
             </Text>
           </View>
         }
@@ -222,8 +215,8 @@ const MateList = props => {
           setPressIndex(-1);
         }}
         onLayout={event => {
-          const {height} = event.nativeEvent.layout;
-          setGroupHeight(height);
+          const {height: group_height} = event.nativeEvent.layout;
+          setGroupHeight(group_height);
         }}>
         <View>
           <FlatList
@@ -231,15 +224,15 @@ const MateList = props => {
             keyExtractor={(item, index) => item + index}
             renderItem={({item, index}) => (
               <View
-                style={styles.alphabeBox}
+                style={styles.letterBox}
                 center
                 backgroundColor={
-                  index == pressIndex ? Colors.primary : Colors.transparent
+                  index === pressIndex ? Colors.primary : Colors.transparent
                 }>
                 <Text
                   text90L
                   style={{
-                    color: index == pressIndex ? Colors.white : Colors.grey30,
+                    color: index === pressIndex ? Colors.white : Colors.grey30,
                   }}>
                   {item}
                 </Text>
@@ -249,8 +242,8 @@ const MateList = props => {
         </View>
       </View>
       <Dialog
-        visible={HintVisible}
-        overlayBackgroundColor={Colors.rgba(0, 0, 0, 0)}
+        visible={hintVisible}
+        overlayBackgroundColor={Colors.transparent}
         onDismiss={() => setHintVisible(false)}
         panDirection={PanningProvider.Directions.RIGHT}>
         <View flexG center>
@@ -259,10 +252,8 @@ const MateList = props => {
             flexS
             center
             width={80}
-            backgroundColor="rgba(0,0,0,0.3)"
-            style={{
-              borderRadius: 8,
-            }}>
+            backgroundColor={Colors.black3}
+            br10>
             <Text white text20>
               {alphabetList[pressIndex]}
             </Text>
@@ -280,7 +271,7 @@ const styles = StyleSheet.create({
     top: 0,
     right: 0,
   },
-  alphabeBox: {
+  letterBox: {
     width: 20,
     height: 20,
     borderRadius: 10,

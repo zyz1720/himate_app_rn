@@ -4,7 +4,6 @@ import Setting from '../../pages/setting/index';
 import StackScreen from './StackScreen';
 import {Colors, TouchableOpacity} from 'react-native-ui-lib';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {useSelector} from 'react-redux';
 import Addmate from '../../pages/mate/mate_pages/addMate';
 import SearchMsg from '../../pages/message/msg_pages/searchMsg';
 import MusicScreen from './MusicScreen';

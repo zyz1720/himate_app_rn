@@ -11,7 +11,6 @@ import {
 import dayjs from 'dayjs';
 import {useRealm} from '@realm/react';
 import {showMediaType, getLocalUser} from '../../../utils/handle/chatHandle';
-import {useSelector} from 'react-redux';
 import {fullHeight, fullWidth} from '../../../styles';
 import {useIsFocused} from '@react-navigation/native';
 

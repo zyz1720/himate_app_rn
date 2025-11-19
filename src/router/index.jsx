@@ -2,22 +2,8 @@ import React, {useEffect} from 'react';
 import {StatusBar} from 'react-native';
 import RootScreen from './RootScreen';
 import {Colors} from 'react-native-ui-lib';
-import {useSelector, useDispatch} from 'react-redux';
-import {initUserStore, setUserInfo} from '../stores/store_slice/userStore';
-import {initSettingStore} from '../stores/store_slice/settingStore';
-import {initMusicStore} from '../stores/store_slice/musicStore';
-import {checkPermissions} from '../stores/store_slice/permissionStore';
-import {initChatMsgStore} from '../stores/store_slice/chatMsgStore';
-import {useToast} from '../components/common/Toast';
+import {useToast} from '../utils/hooks/useToast';
 import {displayName as appDisplayName} from '../../app.json';
-import {
-  setBaseConfig,
-  initBaseConfigStore,
-} from '../stores/store_slice/baseConfigStore';
-import {
-  setErrorMsg,
-  clearErrorMsgStore,
-} from '../stores/store_slice/errorMsgStore';
 import 'react-native-get-random-values';
 import {install} from 'react-native-quick-crypto';
 import FullScreenLoading from '../components/common/FullScreenLoading';

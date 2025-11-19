@@ -1,16 +1,8 @@
 import React from 'react';
 import {View, Card, Colors, Text} from 'react-native-ui-lib';
 import ListItem from '../../components/common/ListItem';
-import {useSelector, useDispatch} from 'react-redux';
-import {
-  checkPermissions,
-  requestCameraPermission,
-  requestMicrophonePermission,
-  requestFolderPermission,
-  requestNotifyPermission,
-} from '../../stores/store_slice/permissionStore';
 import {openSettings} from 'react-native-permissions';
-import {useToast} from '../../components/common/Toast';
+import {useToast} from '../../utils/hooks/useToast';
 
 const Permissions = ({navigation, route}) => {
   const accessCamera = useSelector(state => state.permissionStore.accessCamera);
@@ -35,7 +27,7 @@ const Permissions = ({navigation, route}) => {
             IconColor={Colors.grey10}
             IconSize={20}
             RightText={accessCamera ? '已授权' : '未授权'}
-            Fun={() => {
+            onConfirm={() => {
               if (!accessCamera) {
                 showToast('请授予应用相机使用权限', 'warning');
                 dispatch(requestCameraPermission());
@@ -55,7 +47,7 @@ const Permissions = ({navigation, route}) => {
             IconColor={Colors.grey10}
             IconSize={20}
             RightText={accessNotify ? '已授权' : '未授权'}
-            Fun={() => {
+            onConfirm={() => {
               if (!accessNotify) {
                 showToast('请授予应用通知权限', 'warning');
                 dispatch(requestNotifyPermission());
@@ -74,7 +66,7 @@ const Permissions = ({navigation, route}) => {
             IconName={'microphone'}
             IconColor={Colors.grey10}
             RightText={accessMicrophone ? '已授权' : '未授权'}
-            Fun={() => {
+            onConfirm={() => {
               if (!accessMicrophone) {
                 showToast('请授予应用麦克风使用权限', 'warning');
                 dispatch(requestMicrophonePermission());
@@ -94,7 +86,7 @@ const Permissions = ({navigation, route}) => {
             IconColor={Colors.grey10}
             IconSize={20}
             RightText={accessFolder ? '已授权' : '未授权'}
-            Fun={() => {
+            onConfirm={() => {
               if (!accessFolder) {
                 showToast('请授予应用文件和媒体使用权限', 'warning');
                 dispatch(requestFolderPermission());
@@ -114,7 +106,7 @@ const Permissions = ({navigation, route}) => {
             IconColor={Colors.grey10}
             IconSize={20}
             RightText={'去设置'}
-            Fun={() => {
+            onConfirm={() => {
               openSettings().catch(() =>
                 showToast('打开设置失败，请手动开启权限', 'warning'),
               );

@@ -28,12 +28,12 @@ export const getFirstLetter = word => {
   if (word.length === 0) {
     return false;
   }
-  const Aword = word[0];
+  const aWord = word[0];
 
   // 为中文字符返回拼音首字母
   const pattern_Ch = new RegExp('[\u4E00-\u9FA5]');
-  if (pattern_Ch.test(Aword)) {
-    const firstLetter = pinyin(Aword, {
+  if (pattern_Ch.test(aWord)) {
+    const firstLetter = pinyin(aWord, {
       pattern: 'first',
       toneType: 'none',
     });
@@ -42,8 +42,8 @@ export const getFirstLetter = word => {
 
   // 为英文字符返回大写字母
   const pattern_En = new RegExp('[A-Za-z]');
-  if (pattern_En.test(Aword)) {
-    return Aword.toUpperCase();
+  if (pattern_En.test(aWord)) {
+    return aWord.toUpperCase();
   }
 
   // 其他字符返回#

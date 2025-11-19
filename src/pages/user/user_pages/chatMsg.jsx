@@ -1,14 +1,12 @@
 import React, {useState} from 'react';
 import {View, Button, TextField, Card, Colors, Text} from 'react-native-ui-lib';
 import ListItem from '../../../components/common/ListItem';
-import {requestFolderPermission} from '../../../stores/store_slice/permissionStore';
-import {useToast} from '../../../components/common/Toast';
+import {useToast} from '../../../utils/hooks/useToast';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useRealm} from '@realm/react';
 import {encryptAES, decryptAES} from '../../../utils/handle/cryptoHandle';
-import {useSelector, useDispatch} from 'react-redux';
-import BaseDialog from '../../../components/common/BaseDialog';
-import PasswordEye from '../../../components/about_input/PasswordEye';
+import BaseDialog from '@components/common/BaseDialog';
+import PasswordEye from '@components/about_input/PasswordEye';
 import {writeJSONFile, readJSONFile} from '../../../utils/handle/fileHandle';
 import DocumentPicker from 'react-native-document-picker';
 import {setLocalMsg} from '../../../utils/handle/chatHandle';
@@ -21,7 +19,7 @@ const ChatMsg = ({navigation, route}) => {
   const userId = useSelector(state => state.userStore.userId);
   const accessFolder = useSelector(state => state.permissionStore.accessFolder);
 
-  const [hideflag, setHideflag] = useState(true);
+  const [hideFlag, setHideFlag] = useState(true);
   const [inputVisible, setInputVisible] = useState(false);
   const [msgSecret, setMsgSecret] = useState('');
 
@@ -117,7 +115,7 @@ const ChatMsg = ({navigation, route}) => {
               IconColor={Colors.grey10}
               IconSize={20}
               RightText={'一键导出'}
-              Fun={() => {
+              onConfirm={() => {
                 if (!accessFolder) {
                   showToast('请授予应用文件和媒体使用权限', 'warning');
                   dispatch(requestFolderPermission());
@@ -141,7 +139,7 @@ const ChatMsg = ({navigation, route}) => {
                 IconColor={Colors.grey10}
                 IconSize={20}
                 RightText={'选择导入'}
-                Fun={() => {
+                onConfirm={() => {
                   if (!accessFolder) {
                     showToast('请授予应用文件和媒体使用权限', 'warning');
                     dispatch(requestFolderPermission());
@@ -172,37 +170,42 @@ const ChatMsg = ({navigation, route}) => {
         ) : null}
       </View>
       <BaseDialog
-        IsButton={true}
-        Fun={handlerType === 'export' ? exportChatMsgText : importChatMsgText}
-        Visible={inputVisible}
-        SetVisible={setInputVisible}
-        MainText={'聊天记录密钥'}
-        Body={
+        onConfirm={
+          handlerType === 'export' ? exportChatMsgText : importChatMsgText
+        }
+        visible={inputVisible}
+        setVisible={setInputVisible}
+        description={'聊天记录密钥'}
+        renderBody={
           <View>
             <TextField
               marginT-8
               placeholder={'请输入聊天记录密钥'}
               text70L
               floatingPlaceholder
-              secureTextEntry={hideflag}
+              secureTextEntry={hideFlag}
               onChangeText={value => {
                 setMsgSecret(value);
               }}
               maxLength={10}
               showCharCounter={true}
             />
-            <PasswordEye Flag={setHideflag} Float={true} right={0} top={30} />
+            <PasswordEye
+              visible={hideFlag}
+              setVisible={setHideFlag}
+              isFloat={true}
+              right={0}
+              top={30}
+            />
           </View>
         }
       />
       <BaseDialog
-        IsWarning={true}
-        Title={true}
-        IsButton={true}
-        Fun={clearChatMsg}
-        Visible={clearMsgVisible}
-        SetVisible={setClearMsgVisible}
-        MainText={'您确定要清除所有聊天记录吗？'}
+        title={true}
+        onConfirm={clearChatMsg}
+        visible={clearMsgVisible}
+        setVisible={setClearMsgVisible}
+        description={'您确定要清除所有聊天记录吗？'}
       />
     </>
   );

@@ -1,12 +1,14 @@
 import {LoaderScreen, Colors} from 'react-native-ui-lib';
+import {useTranslation} from 'react-i18next';
 import React from 'react';
 
-const FullScreenLoading = ({Message}) => {
+const FullScreenLoading = ({message}) => {
+  const {t} = useTranslation();
   return (
     <LoaderScreen
-      message={Message || '加载中...'}
+      message={message || t('common.loading')}
       color={Colors.primary}
-      backgroundColor={Colors.loadingWhite}
+      backgroundColor={Colors.white9}
       overlay={true}
       messageStyle={{color: Colors.primary}}
     />

@@ -1,13 +1,14 @@
-import {deepClone} from '../common/base';
-import {store} from '../../stores/index';
-import {getTrueSecretKey, decryptAES} from './cryptoHandle';
+import {deepClone} from '@utils/common/object_utils';
+import {useConfigStore} from '@store/configStore';
+import {useSettingStore} from '@store/settingStore';
+import {getTrueSecretKey, decryptAES} from './crypto_utils';
 
 /* 解密消息 */
-const secretStr = store.getState().baseConfigStore.secretStr;
+const {msgSecretKey} = useConfigStore.getState();
 export const decryptMsg = (msg, secret) => {
   if (secret) {
     const {iv, encryptedData} = JSON.parse(msg);
-    const trueSecret = getTrueSecretKey(secret, secretStr);
+    const trueSecret = getTrueSecretKey(secret, msgSecretKey);
     return decryptAES(encryptedData, iv, trueSecret);
   } else {
     return msg;
@@ -34,10 +35,10 @@ export const showMediaType = (msg, type, secret = false) => {
 
 /* 格式化消息 */
 export const formatMsg = data => {
-  const {id, msgdata, msg_secret, update_time} = data || {}; // 需要格式化的聊天数据
+  const {id, content, msg_secret, update_time} = data || {}; // 需要格式化的聊天数据
   return {
     _id: id,
-    text: decryptMsg(msgdata, msg_secret),
+    text: decryptMsg(content, msg_secret),
     createdAt: new Date(update_time),
     status: 'ok',
     ...data,
@@ -63,7 +64,7 @@ export const formatJoinUser = (
 };
 
 /* 写入本地消息 */
-const notSaveMsg = store.getState().settingStore.notSaveMsg;
+const {notSaveMsg} = useSettingStore.getState();
 export const setLocalMsg = async (realm, msgs) => {
   if (notSaveMsg) {
     return;

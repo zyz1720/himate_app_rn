@@ -1,20 +1,20 @@
-import * as React from 'react';
+import React from 'react';
 import {StyleSheet} from 'react-native';
 import {TouchableOpacity, Colors, View, Badge, Text} from 'react-native-ui-lib';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 const ListItem = props => {
   const {
-    Fun = () => {},
-    IconName,
-    IconColor,
-    IconSize,
-    ItemName,
-    IsBottomLine,
-    IsBadge,
-    BadgeCount,
-    RightText,
-    RightView = null,
+    onConfirm = () => {},
+    iconName,
+    iconColor,
+    iconSize,
+    itemName,
+    showBottomLine,
+    showBadge,
+    badgeCount,
+    rightText,
+    renderRight = null,
   } = props;
 
   return (
@@ -26,57 +26,60 @@ const ListItem = props => {
         centerV
         paddingH-16
         paddingV-12
-        onPress={() => Fun()}>
+        onPress={() => onConfirm()}>
         <View flexS centerV row>
           <View width={22} center>
             <FontAwesome
-              name={IconName}
-              color={IconColor}
-              size={IconSize ? IconSize : 22}
+              name={iconName}
+              color={iconColor}
+              size={iconSize ? iconSize : 22}
             />
           </View>
           <Text text70 marginL-8>
-            {ItemName}
+            {itemName}
           </Text>
         </View>
-        {RightView ? (
-          RightView
+        {renderRight ? (
+          renderRight
         ) : (
           <View flexS row spread centerV>
-            {IsBadge && BadgeCount > 0 ? (
+            {showBadge && badgeCount > 0 ? (
               <View marginR-12>
                 <Badge
-                  label={BadgeCount}
+                  label={badgeCount}
                   backgroundColor={Colors.error}
                   size={16}
                 />
               </View>
             ) : null}
-            {RightText ? (
+            {rightText ? (
               <Text
                 marginR-12
                 numberOfLines={1}
-                style={{maxWidth: 160}}
+                style={styles.maxWidth160}
                 text80
                 grey40>
-                {RightText}
+                {rightText}
               </Text>
             ) : null}
             <FontAwesome name="angle-right" color={Colors.grey50} size={26} />
           </View>
         )}
       </TouchableOpacity>
-      <View style={IsBottomLine ? styles.boxBottomline : null}></View>
+      <View style={showBottomLine ? styles.boxBottomLine : null} />
     </>
   );
 };
 const styles = StyleSheet.create({
-  boxBottomline: {
+  boxBottomLine: {
     borderBottomColor: Colors.grey80,
     borderBottomWidth: 1,
     width: '82%',
     position: 'absolute',
     right: 18,
+  },
+  maxWidth160: {
+    maxWidth: 160,
   },
 });
 export default ListItem;

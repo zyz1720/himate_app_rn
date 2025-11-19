@@ -1,6 +1,5 @@
 import React, {useMemo, useCallback} from 'react';
 import {StyleSheet, Modal, ImageBackground, FlatList} from 'react-native';
-import {useSelector} from 'react-redux';
 import {View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {fullHeight, statusBarHeight} from '../../styles';
@@ -75,7 +74,7 @@ const ToBePlayedModal = React.memo(props => {
               flexS
               centerV
               style={styles.playingStyle}
-              backgroundColor={isCurrent ? Colors.hyalineGrey : 'transparent'}
+              backgroundColor={isCurrent ? Colors.black4 : 'transparent'}
               padding-12>
               <View row spread centerV>
                 <View width={'86%'}>
@@ -113,7 +112,7 @@ const ToBePlayedModal = React.memo(props => {
       onRequestClose={OnClose}>
       <View
         height={fullHeight + statusBarHeight}
-        backgroundColor={Colors.hyalineGrey}>
+        backgroundColor={Colors.black4}>
         <ImageBackground
           blurRadius={40}
           style={styles.listBackImage}

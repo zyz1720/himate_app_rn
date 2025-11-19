@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, Card, Colors, Button, Avatar} from 'react-native-ui-lib';
-import {useSelector} from 'react-redux';
 import {isEmptyObject} from '../../../utils/common/base';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import QRCode from 'react-native-qrcode-svg';

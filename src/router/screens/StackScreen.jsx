@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
-import {useSelector} from 'react-redux';
 import {Colors, TouchableOpacity} from 'react-native-ui-lib';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import TabScreen from './TabScreen';

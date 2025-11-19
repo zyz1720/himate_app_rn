@@ -14,7 +14,7 @@ import {
   Avatar,
 } from 'react-native-ui-lib';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {useToast} from '../../components/common/Toast';
+import {useToast} from '../../utils/hooks/useToast';
 import {getGroupDetail, editGroup, deleteGroup} from '../../api/group';
 import {
   editGroupMember,
@@ -22,17 +22,12 @@ import {
   deleteAllGroupMember,
 } from '../../api/group_member';
 import {UploadFile} from '../../utils/handle/fileHandle';
-import {useSelector, useDispatch} from 'react-redux';
 import ImagePicker from 'react-native-image-crop-picker';
-import BaseDialog from '../../components/common/BaseDialog';
+import BaseDialog from '@components/common/BaseDialog';
 import ListItem from '../../components/common/ListItem';
 import {useRealm} from '@realm/react';
 import BaseSheet from '../../components/common/BaseSheet';
 import {getfileFormdata} from '../../utils/common/base';
-import {
-  requestCameraPermission,
-  requestFolderPermission,
-} from '../../stores/store_slice/permissionStore';
 import {formatMsg, setLocalMsg} from '../../utils/handle/chatHandle';
 import {getSessionDetail} from '../../api/session';
 import {delSessionMsgs} from '../../api/data_manager';
@@ -160,13 +155,13 @@ const GroupInfo = ({navigation, route}) => {
   const [clearVisible, setClearVisible] = useState(false);
 
   /* 删除群群聊 */
-  const [deleteisVisible, setDeleteIsVisible] = useState(false);
+  const [deleteVisible, setDeleteVisible] = useState(false);
 
   const deleteTheGroup = async () => {
     try {
       const addRes = await deleteGroup({group_ids: [groupInfo.group_id]});
       if (addRes.success) {
-        setDeleteIsVisible(false);
+        setDeleteVisible(false);
         navigation.navigate('Mate');
         // 删除群组相关信息
         delSessionMsgs({session_id: groupInfo.group_id});
@@ -478,7 +473,7 @@ const GroupInfo = ({navigation, route}) => {
               IconSize={20}
               IconColor={Colors.violet40}
               RightText={nickname}
-              Fun={() => {
+              onConfirm={() => {
                 setIsVisible(true);
               }}
             />
@@ -487,7 +482,7 @@ const GroupInfo = ({navigation, route}) => {
               IconName={'search'}
               IconSize={20}
               IconColor={Colors.grey40}
-              Fun={() => {
+              onConfirm={() => {
                 navigation.navigate('SearchMsg', {
                   session_id: session_id,
                 });
@@ -498,7 +493,7 @@ const GroupInfo = ({navigation, route}) => {
               IconName={'download'}
               IconColor={Colors.cyan30}
               IconSize={20}
-              Fun={() => {
+              onConfirm={() => {
                 navigation.navigate('ChatMsg', {
                   session_id: session_id,
                 });
@@ -508,7 +503,7 @@ const GroupInfo = ({navigation, route}) => {
               ItemName={'清空历史消息'}
               IconName={'remove'}
               IconColor={Colors.error}
-              Fun={() => {
+              onConfirm={() => {
                 setClearVisible(true);
               }}
             />
@@ -524,7 +519,7 @@ const GroupInfo = ({navigation, route}) => {
                     ItemName={'邀请新的成员'}
                     IconName={'plus-circle'}
                     IconColor={Colors.blue40}
-                    Fun={() => {
+                    onConfirm={() => {
                       navigation.navigate('CreateGroup', {
                         group_id: session_id,
                         gId: groupInfo.id,
@@ -538,7 +533,7 @@ const GroupInfo = ({navigation, route}) => {
                     IconSize={20}
                     IconColor={Colors.primary}
                     IsBottomLine={true}
-                    Fun={() => {
+                    onConfirm={() => {
                       setIsExpand(prev => !prev);
                     }}
                   />
@@ -570,7 +565,7 @@ const GroupInfo = ({navigation, route}) => {
               IconName={'cloud-download'}
               IconSize={20}
               IconColor={Colors.blue30}
-              Fun={() => {
+              onConfirm={() => {
                 getCouldChatHistory();
               }}
             />
@@ -583,7 +578,7 @@ const GroupInfo = ({navigation, route}) => {
               center
               padding-12
               onPress={() => {
-                setDeleteIsVisible(true);
+                setDeleteVisible(true);
               }}>
               <Text text70 color={Colors.error}>
                 解散群聊
@@ -664,54 +659,45 @@ const GroupInfo = ({navigation, route}) => {
         ]}
       />
       <BaseDialog
-        IsWarning={true}
-        Title={true}
-        IsButton={true}
-        Fun={deleteTheGroup}
-        Visible={deleteisVisible}
-        SetVisible={setDeleteIsVisible}
-        MainText={'您确定要解散这个群聊吗？'}
+        title={true}
+        onConfirm={deleteTheGroup}
+        visible={deleteVisible}
+        setVisible={setDeleteVisible}
+        description={'您确定要解散这个群聊吗？'}
       />
       <BaseDialog
-        IsWarning={true}
-        Title={true}
-        IsButton={true}
-        Fun={exitTheGroup}
-        Visible={existVisible}
-        SetVisible={setExistVisible}
-        MainText={'您确定要退出这个群聊吗？'}
+        title={true}
+        onConfirm={exitTheGroup}
+        visible={existVisible}
+        setVisible={setExistVisible}
+        description={'您确定要退出这个群聊吗？'}
       />
       <BaseDialog
-        IsWarning={true}
-        Title={true}
-        IsButton={true}
-        Fun={() => {
+        title={true}
+        onConfirm={() => {
           clearChatHistory(session_id);
         }}
-        Visible={clearVisible}
-        SetVisible={setClearVisible}
-        MainText={'您确定要清除历史消息吗？'}
+        visible={clearVisible}
+        setVisible={setClearVisible}
+        description={'您确定要清除历史消息吗？'}
       />
       <BaseDialog
-        IsButton={true}
-        Fun={editGroupMemberInfo}
-        Visible={isVisible}
-        SetVisible={setIsVisible}
-        MainText={'我的在群里的昵称'}
-        Body={
-          <>
-            <TextField
-              marginT-8
-              placeholder={'请输入新的昵称'}
-              floatingPlaceholder
-              text70L
-              onChangeText={value => {
-                setNickname(value);
-              }}
-              maxLength={10}
-              showCharCounter={true}
-            />
-          </>
+        onConfirm={editGroupMemberInfo}
+        visible={isVisible}
+        setVisible={setIsVisible}
+        description={'我的在群里的昵称'}
+        renderBody={
+          <TextField
+            marginT-8
+            placeholder={'请输入新的昵称'}
+            floatingPlaceholder
+            text70L
+            onChangeText={value => {
+              setNickname(value);
+            }}
+            maxLength={10}
+            showCharCounter={true}
+          />
         }
       />
       <BaseSheet
@@ -780,10 +766,8 @@ const GroupInfo = ({navigation, route}) => {
         ]}
       />
       <BaseDialog
-        IsWarning={true}
-        Title={true}
-        IsButton={true}
-        Fun={() => {
+        title={true}
+        onConfirm={() => {
           setEditMemberInfo(prev => {
             if (prev.member_role === 'owner') {
               showToast('这是群主！', 'warning', true);
@@ -799,9 +783,9 @@ const GroupInfo = ({navigation, route}) => {
             }
           });
         }}
-        Visible={showDeleteDialog}
-        SetVisible={setShowDeleteDialog}
-        MainText={'您确定要移除该成员吗？'}
+        visible={showDeleteDialog}
+        setVisible={setShowDeleteDialog}
+        description={'您确定要移除该成员吗？'}
       />
     </>
   );

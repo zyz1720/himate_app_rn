@@ -1,11 +1,11 @@
 import React, {useState} from 'react';
 import {View, Card, Colors} from 'react-native-ui-lib';
-import {useToast} from '../../../components/common/Toast';
+import {useToast} from '../../../utils/hooks/useToast';
 import {useRealm} from '@realm/react';
 import {getSessionDetail} from '../../../api/session';
 import {formatMsg, setLocalMsg} from '../../../utils/handle/chatHandle';
 import ListItem from '../../../components/common/ListItem';
-import BaseDialog from '../../../components/common/BaseDialog';
+import BaseDialog from '@components/common/BaseDialog';
 import FullScreenLoading from '../../../components/common/FullScreenLoading';
 
 const ChatHistory = ({navigation, route}) => {
@@ -57,7 +57,7 @@ const ChatHistory = ({navigation, route}) => {
           IconName={'group'}
           IconSize={20}
           IconColor={Colors.primary}
-          Fun={() => {
+          onConfirm={() => {
             navigation.navigate('CreateGroup', {
               uid: to_uid,
               is_create: true,
@@ -72,7 +72,7 @@ const ChatHistory = ({navigation, route}) => {
           IconName={'search'}
           IconSize={20}
           IconColor={Colors.grey40}
-          Fun={() => {
+          onConfirm={() => {
             navigation.navigate('SearchMsg', {
               session_id: session_id,
             });
@@ -83,7 +83,7 @@ const ChatHistory = ({navigation, route}) => {
           IconName={'download'}
           IconColor={Colors.cyan30}
           IconSize={20}
-          Fun={() => {
+          onConfirm={() => {
             navigation.navigate('ChatMsg', {
               session_id: session_id,
             });
@@ -93,7 +93,7 @@ const ChatHistory = ({navigation, route}) => {
           ItemName={'清空历史消息'}
           IconName={'remove'}
           IconColor={Colors.error}
-          Fun={() => {
+          onConfirm={() => {
             setClearVisible(true);
           }}
         />
@@ -104,21 +104,19 @@ const ChatHistory = ({navigation, route}) => {
           IconName={'cloud-download'}
           IconSize={20}
           IconColor={Colors.blue30}
-          Fun={() => {
+          onConfirm={() => {
             getCouldChatHistory();
           }}
         />
       </Card>
       <BaseDialog
-        IsWarning={true}
-        Title={true}
-        IsButton={true}
-        Fun={() => {
+        title={true}
+        onConfirm={() => {
           clearChatHistory(session_id);
         }}
-        Visible={clearVisible}
-        SetVisible={setClearVisible}
-        MainText={'您确定要清除历史消息吗？'}
+        visible={clearVisible}
+        setVisible={setClearVisible}
+        description={'您确定要清除历史消息吗？'}
       />
       {loading ? <FullScreenLoading Message="同步中..." /> : null}
     </View>

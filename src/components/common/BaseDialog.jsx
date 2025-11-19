@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -8,66 +8,68 @@ import {
   Button,
   PanningProvider,
 } from 'react-native-ui-lib';
+import {useTranslation} from 'react-i18next';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 const BaseDialog = props => {
+  const {t} = useTranslation();
   const {
-    Fun = () => {},
-    CancelFun = () => {},
-    Visible = false,
-    SetVisible = () => {},
-    Title = '',
-    IsWarning = false,
-    MainText = '',
-    Body = null,
-    IsButton = false,
-    Width = '90%',
+    onConfirm = () => {},
+    onCancel = () => {},
+    visible = false,
+    setVisible = () => {},
+    title = '',
+    showWarning = true,
+    description = '',
+    renderBody = null,
+    showButton = true,
+    width = '90%',
   } = props;
 
   return (
     <Dialog
-      visible={Visible}
+      visible={visible}
       useSafeArea={true}
-      onDismiss={() => SetVisible(false)}
-      width={Width}
+      onDismiss={() => setVisible(false)}
+      width={width}
       panDirection={PanningProvider.Directions.DOWN}>
       <Card flexS padding-16>
-        {Title ? (
+        {title ? (
           <View row>
             <FontAwesome name={'warning'} color={Colors.error} size={22} />
             <Text
               text60
-              color={IsWarning ? Colors.error : ''}
+              color={showWarning ? Colors.error : ''}
               marginB-16
               marginL-8>
-              Warning
+              {t('common.warning')}
             </Text>
           </View>
         ) : null}
-        <Text text70BL>{MainText}</Text>
-        {Body}
-        {IsButton ? (
+        <Text text70BL>{description}</Text>
+        {renderBody}
+        {showButton ? (
           <View marginT-16 flexS row right>
             <Button
-              label={'取消'}
+              label={t('common.cancel')}
               size={Button.sizes.medium}
               outline={true}
               borderRadius={8}
               marginR-16
               outlineColor={Colors.primary}
               onPress={() => {
-                SetVisible(false);
-                CancelFun();
+                setVisible(false);
+                onCancel();
               }}
             />
             <Button
-              label={'确认'}
+              label={t('common.confirm')}
               size={Button.sizes.medium}
               borderRadius={8}
               backgroundColor={Colors.primary}
               onPress={() => {
-                SetVisible(false);
-                Fun();
+                setVisible(false);
+                onConfirm();
               }}
             />
           </View>

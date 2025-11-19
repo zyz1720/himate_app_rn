@@ -1,6 +1,6 @@
-import QuickCrypto from 'react-native-quick-crypto';
 import {Buffer} from 'buffer';
-import {createRandomLetters} from '../common/base';
+import {createRandomLetters} from '@utils/common/string_utils';
+import QuickCrypto from 'react-native-quick-crypto';
 
 /**
  * AES加密函数

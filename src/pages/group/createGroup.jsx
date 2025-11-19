@@ -1,8 +1,7 @@
 import React, {useEffect} from 'react';
 import {View, Colors, Text, Button} from 'react-native-ui-lib';
 import {getmatelist} from '../../api/mate';
-import {useToast} from '../../components/common/Toast';
-import {useSelector} from 'react-redux';
+import {useToast} from '../../utils/hooks/useToast';
 import MateList from '../../components/mate/MateList';
 import {addGroup} from '../../api/group';
 import {addGroupMember} from '../../api/group_member';

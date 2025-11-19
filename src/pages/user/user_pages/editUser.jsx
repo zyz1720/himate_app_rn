@@ -13,18 +13,12 @@ import {
   RadioButton,
 } from 'react-native-ui-lib';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {useToast} from '../../../components/common/Toast';
+import {useToast} from '../../../utils/hooks/useToast';
 import {getUserdetail, EditUserInfo} from '../../../api/user';
 import {UploadFile} from '../../../utils/handle/fileHandle';
-import {useDispatch, useSelector} from 'react-redux';
-import {setUserInfo as setUserData} from '../../../stores/store_slice/userStore';
 import ImagePicker from 'react-native-image-crop-picker';
 import BaseSheet from '../../../components/common/BaseSheet';
 import {getfileFormdata, keepChangedFields} from '../../../utils/common/base';
-import {
-  requestCameraPermission,
-  requestFolderPermission,
-} from '../../../stores/store_slice/permissionStore';
 import FullScreenLoading from '../../../components/common/FullScreenLoading';
 
 const Edituser = ({route}) => {
@@ -46,7 +40,7 @@ const Edituser = ({route}) => {
     {
       label: '男',
       value: 'man',
-      color: Colors.geekblue,
+      color: Colors.geekBlue,
     },
     {
       label: '女',

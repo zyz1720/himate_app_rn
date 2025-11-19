@@ -9,15 +9,14 @@ import {
   Avatar,
   TouchableOpacity,
 } from 'react-native-ui-lib';
-import {useToast} from '../../../components/common/Toast';
-import {useSelector} from 'react-redux';
+import {useToast} from '../../../utils/hooks/useToast';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import ListItem from '../../../components/common/ListItem';
 import {getUserInfo} from '../../../api/user';
-import {addmate, editmate, deletemate, getmateStatus} from '../../../api/mate';
+import {addmate, editMate, deletemate, getmateStatus} from '../../../api/mate';
 import {delSessionMsgs} from '../../../api/data_manager';
 import {DownloadFile} from '../../../utils/handle/fileHandle';
-import BaseDialog from '../../../components/common/BaseDialog';
+import BaseDialog from '.@components/common/BaseDialog';
 import ImgModal from '../../../components/common/ImgModal';
 
 const Mateinfo = ({navigation, route}) => {
@@ -66,7 +65,7 @@ const Mateinfo = ({navigation, route}) => {
   };
 
   /*  添加好友 */
-  const [addisVisible, setAddIsVisible] = useState(false);
+  const [addVisible, setAddVisible] = useState(false);
   const [addremark, setAddRemark] = useState('');
   const [valmessage, setValMessage] = useState('');
   const addFriend = async () => {
@@ -87,28 +86,28 @@ const Mateinfo = ({navigation, route}) => {
         agree_uid: uid,
       });
       if (addRes.success) {
-        cancelAddmate();
+        cancelAddMate();
       }
       showToast(addRes.message, addRes.success ? 'success' : 'error');
     } catch (error) {
       console.error(error);
-      cancelAddmate();
+      cancelAddMate();
     }
   };
-  const cancelAddmate = () => {
+  const cancelAddMate = () => {
     setAddRemark('');
     setValMessage('');
   };
 
   /*  修改备注 */
-  const [remarkisVisible, setRemarkIsVisible] = useState(false);
-  const [newremark, setNewRemark] = useState(mateInfo.remark || '');
+  const [remarkVisible, setRemarkVisible] = useState(false);
+  const [newRemark, setNewRemark] = useState(mateInfo.remark || '');
   const editFriendRemark = async () => {
     try {
-      const editRes = await editmate({
+      const editRes = await editMate({
         id: mateInfo.id,
         uid: userId,
-        remark: newremark,
+        remark: newRemark,
       });
       showToast(editRes.message, editRes.success ? 'success' : 'error');
     } catch (error) {
@@ -117,12 +116,12 @@ const Mateinfo = ({navigation, route}) => {
   };
 
   /* 删除好友 */
-  const [deleteisVisible, setDeleteIsVisible] = useState(false);
+  const [deleteVisible, setDeleteVisible] = useState(false);
   const deleteFriend = async () => {
     try {
       const delRes = await deletemate({id: mateInfo.id});
       if (delRes.success) {
-        setDeleteIsVisible(false);
+        setDeleteVisible(false);
         navigation.navigate('Mate');
         delSessionMsgs({session_id: mateInfo.mate_id});
       }
@@ -191,7 +190,7 @@ const Mateinfo = ({navigation, route}) => {
                 {otherUserInfo?.sex === 'woman' ? (
                   <FontAwesome name="venus" color={Colors.magenta} size={12} />
                 ) : otherUserInfo?.sex === 'man' ? (
-                  <FontAwesome name="mars" color={Colors.geekblue} size={12} />
+                  <FontAwesome name="mars" color={Colors.geekBlue} size={12} />
                 ) : null}
                 <Text marginL-4 grey30 text90>
                   {otherUserInfo?.age}岁
@@ -207,8 +206,8 @@ const Mateinfo = ({navigation, route}) => {
             ItemName={'修改备注'}
             IconName={'edit'}
             IconColor={Colors.primary}
-            Fun={() => {
-              setRemarkIsVisible(true);
+            onConfirm={() => {
+              setRemarkVisible(true);
             }}
           />
         </Card>
@@ -241,7 +240,7 @@ const Mateinfo = ({navigation, route}) => {
           center
           padding-12
           onPress={() => {
-            setDeleteIsVisible(true);
+            setDeleteVisible(true);
           }}>
           <Text text70 color={Colors.error}>
             删除好友
@@ -255,21 +254,20 @@ const Mateinfo = ({navigation, route}) => {
             ItemName={'添加好友'}
             IconName={'user-plus'}
             IconColor={Colors.primary}
-            Fun={() => {
-              setAddIsVisible(true);
+            onConfirm={() => {
+              setAddVisible(true);
             }}
           />
         </Card>
       )}
 
       <BaseDialog
-        IsButton={true}
-        Fun={addFriend}
-        CancelFun={cancelAddmate}
-        Visible={addisVisible}
-        SetVisible={setAddIsVisible}
-        MainText={'添加好友'}
-        Body={
+        onConfirm={addFriend}
+        onCancel={cancelAddMate}
+        visible={addVisible}
+        setVisible={setAddVisible}
+        description={'添加好友'}
+        renderBody={
           <>
             <TextField
               marginT-8
@@ -299,12 +297,11 @@ const Mateinfo = ({navigation, route}) => {
       />
 
       <BaseDialog
-        IsButton={true}
-        Fun={editFriendRemark}
-        Visible={remarkisVisible}
-        SetVisible={setRemarkIsVisible}
-        MainText={'修改备注'}
-        Body={
+        onConfirm={editFriendRemark}
+        visible={remarkVisible}
+        setVisible={setRemarkVisible}
+        description={'修改备注'}
+        renderBody={
           <TextField
             marginT-8
             placeholder={'请输入好友备注'}
@@ -320,13 +317,11 @@ const Mateinfo = ({navigation, route}) => {
       />
 
       <BaseDialog
-        IsWarning={true}
-        Title={true}
-        IsButton={true}
-        Fun={deleteFriend}
-        Visible={deleteisVisible}
-        SetVisible={setDeleteIsVisible}
-        MainText={'您确定要删除这个好友吗？'}
+        title={true}
+        onConfirm={deleteFriend}
+        visible={deleteVisible}
+        setVisible={setDeleteVisible}
+        description={'您确定要删除这个好友吗？'}
       />
 
       {/* 图片预览弹窗 */}

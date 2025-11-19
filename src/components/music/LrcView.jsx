@@ -1,37 +1,82 @@
 import React, {useState, useEffect, useRef, useMemo, useCallback} from 'react';
 import {FlatList, StyleSheet} from 'react-native';
-import {formatLrc} from '../../utils/handle/lyricHandle';
+import {formatLrc} from '@utils/system/lyric_utils';
 import {View, Text, Colors, TouchableOpacity, Image} from 'react-native-ui-lib';
-import {fullHeight, fullWidth} from '../../styles';
-import LrcItem from './LrcItem';
+import {fullHeight, fullWidth} from '@style/index';
+import {useToast} from '@utils/hooks/useToast';
+import {useMusicStore} from '@/stores/musicStore';
+import {useTranslation} from 'react-i18next';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {useToast} from '../common/Toast';
-import {useSelector, useDispatch} from 'react-redux';
-import {setSwitchCount} from '../../stores/store_slice/musicStore';
+import LrcItem from './LrcItem';
 
-const MODES = [
-  {name: 'lrc+trans', label: '普通+翻译歌词'},
-  {name: 'lrc+roma', label: '普通+音译歌词'},
-  {name: 'lrc', label: '普通歌词'},
-  {name: 'yrc+trans', label: '逐字+翻译歌词'},
-  {name: 'yrc+roma', label: '逐字+音译歌词'},
-  {name: 'yrc', label: '逐字歌词'},
-];
+const styles = StyleSheet.create({
+  lyricText: {
+    fontSize: 16,
+    color: Colors.lyricColor,
+    width: '100%',
+  },
+  transText: {
+    fontSize: 14,
+    color: Colors.lyricColor,
+    width: '100%',
+    marginTop: 10,
+  },
+  image: {
+    width: 46,
+    height: 46,
+    borderRadius: 8,
+    marginRight: 12,
+    borderWidth: 0.5,
+  },
+  line: {
+    fontSize: 16,
+    color: '#666',
+    paddingVertical: 10,
+  },
+  activeLine: {
+    fontSize: 22,
+    color: Colors.primary,
+    fontWeight: 'bold',
+  },
+  activeLine2: {
+    fontSize: 16,
+    color: Colors.lyricColor,
+    fontWeight: 'bold',
+  },
+  switchView: {
+    position: 'absolute',
+    bottom: 16,
+    right: 24,
+  },
+  switchBut: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  musicBut: {
+    width: 30,
+    height: 30,
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
 
 const LrcView = React.memo(props => {
   const {
-    IsHorizontal = false,
-    Music = {},
-    Cover = '',
-    CurrentTime,
-    OnLyricsChange = () => {},
+    isHorizontal = false,
+    music = {},
+    cover = '',
+    currentTime,
+    onLyricsChange = () => {},
   } = props;
+  const {t} = useTranslation();
+  const {switchCount, setSwitchCount} = useMusicStore();
   const {showToast} = useToast();
   const [parsedLrc, setParsedLrc] = useState([]);
   const flatListRef = useRef(null);
-
-  const dispatch = useDispatch();
-  const switchCount = useSelector(state => state.musicStore.switchCount);
 
   const [haveYrc, setHaveYrc] = useState(false);
   const [haveTrans, setHaveTrans] = useState(false);
@@ -43,6 +88,15 @@ const LrcView = React.memo(props => {
   // 歌词是否为两行
   const [isTwoLines, setIsTwoLines] = useState(true);
 
+  const MODES = [
+    {name: 'lrc+trans', label: t('music.lrc_trans')},
+    {name: 'lrc+roma', label: t('music.lrc_roma')},
+    {name: 'lrc', label: t('music.lrc')},
+    {name: 'yrc+trans', label: t('music.yrc_trans')},
+    {name: 'yrc+roma', label: t('music.yrc_roma')},
+    {name: 'yrc', label: t('music.yrc')},
+  ];
+
   // 解析歌词
   useEffect(() => {
     const {
@@ -50,7 +104,7 @@ const LrcView = React.memo(props => {
       haveTrans: _haveTrans,
       haveRoma: _haveRoma,
       haveYrc: _haveYrc,
-    } = formatLrc(Music);
+    } = formatLrc(music);
     setParsedLrc(Lyrics);
     setHaveYrc(_haveYrc);
     setHaveRoma(_haveRoma);
@@ -61,7 +115,7 @@ const LrcView = React.memo(props => {
 
     setItemHeights(new Map());
     shouldSkip.current = false;
-  }, [Music]);
+  }, [music]);
 
   // 过滤出可用的歌词模式
   const filteredModes = (_haveYrc, _haveTrans, _haveRoma) => {
@@ -93,8 +147,8 @@ const LrcView = React.memo(props => {
     const currentModeIndex = (switchCount + 1) % availableModes.length;
     const currentMode = availableModes[currentModeIndex];
     showLyric(currentMode);
-    dispatch(setSwitchCount(currentModeIndex));
-    showToast(`已切换为${currentMode.label}`, 'success', true);
+    setSwitchCount(currentModeIndex);
+    showToast(t('music.switch_to', {mode: currentMode.label}), 'success', true);
   }, [switchCount, availableModes]);
 
   // 显示对应歌词
@@ -155,12 +209,12 @@ const LrcView = React.memo(props => {
     for (let i = 0; i < parsedLrc.length; i++) {
       const matchTime =
         yrcVisible && haveYrc ? parsedLrc[i].startTime : parsedLrc[i].time;
-      if (matchTime > CurrentTime) {
+      if (matchTime > currentTime) {
         return i - 1;
       }
     }
     return parsedLrc.length - 1;
-  }, [parsedLrc, yrcVisible, haveYrc, CurrentTime]);
+  }, [parsedLrc, yrcVisible, haveYrc, currentTime]);
 
   // 自动滚动到当前歌词 - 保留基本逻辑
   const [nowIndex, setNowIndex] = useState(-1);
@@ -169,9 +223,9 @@ const LrcView = React.memo(props => {
     setNowIndex(index);
     if (flatListRef.current && index >= 0) {
       flatListRef.current.scrollToIndex({index, animated: true});
-      OnLyricsChange(parsedLrc[index]?.lyric);
+      onLyricsChange(parsedLrc[index]?.lyric);
     } else {
-      OnLyricsChange('');
+      onLyricsChange('');
     }
   }, [findCurrentLineIndex, parsedLrc]);
 
@@ -251,11 +305,11 @@ const LrcView = React.memo(props => {
         ? item.words.map(w => w.char).join('')
         : item?.text;
       if (isActive && item?.words) {
-        const lineTime = CurrentTime - item.startTime;
+        const lineTime = currentTime - item.startTime;
         progress = Math.min(Math.max(lineTime / item.duration, 0), 1);
 
         for (const word of item.words) {
-          if (CurrentTime >= word.startTime) {
+          if (currentTime >= word.startTime) {
             visibleChars += word.char;
           } else {
             break;
@@ -267,7 +321,7 @@ const LrcView = React.memo(props => {
         <LrcItem
           Item={item}
           Index={index}
-          CurrentTime={CurrentTime}
+          currentTime={currentTime}
           NowIndex={nowIndex}
           Progress={progress}
           VisibleChars={visibleChars}
@@ -276,12 +330,12 @@ const LrcView = React.memo(props => {
           TransVisible={transVisible && haveTrans}
           RomaVisible={romaVisible && haveRoma}
           OnItemLayout={OnItemLayout}
-          IsHorizontal={IsHorizontal}
+          isHorizontal={isHorizontal}
         />
       );
     },
     [
-      CurrentTime,
+      currentTime,
       nowIndex,
       yrcVisible,
       haveYrc,
@@ -293,17 +347,17 @@ const LrcView = React.memo(props => {
   );
 
   const lrcHeight = useMemo(() => {
-    const h = IsHorizontal ? fullHeight * 0.9 : fullHeight * 0.78;
+    const h = isHorizontal ? fullHeight * 0.9 : fullHeight * 0.78;
     return h - (h % 68);
-  }, [fullWidth, IsHorizontal]);
+  }, [fullWidth, isHorizontal]);
 
   return (
     <View>
-      {IsHorizontal ? null : (
+      {isHorizontal ? null : (
         <View flexS row centerV paddingV-16 paddingH-20 paddingB-20>
-          {Music?.music_name ? (
+          {music?.music_name ? (
             <Image
-              source={{uri: Cover}}
+              source={{uri: cover}}
               style={[styles.image, {borderColor: Colors.lyricColor}]}
             />
           ) : null}
@@ -313,14 +367,14 @@ const LrcView = React.memo(props => {
               text70BO
               width={fullWidth * 0.78}
               numberOfLines={1}>
-              {Music?.music_name}
+              {music?.music_name}
             </Text>
             <Text
               color={Colors.lyricColor}
               marginT-2
               width={fullWidth * 0.78}
               numberOfLines={1}>
-              {Music?.music_singer}
+              {music?.music_singer}
             </Text>
           </View>
         </View>
@@ -349,7 +403,7 @@ const LrcView = React.memo(props => {
       </View>
       {(haveRoma || haveTrans || haveYrc) && parsedLrc.length > 0 && (
         <View style={styles.switchView}>
-          <View backgroundColor={Colors.hyalineWhite} style={styles.switchBut}>
+          <View backgroundColor={Colors.white4} style={styles.switchBut}>
             <TouchableOpacity style={styles.musicBut} onPress={switchLyric}>
               <Ionicons name="sync-sharp" color={Colors.lyricColor} size={20} />
             </TouchableOpacity>
@@ -358,61 +412,6 @@ const LrcView = React.memo(props => {
       )}
     </View>
   );
-});
-
-const styles = StyleSheet.create({
-  lyricText: {
-    fontSize: 16,
-    color: Colors.lyricColor,
-    width: '100%',
-  },
-  transText: {
-    fontSize: 14,
-    color: Colors.lyricColor,
-    width: '100%',
-    marginTop: 10,
-  },
-  image: {
-    width: 46,
-    height: 46,
-    borderRadius: 8,
-    marginRight: 12,
-    borderWidth: 0.5,
-  },
-  line: {
-    fontSize: 16,
-    color: '#666',
-    paddingVertical: 10,
-  },
-  activeLine: {
-    fontSize: 22,
-    color: Colors.primary,
-    fontWeight: 'bold',
-  },
-  activeLine2: {
-    fontSize: 16,
-    color: Colors.lyricColor,
-    fontWeight: 'bold',
-  },
-  switchView: {
-    position: 'absolute',
-    bottom: 16,
-    right: 24,
-  },
-  switchBut: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  musicBut: {
-    width: 30,
-    height: 30,
-    borderRadius: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
 });
 
 export default LrcView;

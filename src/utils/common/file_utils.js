@@ -8,9 +8,11 @@ import {
   excelTypes,
   pptTypes,
   pdfTypes,
-} from '@const/base_const';
+} from '@const/file_ext_names';
 import {Colors} from 'react-native-ui-lib';
 import {displayName} from '@root/app.json';
+import {useUserStore} from '@store/userStore';
+import {useConfigStore} from '@store/configStore';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 
 /* 获取文件名 */
@@ -64,7 +66,7 @@ export const getFileColor = ext => {
  * @param {object} fileInfo 文件信息
  * @returns {object} 文件信息
  */
-export const getfileFromImageCropPicker = (doName, fileInfo) => {
+export const getFileFromImageCropPicker = (doName, fileInfo) => {
   const baseType = fileInfo.mime;
 
   let type = 'image';
@@ -102,14 +104,14 @@ export const getfileFromImageCropPicker = (doName, fileInfo) => {
  * @param {boolean} useOriginalName 是否使用原始文件名
  * @returns {object} 文件信息
  */
-export const getfileFromDocumentPicker = (
+export const getFileFromDocumentPicker = (
   doName,
   fileInfo,
   useOriginalName = false,
 ) => {
   const baseType = fileInfo.type;
-  const oringalName = fileInfo.name;
-  const ext = getFileExt(oringalName);
+  const originalName = fileInfo.name;
+  const ext = getFileExt(originalName);
 
   let type = 'other';
   if (baseType.startsWith('image/') || imageExtNames.includes(ext)) {
@@ -123,7 +125,7 @@ export const getfileFromDocumentPicker = (
   const file = {
     name: 'file',
     filename: useOriginalName
-      ? oringalName
+      ? originalName
       : `${doName}_${type}_${Math.random().toString(16).substring(2)}.${ext}`,
     data: ReactNativeBlobUtil.wrap(fileInfo.uri),
   };
@@ -141,7 +143,7 @@ export const getfileFromDocumentPicker = (
  * @param {string} filePath 文件路径
  * @returns {object} 文件信息
  */
-export const getfileFromAudioRecorderPlayer = (doName, filePath) => {
+export const getFileFromAudioRecorderPlayer = (doName, filePath) => {
   const type = 'audio';
 
   const ext = getFileExt(filePath);
@@ -170,19 +172,19 @@ export const getfileFromAudioRecorderPlayer = (doName, filePath) => {
  * @returns {object} 文件信息
  */
 export const uploadFile = async (fileData, callback = () => {}, form = {}) => {
-  const {BASE_URL} = store.getState().baseConfigStore.baseConfig;
-  const userToken = store.getState().userStore.userToken;
+  const {access_token, token_type} = useUserStore.getState();
+  const {envConfig} = useConfigStore.getState();
 
   const {uid, fileType, useType} = form;
 
   // 构建URL
-  const url = `${BASE_URL}api/upload/file?uid=${uid}&file_type=${fileType}&use_type=${useType}`;
+  const url = `${envConfig.BASE_URL}api/upload/file`;
 
   return ReactNativeBlobUtil.fetch(
     'POST',
     url,
     {
-      Authorization: 'Bearer ' + userToken,
+      Authorization: token_type + ' ' + access_token,
       'Content-Type': 'multipart/form-data',
     },
     [fileData],

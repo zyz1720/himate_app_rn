@@ -56,20 +56,3 @@ export const docTypes = ['doc', 'docx'];
 export const excelTypes = ['xls', 'xlsx'];
 export const pptTypes = ['ppt', 'pptx'];
 export const pdfTypes = ['pdf'];
-
-export const msgTypeMap = {
-  text: '文字',
-  image: '图片',
-  audio: '语音',
-  video: '视频',
-};
-
-export const chatTypeMap = {
-  group: '群聊',
-  personal: '私聊',
-};
-
-export const msgStatusMap = {
-  unread: '未读',
-  read: '已读',
-};

@@ -8,70 +8,8 @@ import {
   Colors,
   TouchableOpacity,
 } from 'react-native-ui-lib';
+import {fullHeight, statusBarHeight} from '@style/index';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import {fullHeight, statusBarHeight} from '../../styles';
-
-const FavoriteModal = React.memo(props => {
-  const {
-    Visible = false,
-    OnClose = () => {},
-    BackgroundImg = '',
-    Title = '',
-    Remark = '',
-    CreateAvatar = '',
-    CreateName = '',
-  } = props;
-
-  return (
-    <Modal
-      animationType="fade"
-      statusBarTranslucent
-      hardwareAccelerated={true}
-      transparent={true}
-      visible={Visible}
-      onRequestClose={OnClose}>
-      <View
-        height={fullHeight + statusBarHeight}
-        backgroundColor={Colors.hyalineGrey}>
-        <ImageBackground
-          blurRadius={50}
-          style={styles.listBackImage}
-          source={{uri: BackgroundImg}}
-          resizeMode="cover">
-          <TouchableOpacity paddingT-48 paddingL-22 onPress={OnClose}>
-            <AntDesign name="close" color={Colors.white} size={24} />
-          </TouchableOpacity>
-          <ScrollView>
-            <View flexS center marginT-20>
-              <Image source={{uri: BackgroundImg}} style={styles.image} />
-            </View>
-            <View row center marginT-20>
-              <Avatar
-                size={26}
-                source={{
-                  uri: CreateAvatar,
-                }}
-              />
-              <Text text70 marginL-6 white>
-                {CreateName}
-              </Text>
-            </View>
-            <View center marginT-20 paddingH-20>
-              <Text text60 marginL-6 white>
-                {Title}
-              </Text>
-            </View>
-            <View marginT-20 paddingH-20>
-              <Text text80 marginL-6 white>
-                {Remark}
-              </Text>
-            </View>
-          </ScrollView>
-        </ImageBackground>
-      </View>
-    </Modal>
-  );
-});
 
 const styles = StyleSheet.create({
   listBackImage: {
@@ -95,6 +33,68 @@ const styles = StyleSheet.create({
     height: 180,
     borderRadius: 8,
   },
+});
+
+const FavoriteModal = React.memo(props => {
+  const {
+    visible = false,
+    onClose = () => {},
+    backgroundImg = '',
+    title = '',
+    remarks = '',
+    userAvatar = '',
+    userName = '',
+  } = props;
+
+  return (
+    <Modal
+      animationType="fade"
+      statusBarTranslucent
+      hardwareAccelerated={true}
+      transparent={true}
+      visible={visible}
+      onRequestClose={onClose}>
+      <View
+        height={fullHeight + statusBarHeight}
+        backgroundColor={Colors.black4}>
+        <ImageBackground
+          blurRadius={50}
+          style={styles.listBackImage}
+          source={{uri: backgroundImg}}
+          resizeMode="cover">
+          <TouchableOpacity paddingT-48 paddingL-22 onPress={onClose}>
+            <AntDesign name="close" color={Colors.white} size={24} />
+          </TouchableOpacity>
+          <ScrollView>
+            <View flexS center marginT-20>
+              <Image source={{uri: backgroundImg}} style={styles.image} />
+            </View>
+            <View row center marginT-20>
+              <Avatar
+                size={26}
+                source={{
+                  uri: userAvatar,
+                }}
+              />
+              <Text text70 marginL-6 white>
+                {userName}
+              </Text>
+            </View>
+            <View center marginT-20 paddingH-20>
+              <Text text60 marginL-6 white>
+                {title}
+              </Text>
+            </View>
+            <View marginT-20 paddingH-20>
+              <Text text80 marginL-6 white>
+                {remarks}
+              </Text>
+            </View>
+          </ScrollView>
+        </ImageBackground>
+      </View>
+    </Modal>
+  );
 });
 
 export default FavoriteModal;

@@ -88,7 +88,7 @@ export const delStorage = (oldKey, oldId = null) => {
  * 删除key下所有数据
  * @param {string} oldKey 键
  */
-export const delkeyStorage = oldKey => {
+export const delKeyStorage = oldKey => {
   storage
     .clearMapForKey(oldKey)
     .then(() => {

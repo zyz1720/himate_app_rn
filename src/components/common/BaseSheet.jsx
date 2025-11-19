@@ -1,43 +1,43 @@
-import * as React from 'react';
+import React from 'react';
 import {ActionSheet, Button, Colors} from 'react-native-ui-lib';
 import {StyleSheet} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 const BaseSheet = props => {
+  const {t} = useTranslation();
   const {
-    Visible = false,
-    SetVisible = () => {},
-    Title = '',
-    Message = '',
-    Actions = [],
+    visible = false,
+    setVisible = () => {},
+    title = '',
+    description = '',
+    actions = [],
   } = props;
 
   return (
     <ActionSheet
       dialogStyle={styles.dialogStyle}
       optionsStyle={styles.optionsStyle}
-      visible={Visible}
-      onDismiss={() => SetVisible(false)}
-      title={Title}
-      message={Message}
+      visible={visible}
+      onDismiss={() => setVisible(false)}
+      title={title}
+      message={description}
       renderAction={(butProps, index) => (
         <Button
           {...butProps}
           key={index}
           style={[
             styles.buttonStyle,
-            {
-              borderBottomWidth: index === Actions.length ? 0 : 1,
-            },
+            index === actions.length ? styles.noBorder : styles.borderBottom,
           ]}
         />
       )}
-      cancelButtonIndex={Actions.length + 1}
+      cancelButtonIndex={actions.length + 1}
       options={[
-        ...Actions,
+        ...actions,
         {
-          label: '取消',
+          label: t('common.cancel'),
           color: Colors.grey30,
-          onPress: () => SetVisible(false),
+          onPress: () => setVisible(false),
         },
       ]}
     />
@@ -56,6 +56,12 @@ const styles = StyleSheet.create({
     marginTop: 6,
     backgroundColor: Colors.white,
     borderBottomColor: Colors.grey80,
+  },
+  borderBottom: {
+    borderBottomWidth: 1,
+  },
+  noBorder: {
+    borderBottomWidth: 0,
   },
 });
 

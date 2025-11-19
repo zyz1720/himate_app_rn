@@ -26,10 +26,9 @@ import {
 } from 'react-native-gifted-chat';
 import Clipboard from '@react-native-clipboard/clipboard';
 import ImagePicker from 'react-native-image-crop-picker';
-import {useSelector, useDispatch} from 'react-redux';
 import {useSocket} from '../../../utils/common/socket';
 import {getSessionDetail} from '../../../api/session';
-import {useToast} from '../../../components/common/Toast';
+import {useToast} from '../../../utils/hooks/useToast';
 import {useRealm} from '@realm/react';
 import {
   formatMsg,
@@ -40,8 +39,6 @@ import {
   delLocalMsg,
   addOrUpdateLocalUser,
 } from '../../../utils/handle/chatHandle';
-import {setIsPlaySound} from '../../../stores/store_slice/settingStore';
-import {setNowSessionId} from '../../../stores/store_slice/chatMsgStore';
 import {
   deepClone,
   getfileFormdata,
@@ -75,11 +72,6 @@ import Animated, {
 import {fullWidth, fullHeight} from '../../../styles';
 import {DownloadFile} from '../../../utils/handle/fileHandle';
 import BaseSheet from '../../../components/common/BaseSheet';
-import {
-  requestCameraPermission,
-  requestMicrophonePermission,
-  requestFolderPermission,
-} from '../../../stores/store_slice/permissionStore';
 import {cancelNotification} from '../../../utils/common/notification';
 import {
   createRandomSecretKey,

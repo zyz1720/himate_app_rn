@@ -1,4 +1,5 @@
 import {StyleSheet} from 'react-native';
+import React from 'react';
 import {
   Colors,
   TouchableOpacity,
@@ -11,43 +12,47 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 const AudioMsg = props => {
   const {
-    Msg = {},
-    OnPress = () => {},
-    OnLongPress = () => {},
-    NowReadyAudioId = null,
-    AudioPlayprogress = {},
-    AudioIsPlaying = false,
-    OnPause = () => {},
-    OnPlay = () => {},
-    OnValueChange = () => {},
+    message = {},
+    onPress = () => {},
+    onLongPress = () => {},
+    nowReadyAudioId = null,
+    audioPlayProgress = {},
+    audioIsPlaying = false,
+    onPause = () => {},
+    onPlay = () => {},
+    onValueChange = () => {},
   } = props;
 
-  const {duration = 10, currentPosition = 0} = AudioPlayprogress;
+  const {duration = 10, currentPosition = 0} = audioPlayProgress;
 
   return (
     <View style={styles.audioBut}>
       <TouchableOpacity
-        onPress={OnPress}
-        onLongPress={OnLongPress}
+        onPress={onPress}
+        onLongPress={onLongPress}
         row
         centerV
         paddingV-6
         paddingH-12>
-        {NowReadyAudioId === Msg.clientMsg_id ? (
+        {nowReadyAudioId === message.client_msg_id ? (
           <>
-            {AudioIsPlaying ? (
-              <TouchableOpacity onPress={OnPause}>
+            {audioIsPlaying ? (
+              <TouchableOpacity onPress={onPause}>
                 <AntDesign
                   name="pausecircle"
-                  color={Msg.user._id === 1 ? Colors.primary : Colors.grey10}
+                  color={
+                    message.user._id === 1 ? Colors.primary : Colors.grey10
+                  }
                   size={20}
                 />
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity onPress={OnPlay}>
+              <TouchableOpacity onPress={onPlay}>
                 <AntDesign
                   name="playcircleo"
-                  color={Msg.user._id === 1 ? Colors.primary : Colors.grey10}
+                  color={
+                    message.user._id === 1 ? Colors.primary : Colors.grey10
+                  }
                   size={20}
                 />
               </TouchableOpacity>
@@ -61,7 +66,7 @@ const AudioMsg = props => {
                   maximumValue={duration}
                   minimumTrackTintColor={Colors.primary}
                   onValueChange={value => {
-                    OnValueChange(value);
+                    onValueChange(value);
                   }}
                 />
               </View>
@@ -73,7 +78,7 @@ const AudioMsg = props => {
         ) : (
           <FontAwesome
             name="volume-down"
-            color={Msg.user._id === 1 ? Colors.primary : Colors.grey10}
+            color={message.user._id === 1 ? Colors.primary : Colors.grey10}
             size={24}
           />
         )}

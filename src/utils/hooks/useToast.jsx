@@ -1,7 +1,7 @@
-import * as React from 'react';
+import React, {useState} from 'react';
 import {ToastAndroid, StyleSheet, Platform} from 'react-native';
 import {Toast, View, Text, Colors} from 'react-native-ui-lib';
-import {useSelector} from 'react-redux';
+import {useSettingStore} from '@store/settingStore';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -14,11 +14,11 @@ export const useToast = () => React.useContext(ToastContext);
 let timer = null;
 const ToastProvider = props => {
   const {children} = props;
-  const ToastType = useSelector(state => state.settingStore.toastType);
-  const [Message, setMessage] = React.useState(null);
-  const [isVisible, setVisible] = React.useState(false);
-  const [typecolor, setTypecolor] = React.useState(Colors.grey40);
-  const [iosToatVisible, setIosToatVisible] = React.useState(false);
+  const {toastType} = useSettingStore();
+  const [message, setMessage] = useState(null);
+  const [isVisible, setVisible] = useState(false);
+  const [typeColor, setTypeColor] = useState(Colors.grey40);
+  const [iosToastVisible, setIosToastVisible] = useState(false);
 
   const iosToastShow = useSharedValue(false);
   const AnimatedShowToast = useAnimatedStyle(() => {
@@ -27,9 +27,9 @@ const ToastProvider = props => {
     };
   });
 
-  const showToast = async (msg, type, isSystem = false) => {
+  const showToast = async (msg, type, important = false) => {
     if (msg) {
-      if (ToastType === 'System' || isSystem) {
+      if (toastType === 'system' || important) {
         if (Platform.OS === 'android') {
           ToastAndroid.showWithGravity(
             msg,
@@ -41,30 +41,30 @@ const ToastProvider = props => {
           if (timer) {
             return;
           }
-          setIosToatVisible(true);
+          setIosToastVisible(true);
           iosToastShow.value = true;
           setMessage(msg);
           timer = setTimeout(() => {
-            setIosToatVisible(false);
+            setIosToastVisible(false);
             iosToastShow.value = false;
             clearTimeout(timer);
             timer = null;
           }, 1200);
         }
       }
-      if (ToastType !== 'System' && !isSystem) {
+      if (toastType !== 'system' && !important) {
         setMessage(msg);
         setVisible(true);
       }
     }
     if (type === 'warning') {
-      setTypecolor(Colors.warning);
+      setTypeColor(Colors.warning);
     }
     if (type === 'success') {
-      setTypecolor(Colors.success);
+      setTypeColor(Colors.success);
     }
     if (type === 'error') {
-      setTypecolor(Colors.error);
+      setTypeColor(Colors.error);
     }
   };
 
@@ -75,19 +75,19 @@ const ToastProvider = props => {
         onDismiss={() => {
           setVisible(false);
         }}
-        position={ToastType === 'System' ? 'bottom' : ToastType}
+        position={toastType === 'system' ? 'bottom' : toastType}
         centerMessage={true}
-        backgroundColor={typecolor}
+        backgroundColor={typeColor}
         visible={isVisible}
         autoDismiss={1200}
-        message={Message}
+        message={message}
         color={Colors.white}
       />
-      {iosToatVisible ? (
+      {iosToastVisible ? (
         <Animated.View style={[styles.IosToastStyle, AnimatedShowToast]}>
           <View style={styles.IosToastBox} padding-10>
             <Text white text80>
-              {Message}
+              {message}
             </Text>
           </View>
         </Animated.View>

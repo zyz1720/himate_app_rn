@@ -1,4 +1,7 @@
 {
-    "ok": "确定",
-    "cancel": "取消"
+  "confirm": "确定",
+  "cancel": "取消",
+  "warning": "警告",
+  "loading": "加载中...",
+  "footer": "已经到底了 ~"
 }

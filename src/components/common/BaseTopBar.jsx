@@ -1,34 +1,34 @@
-import * as React from 'react';
+import React from 'react';
 import {StyleSheet} from 'react-native';
 import {View, TouchableOpacity, Text, Colors} from 'react-native-ui-lib';
-import {fullWidth, fullHeight} from '../../styles';
-import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
+import {fullWidth, fullHeight} from '@style/index';
+import Animated, {FadeInLeft, FadeOut} from 'react-native-reanimated';
 
 const BaseTopBar = props => {
   const {
-    Routes = [],
-    FocusIndex = 0,
-    OnChangeIndex = () => {},
-    HeightScale = 0.92,
+    routes = [],
+    focusIndex = 0,
+    onChange = () => {},
+    heightScale = 0.92,
   } = props;
 
   return (
-    <View width={fullWidth} height={fullHeight * HeightScale}>
+    <View width={fullWidth} height={fullHeight * heightScale}>
       <View row spread backgroundColor="white" style={styles.topStyle}>
-        {Routes.map((item, index) => {
+        {routes.map((item, index) => {
           return (
             <View key={item.key}>
               <TouchableOpacity
                 style={[styles.barStyle]}
-                onPress={() => OnChangeIndex(index)}>
+                onPress={() => onChange(index)}>
                 <Text
-                  color={index === FocusIndex ? Colors.primary : Colors.grey30}>
+                  color={index === focusIndex ? Colors.primary : Colors.grey30}>
                   {item.title}
                 </Text>
               </TouchableOpacity>
-              {index === FocusIndex ? (
+              {index === focusIndex ? (
                 <Animated.View
-                  entering={FadeIn}
+                  entering={FadeInLeft}
                   exiting={FadeOut}
                   height={2}
                   backgroundColor={Colors.primary}
@@ -38,10 +38,11 @@ const BaseTopBar = props => {
           );
         })}
       </View>
-      <View>{Routes[FocusIndex].screen}</View>
+      <View>{routes[focusIndex].screen}</View>
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   topStyle: {
     borderBottomWidth: 0.8,

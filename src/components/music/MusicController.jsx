@@ -8,22 +8,13 @@ import React, {
 } from 'react';
 import {StyleSheet, ImageBackground} from 'react-native';
 import {Image, View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
-import {useSelector, useDispatch} from 'react-redux';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 import {fullWidth} from '../../styles';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import {Marquee} from '@animatereactnative/marquee';
 import {isEmptyObject, deepClone, getRandomInt} from '../../utils/common/base';
-import {
-  setPlayingMusic,
-  removePlayList,
-  setIsClosed,
-  addPlayList,
-  setPlayList,
-  initMusicStore,
-} from '../../stores/store_slice/musicStore';
-import {useToast} from '../common/Toast';
+import {useToast} from '../../utils/hooks/useToast';
 import {useRealm} from '@realm/react';
 import MusicControl, {Command} from 'react-native-music-control';
 import {

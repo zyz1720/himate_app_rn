@@ -9,10 +9,9 @@ import {
   TouchableOpacity,
   Badge,
 } from 'react-native-ui-lib';
-import {useSelector, useDispatch} from 'react-redux';
 import {getUserSessionList, dleUserSession} from '../../api/session';
 import {getBaseConst} from '../../api/common';
-import {useToast} from '../../components/common/Toast';
+import {useToast} from '../../utils/hooks/useToast';
 import {useSocket} from '../../utils/common/socket';
 import {useRealm} from '@realm/react';
 import {
@@ -26,14 +25,6 @@ import {
   cancelNotification,
   playSystemSound,
 } from '../../utils/common/notification';
-import {
-  setChatMsg,
-  setNotRemindSessionIds,
-  delNotRemindSessionIds,
-  setRemindSessions,
-  delRemindSessions,
-  initChatMsgStore,
-} from '../../stores/store_slice/chatMsgStore';
 import Feather from 'react-native-vector-icons/Feather';
 import {formatDateTime} from '../../utils/common/base';
 import {useIsFocused} from '@react-navigation/native';

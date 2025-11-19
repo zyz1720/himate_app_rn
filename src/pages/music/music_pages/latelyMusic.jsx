@@ -1,9 +1,9 @@
 import React, {useState, useEffect} from 'react';
 import {View, Colors, Button} from 'react-native-ui-lib';
-import {useToast} from '../../../components/common/Toast';
+import {useToast} from '../../../utils/hooks/useToast';
 import MusicList from '../../../components/music/MusicList';
 import {useRealm} from '@realm/react';
-import BaseDialog from '../../../components/common/BaseDialog';
+import BaseDialog from '@components/common/BaseDialog';
 
 const LatelyMusic = () => {
   const {showToast} = useToast();
@@ -53,16 +53,14 @@ const LatelyMusic = () => {
         }
       />
       <BaseDialog
-        IsWarning={true}
-        Title={true}
-        IsButton={true}
-        Fun={() => {
+        title={true}
+        onConfirm={() => {
           delLocalMusic();
           setDelVisible(false);
         }}
-        Visible={delVisible}
-        SetVisible={setDelVisible}
-        MainText={'您确定清空最近播放记录吗？'}
+        visible={delVisible}
+        setVisible={setDelVisible}
+        description={'您确定清空最近播放记录吗？'}
       />
     </View>
   );

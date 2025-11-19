@@ -7,31 +7,6 @@ import {
   Image,
 } from 'react-native-ui-lib';
 
-const ImageMsg = React.memo(props => {
-  const {
-    Msg = {},
-    OnPress = () => {},
-    OnLongPress = () => {},
-    UploadIds = [],
-    NowSendId = null,
-    UploadProgress = 0,
-  } = props;
-
-  return (
-    <TouchableOpacity onPress={OnPress} onLongPress={OnLongPress}>
-      <Image style={styles.image} source={{uri: Msg.image}} />
-      {UploadIds.includes(Msg._id) ? (
-        <AnimatedScanner
-          progress={NowSendId === Msg._id ? UploadProgress : 0}
-          duration={1200}
-          backgroundColor={Colors.black}
-          opacity={0.5}
-        />
-      ) : null}
-    </TouchableOpacity>
-  );
-});
-
 const styles = StyleSheet.create({
   image: {
     width: 150,
@@ -40,6 +15,31 @@ const styles = StyleSheet.create({
     margin: 3,
     resizeMode: 'cover',
   },
+});
+
+const ImageMsg = React.memo(props => {
+  const {
+    message = {},
+    onPress = () => {},
+    onLongPress = () => {},
+    uploadingIds = [],
+    nowSendId = null,
+    uploadProgress = 0,
+  } = props;
+
+  return (
+    <TouchableOpacity onPress={onPress} onLongPress={onLongPress}>
+      <Image style={styles.image} source={{uri: message.image}} />
+      {uploadingIds.includes(message._id) ? (
+        <AnimatedScanner
+          progress={nowSendId === message._id ? uploadProgress : 0}
+          duration={1200}
+          backgroundColor={Colors.black}
+          opacity={0.5}
+        />
+      ) : null}
+    </TouchableOpacity>
+  );
 });
 
 export default ImageMsg;

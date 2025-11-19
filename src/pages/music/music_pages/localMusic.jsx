@@ -8,7 +8,7 @@ import {
   Button,
 } from 'react-native-ui-lib';
 import {FlatList, StyleSheet, Platform, Modal} from 'react-native';
-import {useToast} from '../../../components/common/Toast';
+import {useToast} from '../../../utils/hooks/useToast';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import MusicList from '../../../components/music/MusicList';
 import {useRealm} from '@realm/react';
@@ -16,10 +16,8 @@ import {v4 as uuid} from 'uuid';
 import {fullHeight, statusBarHeight} from '../../../styles';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import BaseDialog from '../../../components/common/BaseDialog';
-import {requestFolderPermission} from '../../../stores/store_slice/permissionStore';
-import {useSelector, useDispatch} from 'react-redux';
-import {audioExtNames} from '../../../constants/base_const';
+import BaseDialog from '@components/common/BaseDialog';
+import {audioExtNames} from '../../../constants/file_ext_names';
 import FullScreenLoading from '../../../components/common/FullScreenLoading';
 
 const LocalMusic = () => {
@@ -245,7 +243,7 @@ const LocalMusic = () => {
         }}>
         <View
           height={fullHeight + statusBarHeight}
-          backgroundColor={Colors.hyalineGrey}>
+          backgroundColor={Colors.black4}>
           <View height={fullHeight * 0.6} style={styles.CtrlModal} padding-12>
             <View row spread centerV paddingH-6>
               <TouchableOpacity
@@ -349,16 +347,14 @@ const LocalMusic = () => {
         </View>
       </Modal>
       <BaseDialog
-        IsWarning={true}
-        Title={true}
-        IsButton={true}
-        Fun={() => {
+        title={true}
+        onConfirm={() => {
           delLocalMusic();
           setDelVisible(false);
         }}
-        Visible={delVisible}
-        SetVisible={setDelVisible}
-        MainText={'您确定清空本地音乐记录吗？'}
+        visible={delVisible}
+        setVisible={setDelVisible}
+        description={'您确定清空本地音乐记录吗？'}
       />
     </View>
   );

@@ -11,15 +11,13 @@ import {
 import {getEmailCode, getImgCaptcha} from '../../api/common';
 import {userLoginAccount, userLoginCode} from '../../api/login';
 import {userReg} from '../../api/user';
-import {useSelector, useDispatch} from 'react-redux';
-import {setIsLogin} from '../../stores/store_slice/userStore';
-import {useToast} from '../../components/common/Toast';
+import {useToast} from '../../utils/hooks/useToast';
 import {validateEmail} from '../../utils/common/base';
 import {displayName as appDisplayName} from '../../../app.json';
 import {SvgXml} from 'react-native-svg';
 import Animated, {FadeInUp, FadeInLeft} from 'react-native-reanimated';
-import PasswordEye from '../../components/about_input/PasswordEye';
-import BaseDialog from '../../components/common/BaseDialog';
+import PasswordEye from '@components/about_input/PasswordEye';
+import BaseDialog from '@components/common/BaseDialog';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Feather from 'react-native-vector-icons/Feather';
@@ -310,7 +308,12 @@ const Login = ({navigation}) => {
             secureTextEntry={hideFlag}
             onChangeText={value => setPassword(value)}
           />
-          <PasswordEye Flag={setHideFlag} Float={true} right={20} />
+          <PasswordEye
+            visible={hideFlag}
+            setVisible={setHideFlag}
+            isFloat={true}
+            right={20}
+          />
         </View>
       ) : null}
 
@@ -398,11 +401,10 @@ const Login = ({navigation}) => {
       </View>
 
       <BaseDialog
-        IsButton={true}
-        Fun={sendCode}
-        Visible={imgCodeVisible}
-        SetVisible={setImgCodeVisible}
-        MainText={'发送验证码'}
+        onConfirm={sendCode}
+        visible={imgCodeVisible}
+        setVisible={setImgCodeVisible}
+        description={'发送验证码'}
         Body={
           <View>
             <View height={80}>

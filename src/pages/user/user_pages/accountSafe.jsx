@@ -2,20 +2,17 @@ import React, {useEffect, useState} from 'react';
 import {StyleSheet, ScrollView, RefreshControl} from 'react-native';
 import {View, Text, Card, Colors, TextField, Button} from 'react-native-ui-lib';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {useToast} from '../../../components/common/Toast';
-import PasswordEye from '../../../components/about_input/PasswordEye';
+import {useToast} from '../../../utils/hooks/useToast';
+import PasswordEye from '@components/about_input/PasswordEye';
 import {
   editUserAccount,
   editUserPassword,
   editUserInfo,
   getUserInfo,
 } from '../../../api/user';
-import {useDispatch} from 'react-redux';
-import {setUserInfo as setUserData} from '../../../stores/store_slice/userStore';
 import {validateEmail} from '../../../utils/common/base';
-import BaseDialog from '../../../components/common/BaseDialog';
+import BaseDialog from '@components/common/BaseDialog';
 import {clearStorage} from '../../../utils/common/localStorage';
-import {clearUserStore} from '../../../stores/store_slice/userStore';
 import FullScreenLoading from '../../../components/common/FullScreenLoading';
 
 let timer = {};
@@ -162,8 +159,8 @@ const Edituser = ({route}) => {
   };
 
   // 显示隐藏密码
-  const [hideflag, setHideflag] = useState(true);
-  const [hideflagold, setHideflagold] = useState(true);
+  const [hideFlag, setHideFlag] = useState(true);
+  const [hideFlagOld, setHideFlagOld] = useState(true);
 
   // 退出登录
   const [showLoginOut, setShowLoginOut] = useState(false);
@@ -265,7 +262,7 @@ const Edituser = ({route}) => {
                 validationMessage={['请至少输入六位密码！']}
                 validateOnChange={true}
                 value={newpassword}
-                secureTextEntry={hideflag}
+                secureTextEntry={hideFlag}
                 onChangeText={value => {
                   setNewpassword(value);
                   setPasswordshow(true);
@@ -276,7 +273,7 @@ const Edituser = ({route}) => {
                 //   }, 1000);
                 // }}
               />
-              <PasswordEye Flag={setHideflag} />
+              <PasswordEye setVisible={setHideFlag} visible={hideFlag} />
               <View style={{display: passwordshow ? 'flex' : 'none'}}>
                 <Button
                   label={'保存'}
@@ -312,17 +309,16 @@ const Edituser = ({route}) => {
         </View>
       </ScrollView>
       <BaseDialog
-        IsButton={true}
-        Fun={() => {
+        onConfirm={() => {
           submitData({account: usermail});
         }}
-        CancelFun={() => {
+        onCancel={() => {
           setUploading(false);
         }}
-        Visible={showCodeDialog}
-        SetVisible={setShowCodeDialog}
-        MainText={'修改邮箱'}
-        Body={
+        visible={showCodeDialog}
+        setVisible={setShowCodeDialog}
+        description={'修改邮箱'}
+        renderBody={
           <>
             <View>
               <TextField
@@ -345,17 +341,16 @@ const Edituser = ({route}) => {
         }
       />
       <BaseDialog
-        IsButton={true}
-        Fun={() => {
+        onConfirm={() => {
           submitData({password: newpassword});
         }}
-        CancelFun={() => {
+        onCancel={() => {
           setUploading(false);
         }}
-        Visible={showPassDialog}
-        SetVisible={setShowPassDialog}
-        MainText={'修改密码'}
-        Body={
+        visible={showPassDialog}
+        setVisible={setShowPassDialog}
+        description={'修改密码'}
+        renderBody={
           <View style={styles.inputLine}>
             <View>
               <TextField
@@ -363,14 +358,15 @@ const Edituser = ({route}) => {
                 text70
                 style={styles.input}
                 value={oldpassword}
-                secureTextEntry={hideflagold}
+                secureTextEntry={hideFlagOld}
                 onChangeText={value => {
                   setOldpassword(value);
                 }}
               />
               <PasswordEye
-                Flag={setHideflagold}
-                Float={true}
+                setVisible={setHideFlagOld}
+                visible={hideFlagOld}
+                isFloat={true}
                 right={20}
                 bottom={6}
               />
@@ -379,22 +375,18 @@ const Edituser = ({route}) => {
         }
       />
       <BaseDialog
-        IsWarning={true}
-        Title={true}
-        IsButton={true}
-        Fun={loginOut}
-        Visible={showLoginOut}
-        SetVisible={setShowLoginOut}
-        MainText={'您确定要退出登录吗？'}
+        title={true}
+        onConfirm={loginOut}
+        visible={showLoginOut}
+        setVisible={setShowLoginOut}
+        description={'您确定要退出登录吗？'}
       />
       <BaseDialog
-        IsWarning={true}
-        Title={true}
-        IsButton={true}
-        Fun={logOff}
-        Visible={showLogOff}
-        SetVisible={setShowLogOff}
-        MainText={'您确定要注销账号吗？'}
+        title={true}
+        onConfirm={logOff}
+        visible={showLogOff}
+        setVisible={setShowLogOff}
+        description={'您确定要注销账号吗？'}
       />
       {uploading ? <FullScreenLoading Message={'修改中...'} /> : null}
     </>

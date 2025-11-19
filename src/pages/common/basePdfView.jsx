@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import { Colors } from 'react-native-ui-lib';
 import Pdf from 'react-native-pdf';
 import { fullWidth, fullHeight } from '../../styles';
-import { useToast } from '../../components/common/Toast';
+import { useToast } from '../../utils/hooks/useToast';
 
 const BasePdfView = ({ route }) => {
   const { url } = route.params || {};

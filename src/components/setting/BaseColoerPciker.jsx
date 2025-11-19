@@ -2,7 +2,7 @@ import {StyleSheet} from 'react-native';
 import {View, Text, TouchableOpacity} from 'react-native-ui-lib';
 
 const BaseColorPicker = props => {
-  const Fun = props.Fun;
+  const onConfirm = props.onConfirm;
   const SlectColor = props.SlectColor;
 
   const ColorList = [
@@ -22,7 +22,7 @@ const BaseColorPicker = props => {
 
   const renderColoritem = () => {
     return ColorList.map(item => (
-      <TouchableOpacity key={item.id} onPress={() => Fun(item)}>
+      <TouchableOpacity key={item.id} onPress={() => onConfirm(item)}>
         <View flexS width={80} center padding-8>
           <View
             height={34}

@@ -1,6 +1,5 @@
 import React, {useState, useEffect} from 'react';
 import {View} from 'react-native-ui-lib';
-import {useSelector} from 'react-redux';
 import {getFavoritesDetail} from '../../../api/music';
 import MusicList from '../../../components/music/MusicList';
 import FullScreenLoading from '../../../components/common/FullScreenLoading';

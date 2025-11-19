@@ -10,18 +10,16 @@ import {
   TouchableOpacity,
   Avatar,
 } from 'react-native-ui-lib';
-import {useSelector, useDispatch} from 'react-redux';
-import {useToast} from '../../../components/common/Toast';
+import {useToast} from '../../../utils/hooks/useToast';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {getUserInfo} from '../../../api/user';
 import {addmate, getmateStatus} from '../../../api/mate';
-import BaseDialog from '../../../components/common/BaseDialog';
+import BaseDialog from '@components/common/BaseDialog';
 import {
   Camera,
   useCameraDevice,
   useCodeScanner,
 } from 'react-native-vision-camera';
-import {requestCameraPermission} from '../../../stores/store_slice/permissionStore';
 import {fullHeight} from '../../../styles';
 
 const Addmate = ({navigation, route}) => {
@@ -190,12 +188,11 @@ const Addmate = ({navigation, route}) => {
       ) : null}
 
       <BaseDialog
-        IsButton={true}
-        Fun={addFriend}
-        Visible={isVisible}
-        SetVisible={setIsVisible}
-        MainText={'添加好友'}
-        Body={
+        onConfirm={addFriend}
+        visible={isVisible}
+        setVisible={setIsVisible}
+        description={'添加好友'}
+        renderBody={
           <>
             <TextField
               marginT-8

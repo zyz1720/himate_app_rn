@@ -8,28 +8,31 @@ import {
   AnimatedScanner,
   Image,
 } from 'react-native-ui-lib';
+import {formatSeconds} from '@utils/common/time_utils';
 import {createVideoThumbnail} from 'react-native-compressor';
+import {useTranslation} from 'react-i18next';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Video from 'react-native-video';
-import {formatSeconds} from '../../utils/common/base';
 
 const VideoMsg = React.memo(props => {
   const {
-    Msg = '',
-    OnPress = () => {},
-    OnLongPress = () => {},
-    UploadIds = [],
-    NowSendId = null,
-    UploadProgress = 0,
+    message = '',
+    onPress = () => {},
+    onLongPress = () => {},
+    uploadingIds = [],
+    nowSendId = null,
+    uploadProgress = 0,
   } = props;
+
+  const {t} = useTranslation();
 
   const [videoThumbnail, setVideoThumbnail] = useState(null);
   const [videoDuration, setVideoDuration] = useState(0);
   const [videoLoading, setVideoLoading] = useState(true);
 
   useEffect(() => {
-    if (Msg?.video) {
-      createVideoThumbnail(Msg?.video)
+    if (message?.video) {
+      createVideoThumbnail(message?.video)
         .then(res => {
           setVideoLoading(false);
           setVideoThumbnail(res.path);
@@ -39,15 +42,14 @@ const VideoMsg = React.memo(props => {
           console.error(error);
         });
     }
-  }, [Msg]);
+  }, [message]);
 
   return (
     <View>
       <Video
-        source={{uri: Msg?.video}}
+        source={{uri: message?.video}}
         paused={true}
         onLoad={e => {
-          // console.log('onLoad', e.duration);
           setVideoDuration(e.duration);
         }}
       />
@@ -61,27 +63,27 @@ const VideoMsg = React.memo(props => {
         <View style={styles.videoControl}>
           <ActivityIndicator color={Colors.white} />
           <Text text90L white marginT-4>
-            视频加载中...
+            {t('video.loading')}
           </Text>
         </View>
       ) : videoThumbnail ? (
         <TouchableOpacity
           style={styles.videoControl}
-          onLongPress={OnLongPress}
-          onPress={OnPress}>
+          onLongPress={onLongPress}
+          onPress={onPress}>
           <AntDesign name="playcircleo" color={Colors.white} size={32} />
           <Text style={styles.videoTime}>{formatSeconds(videoDuration)}</Text>
         </TouchableOpacity>
       ) : (
         <View style={styles.videoControl}>
           <Text text90L white>
-            视频加载失败
+            {t('video.loading_failed')}
           </Text>
         </View>
       )}
-      {UploadIds.includes(Msg._id) ? (
+      {uploadingIds.includes(message._id) ? (
         <AnimatedScanner
-          progress={NowSendId === Msg._id ? UploadProgress : 0}
+          progress={nowSendId === message._id ? uploadProgress : 0}
           duration={1200}
           backgroundColor={Colors.black}
           opacity={0.5}

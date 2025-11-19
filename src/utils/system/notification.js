@@ -1,14 +1,14 @@
 import notifee, {AndroidImportance} from '@notifee/react-native';
-import Sound from 'react-native-sound';
-
-import {showMediaType} from '../handle/chatHandle';
+import {showMediaType} from './chat_utils';
 import {getStorage} from './localStorage';
-import {name as appName} from '../../../app.json';
-import {store} from '../../stores';
+import {name as appName} from '@root/app.json';
+import {useSettingStore} from '@store/settingStore';
+import {useConfigStore} from '@store/configStore';
+import Sound from 'react-native-sound';
 
 /* 系统消息通知 */
 export async function onDisplayRealMsg(data) {
-  const {STATIC_URL} = store.getState().baseConfigStore.baseConfig;
+  const {envConfig} = useConfigStore.getState();
 
   const {
     session_name,
@@ -42,7 +42,7 @@ export async function onDisplayRealMsg(data) {
       importance: AndroidImportance.HIGH,
       timestamp: Date.now(), // 8 minutes ago
       showTimestamp: true,
-      largeIcon: STATIC_URL + session_avatar,
+      largeIcon: envConfig?.STATIC_URL + session_avatar,
       pressAction: {
         id: session_id,
         mainComponent: appName,
@@ -58,24 +58,19 @@ export const cancelNotification = async session_id => {
 
 /* 播放系统声音 */
 export async function playSystemSound(sound_name) {
-  const soundName = await getStorage('setting', 'soundName');
-  const sound = new Sound(
-    sound_name || soundName || 'default_1.mp3',
-    Sound.MAIN_BUNDLE,
-    error => {
-      if (error) {
-        console.log('加载声音文件失败', error);
-        return;
+  const {ringtone} = useSettingStore.getState();
+  const sound = new Sound(sound_name || ringtone, Sound.MAIN_BUNDLE, error => {
+    if (error) {
+      console.log('加载声音文件失败', error);
+      return;
+    }
+    sound.setVolume(1.0);
+    sound.play(success => {
+      if (success) {
+        sound.release();
+      } else {
+        console.log('播放声音时出错');
       }
-      sound.setVolume(1.0);
-      sound.play(success => {
-        if (success) {
-          sound.release();
-          // console.log('successfully finished playing');
-        } else {
-          console.log('播放声音时出错');
-        }
-      });
-    },
-  );
+    });
+  });
 }

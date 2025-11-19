@@ -1,0 +1,11 @@
+{
+  "switch_to": "已切换为{{mode}}",
+  "lrc_trans": "普通+翻译歌词",
+  "lrc_roma": "普通+音译歌词",
+  "lrc": "普通歌词",
+  "yrc_trans": "逐字+翻译歌词",
+  "yrc_roma": "逐字+音译歌词",
+  "yrc": "逐字歌词",
+  "sample_rate": "采样率：{{rate}} Hz",
+  "bitrate": "比特率：{{rate}} bps"
+}

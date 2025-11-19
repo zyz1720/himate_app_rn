@@ -13,7 +13,6 @@ import {
   Badge,
   ProgressBar,
 } from 'react-native-ui-lib';
-import {useSelector, useDispatch} from 'react-redux';
 import {
   getUserUploadFiles,
   getUserMsgList,
@@ -22,11 +21,13 @@ import {
 } from '../../../api/data_manager';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import BaseSheet from '../../../components/common/BaseSheet';
-import {useToast} from '../../../components/common/Toast';
+import {useToast} from '../../../utils/hooks/useToast';
 import {DownloadFile} from '../../../utils/handle/fileHandle';
-import {requestFolderPermission} from '../../../stores/store_slice/permissionStore';
 import DocumentPicker from 'react-native-document-picker';
-import {getDocumentfileFormdata, formatDateTime} from '../../../utils/common/base';
+import {
+  getDocumentfileFormdata,
+  formatDateTime,
+} from '../../../utils/common/base';
 import {
   UploadFile,
   getFileColor,
@@ -39,13 +40,13 @@ import {
   getLocalUser,
   formatMsg,
 } from '../../../utils/handle/chatHandle';
-import BaseDialog from '../../../components/common/BaseDialog';
+import BaseDialog from '@components/common/BaseDialog';
 import {getStorage} from '../../../utils/common/localStorage';
 import {
   msgTypeMap,
   chatTypeMap,
   msgStatusMap,
-} from '../../../constants/base_const';
+} from '../../../constants/file_ext_names';
 import dayjs from 'dayjs';
 import Clipboard from '@react-native-clipboard/clipboard';
 import BaseTopBar from '../../../components/common/BaseTopBar';
@@ -935,16 +936,14 @@ const DataManager = ({navigation, route}) => {
       </Dialog>
 
       <BaseDialog
-        IsWarning={true}
-        Title={true}
-        IsButton={true}
-        Fun={() => {
+        title={true}
+        onConfirm={() => {
           deleteFiles();
           setDelVisible(false);
         }}
-        Visible={delVisible}
-        SetVisible={setDelVisible}
-        MainText={'您确定要删除吗？'}
+        visible={delVisible}
+        setVisible={setDelVisible}
+        description={'您确定要删除吗？'}
       />
       {/* 视频播放器 */}
       <VideoModal

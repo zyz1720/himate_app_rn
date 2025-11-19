@@ -1,52 +1,29 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {getBaseConfig} from '../../api/base_config';
-import {generateSecretKey} from '../../utils/handle/cryptoHandle';
+import {create} from 'zustand';
+import {getBaseConfig} from '@api/app_config';
+import {generateSecretKey} from '@utils/handle/cryptoHandle';
 
 const defaultState = {
-  baseConfig: {}, // 基础配置
-  secretStr: '', // 加密密钥串
+  envConfig: {}, // 环境配置
+  msgSecretKey: null, // 消息加密密钥
   configLoading: false, // 加载状态
 };
 
-export const baseConfigSlice = createSlice({
-  name: 'baseConfigStore',
-  initialState: defaultState,
-  extraReducers: builder => {
-    builder
-      .addCase(initBaseConfigStore.pending, state => {
-        state.configLoading = true;
-      })
-      .addCase(initBaseConfigStore.fulfilled, (state, action) => {
-        state.baseConfig = action.payload || {};
-        const {MSG_SECRET} = state.baseConfig;
-        state.secretStr = generateSecretKey(MSG_SECRET);
-        state.configLoading = false;
-      })
-      .addCase(initBaseConfigStore.rejected, () => defaultState);
-  },
-  reducers: {
-    setBaseConfig: (state, action) => {
-      state.baseConfig = action.payload || {};
-      const {MSG_SECRET} = state.baseConfig;
-      state.secretStr = generateSecretKey(MSG_SECRET);
-      return state;
-    },
-  },
-});
-
-export const initBaseConfigStore = createAsyncThunk(
-  'config/initBaseConfigStore',
-  async (_, {rejectWithValue}) => {
+export const useConfigStore = create(set => ({
+  ...defaultState,
+  setConfig: async () => {
     try {
+      set({configLoading: true});
       const config = await getBaseConfig();
-      return config;
+      set(state => {
+        const {MSG_SECRET} = config;
+        state.envConfig = config;
+        state.msgSecretKey = generateSecretKey(MSG_SECRET);
+        return state;
+      });
     } catch (error) {
       console.error(error);
-      return rejectWithValue(null); // 错误处理
+    } finally {
+      set({configLoading: false});
     }
   },
-);
-
-export const {setBaseConfig} = baseConfigSlice.actions;
-
-export default baseConfigSlice.reducer;
+}));

@@ -37,7 +37,7 @@ export const useUserStore = create()(
       },
       setUserInfo: () => {
         getUserInfo().then(res => {
-          set({userInfo: res || {}});
+          res.code === 0 && set({userInfo: res.data || {}});
         });
       },
     }),

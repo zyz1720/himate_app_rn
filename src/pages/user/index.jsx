@@ -11,8 +11,7 @@ import {
   ProgressBar,
 } from 'react-native-ui-lib';
 import {StyleSheet, ActivityIndicator, Platform} from 'react-native';
-import {useSelector} from 'react-redux';
-import {useToast} from '../../components/common/Toast';
+import {useToast} from '../../utils/hooks/useToast';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {DownloadFile} from '../../utils/handle/fileHandle';
 import ListItem from '../../components/common/ListItem';
@@ -198,7 +197,7 @@ const User = ({navigation}) => {
                   ) : userInfo?.sex === 'man' ? (
                     <FontAwesome
                       name="mars"
-                      color={Colors.geekblue}
+                      color={Colors.geekBlue}
                       size={12}
                     />
                   ) : null}
@@ -223,7 +222,7 @@ const User = ({navigation}) => {
               IconName={'shield'}
               IconColor={Colors.green30}
               isBottomLine={true}
-              Fun={() => {
+              onConfirm={() => {
                 navigation.navigate('UserSafe', {
                   userId: userId,
                 });
@@ -235,7 +234,7 @@ const User = ({navigation}) => {
               ItemName={'系统设置'}
               IconName={'cog'}
               IconColor={Colors.grey30}
-              Fun={() => {
+              onConfirm={() => {
                 navigation.navigate('Setting');
               }}
             />
@@ -244,7 +243,7 @@ const User = ({navigation}) => {
               IconName={'file-text'}
               IconSize={20}
               IconColor={Colors.blue40}
-              Fun={() => {
+              onConfirm={() => {
                 navigation.navigate('ChatMsg');
               }}
             />
@@ -253,7 +252,7 @@ const User = ({navigation}) => {
               IconName={'database'}
               IconSize={20}
               IconColor={Colors.orange40}
-              Fun={() => {
+              onConfirm={() => {
                 navigation.navigate('DataManager');
               }}
             />
@@ -263,7 +262,7 @@ const User = ({navigation}) => {
               IconSize={20}
               IconColor={Colors.violet40}
               RightText={versionName}
-              Fun={() => {
+              onConfirm={() => {
                 if (Platform.OS === 'ios') {
                   showToast('IOS暂不支持', 'warning');
                   return;
@@ -277,7 +276,7 @@ const User = ({navigation}) => {
               IconName={'cube'}
               IconSize={20}
               IconColor={Colors.cyan30}
-              Fun={() => {
+              onConfirm={() => {
                 navigation.navigate('WebView', {
                   title: '关于' + appDisplayName,
                   url: STATIC_URL + 'default_assets/index.html',
