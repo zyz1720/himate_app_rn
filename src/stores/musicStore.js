@@ -38,7 +38,7 @@ export const useMusicStore = create()(
           });
           return state;
         }),
-      removeMusic: (playList = []) =>
+      removePlayList: (playList = []) =>
         set(state => {
           playList.forEach(item => {
             const index = state.playList.findIndex(e => e?.id === item?.id);
