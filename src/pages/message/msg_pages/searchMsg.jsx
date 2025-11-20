@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {FlatList, StyleSheet} from 'react-native';
 import {
   View,
@@ -8,92 +8,88 @@ import {
   TouchableOpacity,
   TextField,
 } from 'react-native-ui-lib';
-import dayjs from 'dayjs';
-import {useRealm} from '@realm/react';
 import {showMediaType, getLocalUser} from '@utils/system/chat_utils';
-import {fullHeight, fullWidth} from '../../../styles';
-import {useIsFocused} from '@react-navigation/native';
+import {fullHeight, fullWidth} from '@style/index';
+import {useConfigStore} from '@store/configStore';
+import dayjs from 'dayjs';
 
 const SearchMsg = ({navigation, route}) => {
   const {session_id} = route.params || {};
-
-  const realm = useRealm();
-  const isFocused = useIsFocused();
-
-  // baseConfig
-  const {STATIC_URL} = useSelector(state => state.baseConfigStore.baseConfig);
+  const {envConfig} = useConfigStore();
 
   useEffect(() => {
-    if (isFocused && keyword && session_id) {
+    if (keyword && session_id) {
       getMsgList(keyword, session_id);
     }
-  }, [isFocused, keyword, session_id]);
+  }, [keyword, session_id]);
 
   // 群聊列表
   const [msgList, setMsgList] = useState([]);
 
   /* 查询历史记录 */
   const getMsgList = async (keyword, sessionId) => {
-    if (!keyword || keyword.trim() === '') {
-      return [];
-    }
-    const localUses = realm
-      .objects('UsersInfo')
-      .filtered('remark CONTAINS $0', keyword.trim())
-      .toJSON();
-    const userMsgs = [];
-    localUses.forEach(item => {
-      const local_msgs = realm.objects('ChatMsg');
-      let user_msg = [];
-      if (sessionId) {
-        user_msg = local_msgs
-          .filtered('send_uid == $0 && session_id == $1', item.uid, sessionId)
-          .sorted('createdAt', true)
-          .toJSON();
-      } else {
-        user_msg = local_msgs
-          .filtered('send_uid == $0', item.uid)
-          .sorted('createdAt', true)
-          .toJSON();
-      }
-      userMsgs.push(...user_msg);
-    });
-
-    const localMsgs = realm.objects('ChatMsg');
-    let Msgs = [];
-    if (sessionId && keyword) {
-      Msgs = localMsgs
-        .filtered(
-          'session_id == $0 && text CONTAINS $1 && msg_type == $2',
-          sessionId,
-          keyword.trim(),
-          'text',
-        )
-        .sorted('createdAt', true)
-        .toJSON();
-    } else {
-      Msgs = localMsgs
-        .filtered('text CONTAINS $0 && msg_type == $1', keyword.trim(), 'text')
-        .sorted('createdAt', true)
-        .toJSON();
-    }
-
-    const items = [...userMsgs, ...Msgs];
-    return items.reduce((acc, item) => {
-      if (!acc.some(accItem => accItem.clientMsg_id === item.clientMsg_id)) {
-        acc.push(item);
-      }
-      return acc;
-    }, []);
+    // if (!keyword || keyword.trim() === '') {
+    //   return [];
+    // }
+    // const localUses = realm
+    //   .objects('UsersInfo')
+    //   .filtered('remark CONTAINS $0', keyword.trim())
+    //   .toJSON();
+    // const userMsgs = [];
+    // localUses.forEach(item => {
+    //   const local_msgs = realm.objects('ChatMsg');
+    //   let user_msg = [];
+    //   if (sessionId) {
+    //     user_msg = local_msgs
+    //       .filtered(
+    //         'send_uid == $0 && session_id == $1',
+    //         item.userId,
+    //         sessionId,
+    //       )
+    //       .sorted('createdAt', true)
+    //       .toJSON();
+    //   } else {
+    //     user_msg = local_msgs
+    //       .filtered('send_uid == $0', item.userId)
+    //       .sorted('createdAt', true)
+    //       .toJSON();
+    //   }
+    //   userMsgs.push(...user_msg);
+    // });
+    // const localMsgs = realm.objects('ChatMsg');
+    // let Msgs = [];
+    // if (sessionId && keyword) {
+    //   Msgs = localMsgs
+    //     .filtered(
+    //       'session_id == $0 && text CONTAINS $1 && msg_type == $2',
+    //       sessionId,
+    //       keyword.trim(),
+    //       'text',
+    //     )
+    //     .sorted('createdAt', true)
+    //     .toJSON();
+    // } else {
+    //   Msgs = localMsgs
+    //     .filtered('text CONTAINS $0 && msg_type == $1', keyword.trim(), 'text')
+    //     .sorted('createdAt', true)
+    //     .toJSON();
+    // }
+    // const items = [...userMsgs, ...Msgs];
+    // return items.reduce((acc, item) => {
+    //   if (!acc.some(accItem => accItem.clientMsg_id === item.clientMsg_id)) {
+    //     acc.push(item);
+    //   }
+    //   return acc;
+    // }, []);
   };
 
   /* 获取匹配头像备注信息 */
-  const matchInfoList = getLocalUser(realm) || [];
+  const matchInfoList = getLocalUser() || [];
 
   /* 为消息匹配头像备注信息 */
-  const matchAvatarAndRemark = (list, uid, sessionId) => {
+  const matchAvatarAndRemark = (list, userId, sessionId) => {
     const info = list.find(
-      item => item.uid === uid && item.session_id === sessionId,
+      item => item.userId === userId && item.session_id === sessionId,
     );
     if (info) {
       return info;
@@ -169,13 +165,13 @@ const SearchMsg = ({navigation, route}) => {
                 item.send_uid,
                 item.session_id,
               )?.avatar
-                ? STATIC_URL +
+                ? envConfig.STATIC_URL +
                   matchAvatarAndRemark(
                     matchInfoList,
                     item.send_uid,
                     item.session_id,
                   )?.avatar
-                : STATIC_URL + 'default_empty.png',
+                : envConfig.STATIC_URL + 'default_empty.png',
             }}
           />
           <View marginL-10 width={fullWidth * 0.78}>

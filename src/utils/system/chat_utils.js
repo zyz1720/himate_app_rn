@@ -47,15 +47,15 @@ export const formatMsg = data => {
 
 /* 格式化加入会话的用户信息 */
 export const formatJoinUser = (
-  uid,
+  userId,
   remark,
   avatar,
   session_id,
   session_name = '',
 ) => {
   return {
-    _id: uid + session_id,
-    uid,
+    _id: userId + session_id,
+    userId,
     remark,
     avatar,
     session_id,
@@ -124,8 +124,8 @@ export const addOrUpdateLocalUser = (realm, users) => {
     const user = realm
       .objects('UsersInfo')
       .filtered(
-        'uid == $0 && session_id == $1',
-        element.uid,
+        'userId == $0 && session_id == $1',
+        element.userId,
         element.session_id,
       );
     if (user.length > 0) {

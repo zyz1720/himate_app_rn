@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useState} from 'react';
 import {FlatList} from 'react-native';
 import {
   View,
@@ -7,49 +7,43 @@ import {
   Colors,
   TouchableOpacity,
 } from 'react-native-ui-lib';
-import {useToast} from '@utils/hooks/useToast';
-import {roleMap, statusMap} from '@const/database_enum';
+import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
+import {GroupRoleEnum} from '@const/database_enum';
 import {getGroupList} from '@api/group';
+import {useTranslation} from 'react-i18next';
 import {useConfigStore} from '@store/configStore';
-import dayjs from 'dayjs';
 import FullScreenLoading from '@components/common/FullScreenLoading';
+import BaseTopBar from '@components/common/BaseTopBar';
+import dayjs from 'dayjs';
 
 const GroupList = ({navigation}) => {
   const {envConfig} = useConfigStore();
-  const {showToast} = useToast();
+  const {t} = useTranslation();
 
   // 群聊列表
-  const [loading, setLoading] = useState(false);
-  const [selfGroupList, setSelfGroupList] = useState([]);
-  const [joinGroupList, setJoinGroupList] = useState([]);
-  /* 获取群聊列表 */
-  const getUserGroups = async uid => {
-    try {
-      setLoading(true);
-      const res = await getAllJoinGroupList({uid});
-      if (res.success) {
-        const allGroupList = res.data.list;
-        setSelfGroupList(allGroupList.filter(item => item.creator_uid === uid));
-        setJoinGroupList(allGroupList.filter(item => item.creator_uid !== uid));
-      } else {
-        showToast(res.message, 'error');
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [focusedIndex, setFocusedIndex] = useState(0);
 
-  useEffect(() => {
-    if (userId) {
-      setLoading(true);
-      const timer = setTimeout(() => {
-        getUserGroups(userId);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [userId]);
+  /* 顶部导航栏 */
+  const routes = [
+    {
+      key: GroupRoleEnum.owner,
+      title: t('group.group_owner'),
+      screen: listScreen,
+    },
+    {
+      key: GroupRoleEnum.admin,
+      title: t('group.group_admin'),
+      screen: listScreen,
+    },
+    {
+      key: GroupRoleEnum.member,
+      title: t('group.group_member'),
+      screen: listScreen,
+    },
+  ];
+
+  const {list, loading, onEndReached, refreshData} =
+    useInfiniteScroll(getGroupList);
 
   const renderGroupItem = ({item}) => (
     <TouchableOpacity
@@ -63,13 +57,12 @@ const GroupList = ({navigation}) => {
       onPress={() => {
         navigation.navigate('Chat', {
           chat_type: 'group',
-          session_id: item.group_id,
           to_remark: item.group_name,
           group_id: item.group_id,
         });
       }}>
       <View flexS row centerV>
-        <Avatar source={{uri: STATIC_URL + item.group_avatar}} />
+        <Avatar source={{uri: envConfig.STATIC_URL + item.group_avatar}} />
         <View marginL-10>
           <Text text70>{item.group_name}</Text>
         </View>
@@ -77,10 +70,25 @@ const GroupList = ({navigation}) => {
       <View>
         <Text grey40 text90L>
           {dayjs(item.create_time).format('YYYY/MM/DD')}
-          {item.creator_uid === userId ? ' 创建' : ' 加入'}
         </Text>
       </View>
     </TouchableOpacity>
+  );
+
+  const listScreen = (
+    <FlatList
+      data={list}
+      renderItem={renderGroupItem}
+      keyExtractor={(item, index) => item?.id + index}
+      onEndReached={onEndReached}
+      ListEmptyComponent={
+        <View marginT-16 center>
+          <Text text90L grey40>
+            {t('empty.group')}
+          </Text>
+        </View>
+      }
+    />
   );
 
   return (
@@ -88,39 +96,16 @@ const GroupList = ({navigation}) => {
       {loading ? (
         <FullScreenLoading />
       ) : (
-        <View>
-          {selfGroupList.length > 0 ? (
-            <View padding-6 paddingL-12>
-              <Text text80 grey30>
-                我创建的群聊
-              </Text>
-            </View>
-          ) : null}
-          <FlatList
-            data={selfGroupList}
-            renderItem={renderGroupItem}
-            keyExtractor={(item, index) => item + index}
-          />
-          {joinGroupList.length > 0 ? (
-            <View padding-6 paddingL-12>
-              <Text text80 grey30>
-                我加入的群聊
-              </Text>
-            </View>
-          ) : null}
-          <FlatList
-            data={joinGroupList}
-            renderItem={renderGroupItem}
-            keyExtractor={(item, index) => item + index}
-          />
-          {!selfGroupList.length && !joinGroupList.length ? (
-            <View marginT-16 center>
-              <Text text90L grey40>
-                没有发现任何群聊{' T_T'}
-              </Text>
-            </View>
-          ) : null}
-        </View>
+        <BaseTopBar
+          routes={routes}
+          focusIndex={focusedIndex}
+          onChange={index => {
+            setFocusedIndex(index);
+            refreshData({
+              member_role: routes[index].key,
+            });
+          }}
+        />
       )}
     </>
   );

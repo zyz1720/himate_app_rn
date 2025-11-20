@@ -79,7 +79,7 @@ const FindFavorites = ({navigation}) => {
                 favoritesId: item.id,
               });
             }}
-            OnEndReached={() => {
+            onEndReached={() => {
               if (!isEnd.current) {
                 setPageNum(prev => prev + 1);
               }

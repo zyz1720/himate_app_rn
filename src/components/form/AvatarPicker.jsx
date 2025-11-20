@@ -2,7 +2,7 @@ import React, {useEffect} from 'react';
 import {Colors} from 'react-native-ui-lib';
 import {useTranslation} from 'react-i18next';
 import {useToast} from '@utils/hooks/useToast';
-import {usePermissionStore} from '@/stores/permissionStore';
+import {usePermissionStore} from '@store/permissionStore';
 import {getFileFromImageCropPicker} from '@utils/system/file_utils';
 import BaseSheet from '@components/common/BaseSheet';
 import ImagePicker from 'react-native-image-crop-picker';

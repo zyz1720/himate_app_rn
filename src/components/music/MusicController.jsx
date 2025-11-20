@@ -552,8 +552,8 @@ const MusicCtrlProvider = React.memo(props => {
         </View>
       ) : null}
       <LyricModal
-        Visible={musicModalVisible}
-        OnClose={() => setMusicModalVisible(false)}
+        visible={musicModalVisible}
+        onClose={() => setMusicModalVisible(false)}
         Music={playingMusic}
         IsPlaying={audioIsPlaying}
         isLike={isLike}
@@ -594,8 +594,8 @@ const MusicCtrlProvider = React.memo(props => {
         }}
       />
       <ToBePlayedModal
-        Visible={listModalVisible}
-        OnClose={() => setListModalVisible(false)}
+        visible={listModalVisible}
+        onClose={() => setListModalVisible(false)}
         OnClearList={() => {
           setPlayList([]);
         }}

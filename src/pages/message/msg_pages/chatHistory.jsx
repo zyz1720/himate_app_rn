@@ -53,13 +53,13 @@ const ChatHistory = ({navigation, route}) => {
     <View flexG paddingH-16 paddingT-16>
       <Card enableShadow={false}>
         <ListItem
-          ItemName={'创建群聊'}
-          IconName={'group'}
-          IconSize={20}
-          IconColor={Colors.primary}
+          itemName={'创建群聊'}
+          iconName={'group'}
+          iconSize={20}
+          iconColor={Colors.primary}
           onConfirm={() => {
             navigation.navigate('CreateGroup', {
-              uid: to_uid,
+              userId: to_uid,
               is_create: true,
             });
           }}
@@ -68,10 +68,10 @@ const ChatHistory = ({navigation, route}) => {
 
       <Card marginT-16 enableShadow={false}>
         <ListItem
-          ItemName={'查找历史消息'}
-          IconName={'search'}
-          IconSize={20}
-          IconColor={Colors.grey40}
+          itemName={'查找历史消息'}
+          iconName={'search'}
+          iconSize={20}
+          iconColor={Colors.grey40}
           onConfirm={() => {
             navigation.navigate('SearchMsg', {
               session_id: session_id,
@@ -79,10 +79,10 @@ const ChatHistory = ({navigation, route}) => {
           }}
         />
         <ListItem
-          ItemName={'导出聊天记录'}
-          IconName={'download'}
-          IconColor={Colors.cyan30}
-          IconSize={20}
+          itemName={'导出聊天记录'}
+          iconName={'download'}
+          iconColor={Colors.cyan30}
+          iconSize={20}
           onConfirm={() => {
             navigation.navigate('ChatMsg', {
               session_id: session_id,
@@ -90,9 +90,9 @@ const ChatHistory = ({navigation, route}) => {
           }}
         />
         <ListItem
-          ItemName={'清空历史消息'}
-          IconName={'remove'}
-          IconColor={Colors.error}
+          itemName={'清空历史消息'}
+          iconName={'remove'}
+          iconColor={Colors.error}
           onConfirm={() => {
             setClearVisible(true);
           }}
@@ -100,10 +100,10 @@ const ChatHistory = ({navigation, route}) => {
       </Card>
       <Card marginT-16 enableShadow={false}>
         <ListItem
-          ItemName={'从云端同步消息'}
-          IconName={'cloud-download'}
-          IconSize={20}
-          IconColor={Colors.blue30}
+          itemName={'从云端同步消息'}
+          iconName={'cloud-download'}
+          iconSize={20}
+          iconColor={Colors.blue30}
           onConfirm={() => {
             getCouldChatHistory();
           }}

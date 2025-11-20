@@ -27,7 +27,7 @@ export class UsersInfo extends Realm.Object {
     primaryKey: '_id',
     properties: {
       _id: 'string',
-      uid: {type: 'int', indexed: true},
+      userId: {type: 'int', indexed: true},
       remarks: 'string',
       avatar: 'string',
       session_id: {type: 'string', indexed: true},

@@ -17,31 +17,31 @@ const TabScreen = () => {
   const {t} = useTranslation();
 
   const renderTabInfo = (name, type, focused = false) => {
-    let IconName = '';
+    let iconName = '';
     let tablabel = '';
     if (name === 'Msg') {
-      IconName = 'comments-o';
+      iconName = 'comments-o';
       tablabel = t('screen.Msg');
       if (focused) {
-        IconName = 'comments';
+        iconName = 'comments';
       }
     }
     if (name === 'Mate') {
-      IconName = 'address-book-o';
+      iconName = 'address-book-o';
       tablabel = t('screen.Mate');
       if (focused) {
-        IconName = 'address-book';
+        iconName = 'address-book';
       }
     }
     if (name === 'User') {
-      IconName = 'user-o';
+      iconName = 'user-o';
       tablabel = t('screen.User');
       if (focused) {
-        IconName = 'user';
+        iconName = 'user';
       }
     }
     if (type === 'icon') {
-      return IconName;
+      return iconName;
     }
     if (type === 'label') {
       return tablabel;

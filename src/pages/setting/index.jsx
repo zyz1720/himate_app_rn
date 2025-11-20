@@ -106,25 +106,25 @@ const Setting = ({navigation}) => {
       <View flexG paddingH-16 paddingT-16>
         <Card enableShadow={false}>
           <ListItem
-            ItemName={'主题颜色'}
-            IconName={'dropbox'}
-            IconColor={themeColor}
+            itemName={'主题颜色'}
+            iconName={'dropbox'}
+            iconColor={themeColor}
             onConfirm={() => {
               setShowDialog(true);
             }}
           />
           <ListItem
-            ItemName={'提示类型'}
-            IconName={'question-circle'}
-            IconColor={Colors.blue30}
+            itemName={'提示类型'}
+            iconName={'question-circle'}
+            iconColor={Colors.blue30}
             onConfirm={() => {
               setShowToastType(true);
             }}
           />
           <ListItem
-            ItemName={'全屏模式'}
-            IconName={'square-o'}
-            IconColor={Colors.grey30}
+            itemName={'全屏模式'}
+            iconName={'square-o'}
+            iconColor={Colors.grey30}
             RightView={
               <Switch
                 onColor={Colors.primary}
@@ -135,9 +135,9 @@ const Setting = ({navigation}) => {
             }
           />
           <ListItem
-            ItemName={'默认应用'}
-            IconName={'tablet'}
-            IconColor={Colors.blue50}
+            itemName={'默认应用'}
+            iconName={'tablet'}
+            iconColor={Colors.blue50}
             onConfirm={() => {
               setShowDefaultApp(true);
             }}
@@ -145,17 +145,17 @@ const Setting = ({navigation}) => {
         </Card>
         <Card marginT-16 enableShadow={false}>
           <ListItem
-            ItemName={'消息铃声'}
-            IconName={'volume-up'}
-            IconColor={Colors.cyan30}
+            itemName={'消息铃声'}
+            iconName={'volume-up'}
+            iconColor={Colors.cyan30}
             onConfirm={() => {
               setShowAudio(true);
             }}
           />
           <ListItem
-            ItemName={'消息提醒'}
-            IconName={'bell'}
-            IconColor={Colors.yellow30}
+            itemName={'消息提醒'}
+            iconName={'bell'}
+            iconColor={Colors.yellow30}
             RightView={
               <Switch
                 onColor={Colors.primary}
@@ -166,9 +166,9 @@ const Setting = ({navigation}) => {
             }
           />
           <ListItem
-            ItemName={'消息加密'}
-            IconName={'lock'}
-            IconColor={Colors.grey30}
+            itemName={'消息加密'}
+            iconName={'lock'}
+            iconColor={Colors.grey30}
             RightView={
               <Switch
                 onColor={Colors.primary}
@@ -179,9 +179,9 @@ const Setting = ({navigation}) => {
             }
           />
           <ListItem
-            ItemName={'不保留消息'}
-            IconName={'times-circle'}
-            IconColor={Colors.red30}
+            itemName={'不保留消息'}
+            iconName={'times-circle'}
+            iconColor={Colors.red30}
             RightView={
               <Switch
                 onColor={Colors.primary}
@@ -195,26 +195,26 @@ const Setting = ({navigation}) => {
 
         <Card marginT-16 enableShadow={false}>
           <ListItem
-            ItemName={'权限管理'}
-            IconName={'lock'}
-            IconColor={Colors.red40}
+            itemName={'权限管理'}
+            iconName={'lock'}
+            iconColor={Colors.red40}
             onConfirm={() => {
               navigation.navigate('Permissions');
             }}
           />
           <ListItem
-            ItemName={'存储位置'}
-            IconName={'folder'}
-            IconColor={Colors.blue40}
+            itemName={'存储位置'}
+            iconName={'folder'}
+            iconColor={Colors.blue40}
             onConfirm={() => {
               setShowFileLocation(true);
             }}
           />
           {userInfo?.user_role !== 'default' ? (
             <ListItem
-              ItemName={'静态资源加速'}
-              IconName={'rocket'}
-              IconColor={Colors.red20}
+              itemName={'静态资源加速'}
+              iconName={'rocket'}
+              iconColor={Colors.red20}
               RightView={
                 <Switch
                   onColor={Colors.primary}
@@ -259,7 +259,7 @@ const Setting = ({navigation}) => {
       </Dialog>
       <BaseSheet
         Title={'选择提示类型'}
-        Visible={showToastType}
+        visible={showToastType}
         SetVisible={setShowToastType}
         Actions={[
           {
@@ -293,7 +293,7 @@ const Setting = ({navigation}) => {
       />
       <BaseSheet
         Title={'选择默认启动的应用类型'}
-        Visible={showDefaultApp}
+        visible={showDefaultApp}
         SetVisible={setShowDefaultApp}
         Actions={[
           {
@@ -318,7 +318,7 @@ const Setting = ({navigation}) => {
       />
       <BaseSheet
         Title={'消息铃声'}
-        Visible={showAudio}
+        visible={showAudio}
         SetVisible={setShowAudio}
         Actions={soundNames.map(item => {
           return {

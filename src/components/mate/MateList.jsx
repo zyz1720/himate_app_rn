@@ -136,18 +136,18 @@ const MateList = props => {
                 color={Colors.primary}
                 size={20}
                 borderRadius={10}
-                value={selectedItem.includes(item.uid)}
-                disabled={excludeIds.includes(item.uid)}
+                value={selectedItem.includes(item.userId)}
+                disabled={excludeIds.includes(item.userId)}
                 onValueChange={value => {
                   if (value) {
                     setSelectedItem(prevItem => {
-                      const newItem = [...prevItem, item.uid];
+                      const newItem = [...prevItem, item.userId];
                       onSelectChange(newItem);
                       return newItem;
                     });
                   } else {
                     setSelectedItem(prevItem => {
-                      const newItem = prevItem.filter(uid => uid !== item.uid);
+                      const newItem = prevItem.filter(userId => userId !== item.userId);
                       onSelectChange(newItem);
                       return newItem;
                     });

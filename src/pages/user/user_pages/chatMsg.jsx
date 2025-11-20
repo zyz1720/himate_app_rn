@@ -110,10 +110,10 @@ const ChatMsg = ({navigation, route}) => {
         <Card enableShadow={false}>
           <View>
             <ListItem
-              ItemName={session_id ? '导出聊天记录' : '导出所有聊天记录'}
-              IconName={'download'}
-              IconColor={Colors.grey10}
-              IconSize={20}
+              itemName={session_id ? '导出聊天记录' : '导出所有聊天记录'}
+              iconName={'download'}
+              iconColor={Colors.grey10}
+              iconSize={20}
               RightText={'一键导出'}
               onConfirm={() => {
                 if (!accessFolder) {
@@ -134,10 +134,10 @@ const ChatMsg = ({navigation, route}) => {
           {!session_id ? (
             <View>
               <ListItem
-                ItemName={'导入聊天记录'}
-                IconName={'upload'}
-                IconColor={Colors.grey10}
-                IconSize={20}
+                itemName={'导入聊天记录'}
+                iconName={'upload'}
+                iconColor={Colors.grey10}
+                iconSize={20}
                 RightText={'选择导入'}
                 onConfirm={() => {
                   if (!accessFolder) {

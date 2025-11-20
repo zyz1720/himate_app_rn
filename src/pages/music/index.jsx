@@ -259,7 +259,7 @@ const Music = ({navigation}) => {
       if (urls && urls?.[0]) {
         const trueUrl = urls?.[0];
         showToast('歌单导入中...', 'success');
-        const res = await importFavorites({uid: userId, url: trueUrl});
+        const res = await importFavorites({userId: userId, url: trueUrl});
         showToast(res.message, res.success ? 'success' : 'error');
         getUserFavoritesList(userId);
         getAllMusicList();

@@ -1,36 +1,25 @@
 import React, {useEffect, useState} from 'react';
 import {View, Colors} from 'react-native-ui-lib';
-import {getmatelist, getapplylist} from '../../api/mate';
+import {getMateList, getApplyList} from '@api/mate';
+import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
 import {useIsFocused} from '@react-navigation/native';
-import ListItem from '../../components/common/ListItem';
-import MateList from '../../components/mate/MateList';
+import {useTranslation} from 'react-i18next';
+import ListItem from '@components/common/ListItem';
+import MateList from '@components/mate/MateList';
 
 const Mate = ({navigation}) => {
   const isFocused = useIsFocused();
-  const userId = useSelector(state => state.userStore.userId);
+  const {t} = useTranslation();
 
   /*   好友列表 */
-  const [matelist, setMatelist] = useState([]);
-  const [pageNum, setPageNum] = useState(0);
-  const getMatelist = _userId => {
-    getmatelist({uid: _userId, pageSize: pageNum * 20, mate_status: 'agreed'})
-      .then(res => {
-        if (res.success) {
-          setMatelist(res.data.list);
-        }
-      })
-      .catch(error => {
-        console.error(error);
-      });
-  };
-
+  const {list, onEndReached} = useInfiniteScroll(getMateList);
   /* 申请好友数量 */
-  const [applycount, setApplycount] = useState(null);
-  const getApplylist = _userId => {
-    getapplylist({uid: _userId})
+  const [applyCount, setApplyCount] = useState(null);
+  const getApplyListFunc = _userId => {
+    getApplyList()
       .then(res => {
-        if (res.success) {
-          setApplycount(res.data.count);
+        if (res.code === 0) {
+          setApplyCount(res.data.total);
         }
       })
       .catch(error => {
@@ -39,32 +28,31 @@ const Mate = ({navigation}) => {
   };
 
   useEffect(() => {
-    if (isFocused && userId) {
-      getApplylist(userId);
-      getMatelist(userId);
+    if (isFocused) {
+      getApplyListFunc();
     }
-  }, [isFocused, userId, pageNum]);
+  }, [isFocused]);
 
   return (
     <View>
       <View>
         <View flexG paddingV-4 backgroundColor={Colors.white}>
           <ListItem
-            ItemName={'新的朋友'}
-            IconName={'user'}
-            IconColor={Colors.primary}
-            IsBadge={true}
-            BadgeCount={applycount}
+            itemName={t('mate.new_mate')}
+            iconName={'user'}
+            iconColor={Colors.primary}
+            showBadge={true}
+            badgeCount={applyCount}
             onConfirm={() => {
               navigation.navigate('NewMate');
             }}
           />
           <View marginT-8>
             <ListItem
-              ItemName={'我的群聊'}
-              IconName={'group'}
-              IconColor={Colors.success}
-              IconSize={20}
+              itemName={t('mate.my_groups')}
+              iconName={'group'}
+              iconColor={Colors.success}
+              iconSize={20}
               onConfirm={() => {
                 navigation.navigate('GroupList');
               }}
@@ -72,14 +60,12 @@ const Mate = ({navigation}) => {
           </View>
         </View>
         <MateList
-          originalList={matelist}
-          height={'84.3%'}
-          OnEndReached={() => {
-            setPageNum(prev => prev + 1);
-          }}
+          originalList={list}
+          height={'84%'}
+          onEndReached={onEndReached}
           onConfirm={item => {
             navigation.navigate('MateInfo', {
-              uid: item.uid,
+              userId: item.userId,
             });
           }}
         />

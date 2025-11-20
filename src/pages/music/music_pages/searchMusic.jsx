@@ -86,7 +86,7 @@ const SearchMusic = () => {
             HeightScale={0.8}
             List={music}
             Total={totalMusic}
-            OnEndReached={() => {
+            onEndReached={() => {
               if (!isEnd.current) {
                 setPageNum(prev => prev + 1);
               }

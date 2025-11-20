@@ -15,7 +15,7 @@ import {
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useToast} from '../../../utils/hooks/useToast';
 import {getUserdetail, EditUserInfo} from '../../../api/user';
-import {UploadFile} from '../../../utils/handle/fileHandle';
+import {uploadFile} from '../../../utils/handle/fileHandle';
 import ImagePicker from 'react-native-image-crop-picker';
 import BaseSheet from '../../../components/common/BaseSheet';
 import {getfileFormdata, keepChangedFields} from '../../../utils/common/base';
@@ -111,8 +111,8 @@ const EditUser = ({route}) => {
 
     if (avatarfile) {
       try {
-        const res = await UploadFile(avatarfile, () => {}, {
-          uid: userId,
+        const res = await uploadFile(avatarfile, () => {}, {
+          userId: userId,
           fileType: 'image',
           useType: 'user',
         });
@@ -310,7 +310,7 @@ const EditUser = ({route}) => {
       </ScrollView>
       <BaseSheet
         Title={'选择头像'}
-        Visible={showDialog}
+        visible={showDialog}
         SetVisible={setShowDialog}
         Actions={[
           {

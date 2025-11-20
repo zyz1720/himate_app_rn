@@ -13,7 +13,7 @@ import {
 import {StyleSheet, ActivityIndicator, Platform} from 'react-native';
 import {useToast} from '../../utils/hooks/useToast';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {DownloadFile} from '../../utils/handle/fileHandle';
+import {downloadFile} from '../../utils/handle/fileHandle';
 import ListItem from '../../components/common/ListItem';
 import {getAppPackageDetail} from '../../api/app_package';
 import {
@@ -48,7 +48,7 @@ const User = ({navigation}) => {
   const saveAvatar = async (url, name) => {
     setAvatarShow(false);
     showToast('已开始保存头像...', 'success');
-    const pathRes = await DownloadFile(url, name, () => {}, true);
+    const pathRes = await downloadFile(url, name, () => {}, true);
     if (pathRes) {
       showToast('图片已保存到' + pathRes, 'success');
     } else {
@@ -125,7 +125,7 @@ const User = ({navigation}) => {
   const downloadApp = async () => {
     setShowProgress(true);
     const android = ReactNativeBlobUtil.android;
-    const downloadRes = await DownloadFile(
+    const downloadRes = await downloadFile(
       STATIC_URL + newAppInfo.app_fileName,
       appName + '_' + newAppInfo.app_version + '.apk',
       progress => {
@@ -218,9 +218,9 @@ const User = ({navigation}) => {
           </Card>
           <Card flexS centerV enableShadow={false} marginT-16>
             <ListItem
-              ItemName={'账号安全'}
-              IconName={'shield'}
-              IconColor={Colors.green30}
+              itemName={'账号安全'}
+              iconName={'shield'}
+              iconColor={Colors.green30}
               isBottomLine={true}
               onConfirm={() => {
                 navigation.navigate('UserSafe', {
@@ -231,36 +231,36 @@ const User = ({navigation}) => {
           </Card>
           <Card flexS centerV enableShadow={false} marginT-16>
             <ListItem
-              ItemName={'系统设置'}
-              IconName={'cog'}
-              IconColor={Colors.grey30}
+              itemName={'系统设置'}
+              iconName={'cog'}
+              iconColor={Colors.grey30}
               onConfirm={() => {
                 navigation.navigate('Setting');
               }}
             />
             <ListItem
-              ItemName={'聊天记录'}
-              IconName={'file-text'}
-              IconSize={20}
-              IconColor={Colors.blue40}
+              itemName={'聊天记录'}
+              iconName={'file-text'}
+              iconSize={20}
+              iconColor={Colors.blue40}
               onConfirm={() => {
                 navigation.navigate('ChatMsg');
               }}
             />
             <ListItem
-              ItemName={'云端数据'}
-              IconName={'database'}
-              IconSize={20}
-              IconColor={Colors.orange40}
+              itemName={'云端数据'}
+              iconName={'database'}
+              iconSize={20}
+              iconColor={Colors.orange40}
               onConfirm={() => {
                 navigation.navigate('DataManager');
               }}
             />
             <ListItem
-              ItemName={'版本更新'}
-              IconName={'cloud-download'}
-              IconSize={20}
-              IconColor={Colors.violet40}
+              itemName={'版本更新'}
+              iconName={'cloud-download'}
+              iconSize={20}
+              iconColor={Colors.violet40}
               RightText={versionName}
               onConfirm={() => {
                 if (Platform.OS === 'ios') {
@@ -272,10 +272,10 @@ const User = ({navigation}) => {
               }}
             />
             <ListItem
-              ItemName={'关于' + appDisplayName}
-              IconName={'cube'}
-              IconSize={20}
-              IconColor={Colors.cyan30}
+              itemName={'关于' + appDisplayName}
+              iconName={'cube'}
+              iconSize={20}
+              iconColor={Colors.cyan30}
               onConfirm={() => {
                 navigation.navigate('WebView', {
                   title: '关于' + appDisplayName,
@@ -332,13 +332,13 @@ const User = ({navigation}) => {
 
           {/* 图片预览弹窗 */}
           <ImgModal
-            Uri={STATIC_URL + userInfo?.user_avatar}
-            Visible={avatarShow}
-            OnClose={() => {
+            uri={STATIC_URL + userInfo?.user_avatar}
+            visible={avatarShow}
+            onClose={() => {
               setAvatarShow(false);
             }}
-            IsSave={true}
-            OnSave={url => saveAvatar(url, userInfo?.user_avatar)}
+            allowSave={true}
+            onSave={url => saveAvatar(url, userInfo?.user_avatar)}
           />
         </View>
       )}

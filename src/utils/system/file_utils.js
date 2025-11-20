@@ -175,7 +175,7 @@ export const uploadFile = async (fileData, callback = () => {}, form = {}) => {
   const {access_token, token_type} = useUserStore.getState();
   const {envConfig} = useConfigStore.getState();
 
-  const {uid, fileType, useType} = form;
+  const {userId, fileType, useType} = form;
 
   // 构建URL
   const url = `${envConfig.BASE_URL}api/upload/file`;

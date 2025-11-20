@@ -12,7 +12,6 @@ import {
   TouchableOpacity,
   Avatar,
 } from 'react-native-ui-lib';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useToast} from '@utils/hooks/useToast';
 import {getGroupDetail, editGroup, deleteGroup} from '@api/group';
 import {editGroupMember, exitGroup} from '@api/group_member';
@@ -21,7 +20,8 @@ import {formatMsg, setLocalMsg} from '@utils/system/chat_utils';
 import {getSessionDetail} from '@api/session';
 import {useConfigStore} from '@/stores/configStore';
 import {useTranslation} from 'react-i18next';
-import {roleMap, statusMap} from '@const/database_enum';
+import {GroupRoleEnum, MemberStatusEnum} from '@const/database_enum';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FullScreenLoading from '@components/common/FullScreenLoading';
 import BaseDialog from '@components/common/BaseDialog';
 import ListItem from '@components/common/ListItem';
@@ -43,7 +43,7 @@ const GroupInfo = ({navigation, route}) => {
 
   const [isVisible, setIsVisible] = useState(false);
   const [nickname, setNickname] = useState('');
-  const [groupRole, setGroupRole] = useState(roleMap.member);
+  const [groupRole, setGroupRole] = useState(GroupRoleEnum.member);
   const [oneselfMemberId, setOneselfMemberId] = useState(null);
   const [allMemberIds, setAllMemberIds] = useState([]);
 
@@ -238,7 +238,7 @@ const GroupInfo = ({navigation, route}) => {
           center
           onPress={() => {
             navigation.navigate('MateInfo', {
-              uid: item.member_uid,
+              userId: item.member_uid,
             });
           }}>
           <Avatar
@@ -246,22 +246,22 @@ const GroupInfo = ({navigation, route}) => {
               uri: envConfig.STATIC_URL + item.member_avatar,
             }}
             imageStyle={
-              item.member_status === statusMap.forbidden
+              item.member_status === MemberStatusEnum.forbidden
                 ? styles.avatarOpacity
                 : styles.avatarNormal
             }
             ribbonLabel={
-              item.member_role === roleMap.owner
+              item.member_role === GroupRoleEnum.owner
                 ? t('group.owner')
-                : item.member_role === roleMap.admin
+                : item.member_role === GroupRoleEnum.admin
                 ? t('group.admin')
                 : null
             }
             ribbonStyle={{
               backgroundColor:
-                item.member_role === roleMap.owner
+                item.member_role === GroupRoleEnum.owner
                   ? Colors.primary
-                  : item.member_role === roleMap.admin
+                  : item.member_role === GroupRoleEnum.admin
                   ? Colors.yellow30
                   : null,
             }}
@@ -295,7 +295,7 @@ const GroupInfo = ({navigation, route}) => {
             center
             padding-16
             onPress={() => {
-              if (groupRole !== roleMap.member) {
+              if (groupRole !== GroupRoleEnum.member) {
                 setShowPicker(true);
               }
             }}>
@@ -327,7 +327,7 @@ const GroupInfo = ({navigation, route}) => {
               <TextField
                 label={t('group.name')}
                 text70
-                readonly={groupRole === roleMap.member}
+                readonly={groupRole === GroupRoleEnum.member}
                 enableErrors={showNameSave}
                 style={styles.input}
                 placeholder={t('group.input_name')}
@@ -361,7 +361,7 @@ const GroupInfo = ({navigation, route}) => {
                 grey30
                 multiline
                 numberOfLines={3}
-                readonly={groupRole === roleMap.member}
+                readonly={groupRole === GroupRoleEnum.member}
                 helperText={t('group.max_introduce_length')}
                 enableErrors={showIntroduceSave}
                 style={styles.input}
@@ -469,7 +469,7 @@ const GroupInfo = ({navigation, route}) => {
               }
               children={
                 <>
-                  {groupRole !== roleMap.member ? (
+                  {groupRole !== GroupRoleEnum.member ? (
                     <View flexS>
                       <Text text90L grey30 center>
                         <FontAwesome
@@ -489,16 +489,16 @@ const GroupInfo = ({navigation, route}) => {
           </Card>
           <Card marginT-16 enableShadow={false}>
             <ListItem
-              ItemName={t('group.sync_msg')}
-              IconName={'cloud-download'}
-              IconSize={20}
-              IconColor={Colors.blue30}
+              itemName={t('group.sync_msg')}
+              iconName={'cloud-download'}
+              iconSize={20}
+              iconColor={Colors.blue30}
               onConfirm={() => {
                 getCouldChatHistory();
               }}
             />
           </Card>
-          {groupRole === roleMap.owner ? (
+          {groupRole === GroupRoleEnum.owner ? (
             <Button
               bg-white
               marginT-16

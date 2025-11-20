@@ -9,7 +9,7 @@
     "verify_password": "请确认密码！",
     "verify_password_error": "两次输入密码不一致！",
     "please_email_or_account": "请输入邮箱/账号",
-    "please_email": "请输入邮箱/账号",
+    "please_email": "请输入邮箱",
     "please_code": "请输入验证码",
     "please_password": "请输入密码",
     "please_confirm_password": "请再次确认密码",

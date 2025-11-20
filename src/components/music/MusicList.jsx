@@ -22,8 +22,8 @@ import {
   updateFavorites,
   getFavoritesDetail,
   getOneselfFavorites,
-} from '@api/favorities';
-import {DownloadFile, getFileExt} from '@utils/system/file_utils';
+} from '@api/favorites';
+import {downloadFile, getFileExt} from '@utils/system/file_utils';
 import {useConfigStore} from '@store/configStore';
 import {useMusicStore} from '@store/musicStore';
 import {useTranslation} from 'react-i18next';
@@ -294,7 +294,7 @@ const MusicList = props => {
     for (let i = 0; i < selectedFiles.length; i++) {
       const file = selectedFiles[i];
       setNowFileIndex(i + 1);
-      const savePath = await DownloadFile(
+      const savePath = await downloadFile(
         envConfig.STATIC_URL + file.file_name,
         `${file.title} - ${file.artist.replace(/\//g, ' - ')}.${getFileExt(
           file.file_name,

@@ -17,3 +17,9 @@ export const editUserAccount = data => instance.put('app/user/account', data);
 
 // 用户注销
 export const userLogout = () => instance.delete('app/user/logout');
+
+// 搜索其他用户
+export const searchUsers = params => instance.get('app/user/search', {params});
+
+// 获取用户详情
+export const getUserDetail = id => instance.get(`app/user/detail/${id}`);

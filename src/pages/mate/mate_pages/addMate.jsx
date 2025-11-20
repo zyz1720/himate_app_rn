@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Vibration, StyleSheet, Modal} from 'react-native';
+import {Vibration, StyleSheet, Modal, FlatList} from 'react-native';
 import {
   View,
   Card,
@@ -10,45 +10,34 @@ import {
   TouchableOpacity,
   Avatar,
 } from 'react-native-ui-lib';
-import {useToast} from '../../../utils/hooks/useToast';
-import AntDesign from 'react-native-vector-icons/AntDesign';
-import {getUserInfo} from '../../../api/user';
-import {addmate, getmateStatus} from '../../../api/mate';
-import BaseDialog from '@components/common/BaseDialog';
+import {useToast} from '@utils/hooks/useToast';
+import {searchUsers} from '@api/user';
+import {addMate} from '@api/mate';
 import {
   Camera,
   useCameraDevice,
   useCodeScanner,
 } from 'react-native-vision-camera';
-import {fullHeight} from '../../../styles';
+import {fullHeight} from '@style/index';
+import {usePermissionStore} from '@store/permissionStore';
+import {useSettingStore} from '@store/settingStore';
+import {useConfigStore} from '@store/configStore';
+import {useTranslation} from 'react-i18next';
+import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import BaseDialog from '@components/common/BaseDialog';
 
-const AddMate = ({navigation, route}) => {
+const AddMate = ({navigation}) => {
   const {showToast} = useToast();
-  const userId = useSelector(state => state.userStore.userId);
-  const isFullScreen = useSelector(state => state.settingStore.isFullScreen);
-  const accessCamera = useSelector(state => state.permissionStore.accessCamera);
-  // baseConfig
-  const {STATIC_URL} = useSelector(state => state.baseConfigStore.baseConfig);
-  const dispatch = useDispatch();
+  const {isFullScreen} = useSettingStore();
+  const {accessCamera, setAccessCamera} = usePermissionStore();
+  const {envConfig} = useConfigStore();
+  const {t} = useTranslation();
 
-  /*  搜索用户 */
-  const [userDetail, setUserDetail] = useState(null);
-  const [account, setAccount] = useState('');
-  const searchUser = async userAccount => {
-    if (userAccount === '') {
-      showToast('请先输入账号！', 'warning');
-      return;
-    }
-    try {
-      const userRes = await getUserInfo({self_account: userAccount});
-      if (userRes.success) {
-        setUserDetail(userRes.data);
-      }
-      showToast(userRes.message, userRes.success ? 'success' : 'error');
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const [keyword, setKeyword] = useState('');
+  const {list, onEndReached, refreshData} = useInfiniteScroll(searchUsers);
+
+  const [userId, setUserId] = useState(null);
 
   /*  添加好友 */
   const [isVisible, setIsVisible] = useState(false);
@@ -56,33 +45,23 @@ const AddMate = ({navigation, route}) => {
   const [message, setMessage] = useState('');
   const addFriend = async () => {
     try {
-      if (userId === userDetail.id) {
-        showToast('不能添加自己为好友', 'error');
-        return;
-      }
-      const statusRes = await getmateStatus({
-        selfUid: userId,
-        otherUid: userDetail.id,
-      });
-      if (statusRes.success) {
-        showToast('你们已是好友或已申请', 'error');
-        return;
-      }
-      const addRes = await addmate({
-        agree_remark: remark,
+      const addRes = await addMate({
+        friend_id: userId,
+        friend_remarks: remark,
         validate_msg: message,
-        apply_uid: userId,
-        agree_uid: userDetail.id,
       });
-      if (addRes.success) {
-        cancelAddmate();
+      if (addRes.code === 0) {
+        showToast(t('mate.add_success'), 'success');
+        reset();
+        return;
       }
-      showToast(addRes.message, addRes.success ? 'success' : 'error');
+      showToast(addRes.message, 'error');
     } catch (error) {
       console.error(error);
     }
   };
-  const cancelAddmate = () => {
+
+  const reset = () => {
     setIsVisible(false);
     setRemark('');
     setMessage('');
@@ -94,10 +73,9 @@ const AddMate = ({navigation, route}) => {
   const codeScanner = useCodeScanner({
     codeTypes: ['qr', 'ean-13'],
     onCodeScanned: codes => {
-      // console.log(codes);
       if (codes[0]?.value) {
         Vibration.vibrate(50);
-        searchUser(codes[0].value);
+        refreshData({keyword: codes[0].value});
         setModalVisible(false);
       } else {
         showToast('未识别到二维码', 'error');
@@ -105,14 +83,58 @@ const AddMate = ({navigation, route}) => {
     },
   });
 
+  const renderItem = ({item}) => (
+    <Card marginT-16 padding-16 paddingB-16>
+      <View flexS backgroundColor={Colors.white} spread row centerV>
+        <TouchableOpacity
+          flexS
+          row
+          centerV
+          onPress={() => {
+            navigation.navigate('MateInfo', {
+              userId: item.id,
+            });
+          }}>
+          <Avatar
+            source={{
+              uri: envConfig.STATIC_URL + item.user_avatar,
+            }}
+          />
+          <View marginL-10>
+            <Text text80BL>{item.user_name}</Text>
+            <Text text90L marginT-5 grey30>
+              {item.self_account}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        <View marginL-10 flexS row>
+          <Button
+            onPress={() => {
+              setUserId(item.id);
+              setIsVisible(true);
+            }}
+            marginL-8
+            label={t('common.append')}
+            borderRadius={8}
+            text70L
+            avoidMinWidth={true}
+            outline
+            outlineColor={Colors.primary}
+            size={Button.sizes.xSmall}
+          />
+        </View>
+      </View>
+    </Card>
+  );
+
   return (
     <View padding-16>
       <Card padding-12 flexS enableShadow={false} row spread>
         <TextField
-          placeholder={'请输入账号进行搜索'}
+          placeholder={t('mate.search_placeholder')}
           text70L
           onChangeText={value => {
-            setAccount(value);
+            setKeyword(value);
           }}
           maxLength={30}
         />
@@ -120,83 +142,49 @@ const AddMate = ({navigation, route}) => {
           <TouchableOpacity
             onPress={() => {
               if (!accessCamera) {
-                showToast('请授予应用相机使用权限', 'warning');
-                dispatch(requestCameraPermission());
+                showToast(t('permission.camera_please'), 'warning');
+                setAccessCamera();
                 return;
               }
               if (device) {
                 setModalVisible(true);
               } else {
-                showToast('没有找到相机！', 'error');
+                showToast(t('mate.camera_error'), 'error');
               }
             }}>
             <AntDesign name="scan1" size={24} color={Colors.primary} />
           </TouchableOpacity>
           <Button
             marginL-12
-            label={'搜索'}
+            label={t('common.search')}
             borderRadius={8}
-            labelStyle={{fontSize: 13}}
+            text70L
             avoidMinWidth={true}
             size={Button.sizes.small}
             backgroundColor={Colors.primary}
             onPress={() => {
-              searchUser(account);
+              refreshData({keyword});
             }}
           />
         </View>
       </Card>
-      {userDetail ? (
-        <Card marginT-16 padding-16 paddingB-16>
-          <View flexS backgroundColor={Colors.white} spread row centerV>
-            <TouchableOpacity
-              flexS
-              row
-              centerV
-              onPress={() => {
-                navigation.navigate('MateInfo', {
-                  uid: userDetail.id,
-                });
-              }}>
-              <Avatar
-                source={{
-                  uri: STATIC_URL + userDetail.user_avatar,
-                }}
-              />
-              <View marginL-10>
-                <Text text80BL>{userDetail.user_name}</Text>
-                <Text text90L marginT-5 grey30>
-                  {userDetail.self_account}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <View marginL-10 flexS row>
-              <Button
-                onPress={() => setIsVisible(true)}
-                marginL-8
-                label={'添加'}
-                borderRadius={8}
-                labelStyle={{fontSize: 13}}
-                avoidMinWidth={true}
-                outline
-                outlineColor={Colors.primary}
-                size={Button.sizes.xSmall}
-              />
-            </View>
-          </View>
-        </Card>
-      ) : null}
+      <FlatList
+        data={list}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => item?.id + index}
+        onEndReached={onEndReached}
+      />
 
       <BaseDialog
         onConfirm={addFriend}
         visible={isVisible}
         setVisible={setIsVisible}
-        description={'添加好友'}
+        description={t('mate.add_mate')}
         renderBody={
           <>
             <TextField
               marginT-8
-              placeholder={'请输入好友备注'}
+              placeholder={t('mate.remark_placeholder')}
               floatingPlaceholder
               text70L
               onChangeText={value => {
@@ -207,7 +195,7 @@ const AddMate = ({navigation, route}) => {
             />
             <TextField
               marginT-8
-              placeholder={'请输入验证消息'}
+              placeholder={t('mate.message_placeholder')}
               floatingPlaceholder
               text70L
               onChangeText={value => {
@@ -237,7 +225,7 @@ const AddMate = ({navigation, route}) => {
                 <AntDesign name="close" size={24} color={Colors.white} />
               </TouchableOpacity>
               <View paddingT-4>
-                <Text white>扫一扫</Text>
+                <Text white>{t('mate.scan_qrcode')}</Text>
               </View>
             </View>
           ) : null}
@@ -248,7 +236,7 @@ const AddMate = ({navigation, route}) => {
             isActive={true}
           />
           <Text center white style={styles.tipText}>
-            请对准需要识别的二维码
+            {t('mate.scan_qrcode_tip')}
           </Text>
           <View marginT-16>
             <TouchableOpacity
@@ -261,7 +249,7 @@ const AddMate = ({navigation, route}) => {
                 <AntDesign name="qrcode" size={32} color={Colors.black} />
               </View>
               <Text grey30 marginT-4 text80>
-                我的二维码
+                {t('mate.my_qrcode')}
               </Text>
             </TouchableOpacity>
           </View>

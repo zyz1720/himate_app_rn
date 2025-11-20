@@ -9,85 +9,68 @@ import {
   TouchableOpacity,
   TextField,
 } from 'react-native-ui-lib';
-import {useToast} from '../../../utils/hooks/useToast';
+import {useToast} from '@utils/hooks/useToast';
 import {
-  editmate,
-  deletemate,
-  getmatelist,
-  getapplylist,
-} from '../../../api/mate';
+  getApplyList,
+  getRejectedList,
+  deleteMate,
+  agreeMateApply,
+  refuseMateApply,
+} from '@api/mate';
+import {useConfigStore} from '@store/configStore';
+import {useTranslation} from 'react-i18next';
+import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
 import BaseDialog from '@components/common/BaseDialog';
+import BaseTopBar from '@components/common/BaseTopBar';
 
 const NewMate = ({navigation}) => {
-  const userId = useSelector(state => state.userStore.userId);
-  // baseConfig
-  const {STATIC_URL} = useSelector(state => state.baseConfigStore.baseConfig);
+  const {envConfig} = useConfigStore();
   const {showToast} = useToast();
+  const {t} = useTranslation();
 
   /* 申请好友列表 */
-  const [applylist, setAplylist] = useState([]);
-  const getApplylist = _userId => {
-    getapplylist({uid: _userId})
-      .then(res => {
-        // console.log(res);
-        if (res.success) {
-          setAplylist(res.data.list);
-        }
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  };
+  const {
+    list: applyList,
+    onEndReached: onEndReachedApply,
+    refreshData: refreshDataApply,
+  } = useInfiniteScroll(getApplyList);
+  const {
+    list: refusedList,
+    onEndReached: onEndReachedRefused,
+    refreshData: refreshDataRefused,
+  } = useInfiniteScroll(getRejectedList);
 
-  /*   待通过好友列表 */
-  const [waitinglist, setWaitinglist] = useState([]);
-  const getWaitinglist = _userId => {
-    getmatelist({uid: _userId, mate_status: 'waiting'})
-      .then(res => {
-        if (res.success) {
-          const newList = res.data.list.filter(item => {
-            return item.apply_uid === _userId;
-          });
-          setWaitinglist(newList);
-        }
-      })
-      .catch(error => {
-        console.error(error);
-      });
-  };
-
-  /*   拒绝的好友列表 */
-  const [refusedlist, setRefusedlist] = useState([]);
-  const getRefusedlist = _userId => {
-    getmatelist({uid: _userId, mate_status: 'refused'})
-      .then(res => {
-        if (res.success) {
-          setRefusedlist(res.data.list);
-          // console.log(res.data.list);
-        }
-      })
-      .catch(error => {
-        console.error(error);
-      });
-  };
-
-  /*  同意好友申请 */
   const [remarkVisible, setRemarkVisible] = useState(false);
   const [remark, setRemark] = useState('');
   const [mateId, setMateId] = useState(null);
-  const agreeOrRefuseApply = (status, Id) => {
-    editmate({
-      id: Id ? Id : mateId,
-      uid: userId,
-      mate_status: status,
-      remark: remark,
-    })
+
+  const [focusedIndex, setFocusedIndex] = useState(0);
+
+  const agreeApply = () => {
+    agreeMateApply(mateId, {remarks: remark})
       .then(res => {
-        // console.log(res);
-        if (res.success) {
-          showToast(status === 'agreed' ? '已同意' : '已拒绝', 'success');
-          getApplylist(userId);
+        if (res.code === 0) {
+          showToast(t('mate.agreed'), 'success');
+          refreshDataApply();
+          return;
         }
+        showToast(res.message, 'error');
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  };
+
+  const refuseApply = () => {
+    refuseMateApply(mateId)
+      .then(res => {
+        if (res.code === 0) {
+          showToast(t('mate.refused'), 'success');
+          refreshDataApply();
+          refreshDataRefused();
+          return;
+        }
+        showToast(res.message, 'error');
       })
       .catch(error => {
         console.error(error);
@@ -96,14 +79,13 @@ const NewMate = ({navigation}) => {
 
   /* 删除好友申请 */
   const [deleteVisible, setDeleteVisible] = useState(false);
-  const [deleteId, setDeleteId] = useState(null);
-  const deleteApplyInfo = async delete_id => {
+  const deleteApplyInfo = async () => {
     try {
-      const delRes = await deletemate({id: delete_id});
+      const delRes = await deleteMate(mateId);
       if (delRes.success) {
         setDeleteVisible(false);
-        getWaitinglist(userId);
-        getRefusedlist(userId);
+        refreshDataApply();
+        refreshDataRefused();
       }
       showToast(delRes.message, delRes.success ? 'success' : 'error');
     } catch (error) {
@@ -113,15 +95,50 @@ const NewMate = ({navigation}) => {
 
   /* 拒绝好友申请 */
   const [refusedVisible, setRefusedVisible] = useState(false);
-  const [refusedId, setRefusedId] = useState(null);
 
-  useEffect(() => {
-    if (userId) {
-      getApplylist(userId);
-      getWaitinglist(userId);
-      getRefusedlist(userId);
-    }
-  }, [userId]);
+  /* 顶部导航栏 */
+  const routes = [
+    {
+      key: 'apply',
+      title: t('mate.apply'),
+      refreshFunc: refreshDataApply,
+      screen: (
+        <FlatList
+          data={applyList}
+          renderItem={renderApplyItem}
+          keyExtractor={(item, index) => item?.id + index}
+          onEndReached={onEndReachedApply}
+          ListEmptyComponent={
+            <View marginT-16 center>
+              <Text text90L grey40>
+                {t('empty.mate_apply')}
+              </Text>
+            </View>
+          }
+        />
+      ),
+    },
+    {
+      key: 'refused',
+      title: t('group.refused'),
+      refreshFunc: refreshDataRefused,
+      screen: (
+        <FlatList
+          data={refusedList}
+          renderItem={renderRefuseItem}
+          keyExtractor={(item, index) => item?.id + index}
+          onEndReached={onEndReachedRefused}
+          ListEmptyComponent={
+            <View marginT-16 center>
+              <Text text90L grey40>
+                {t('empty.mate_refused')}
+              </Text>
+            </View>
+          }
+        />
+      ),
+    },
+  ];
 
   const renderApplyItem = ({item}) => (
     <View padding-10 flexS backgroundColor={Colors.white} spread row centerV>
@@ -131,53 +148,55 @@ const NewMate = ({navigation}) => {
         centerV
         onPress={() => {
           navigation.navigate('MateInfo', {
-            uid: item.apply_uid,
+            userId: item.user.id,
           });
         }}>
         <Avatar
           source={{
-            uri: STATIC_URL + item.apply_avatar,
+            uri: envConfig.STATIC_URL + item.user.user_avatar,
           }}
         />
         <View marginL-10>
-          <Text text80BL>{item.apply_remark}</Text>
-          <Text text90L marginT-5 grey30 style={{width: 210}}>
-            {item.validate_msg}
-          </Text>
+          <Text text80BL>{item.user.user_name}</Text>
+          <View width={210}>
+            <Text text90L marginT-5 grey30>
+              {item.validate_msg}
+            </Text>
+          </View>
         </View>
       </TouchableOpacity>
       <View marginL-10 flexS row>
         <Button
-          label={'同意'}
+          label={t('common.agree')}
           borderRadius={6}
-          labelStyle={{fontSize: 13}}
+          text70L
           avoidMinWidth={true}
-          size={Button.sizes.xSmall}
+          size={'xSmall'}
           backgroundColor={Colors.primary}
           onPress={() => {
-            setRemarkVisible(true);
             setMateId(item.id);
+            setRemarkVisible(true);
           }}
         />
         <Button
           marginL-8
-          label={'拒绝'}
+          label={t('common.refuse')}
           borderRadius={6}
-          labelStyle={{fontSize: 13}}
+          text70L
           avoidMinWidth={true}
           outline
           outlineColor={Colors.error}
-          size={Button.sizes.xSmall}
+          size={'xSmall'}
           onPress={() => {
+            setMateId(item.id);
             setRefusedVisible(true);
-            setRefusedId(item.id);
           }}
         />
       </View>
     </View>
   );
 
-  const renderOtherItem = ({item}) => (
+  const renderRefuseItem = ({item}) => (
     <View padding-10 flexS backgroundColor={Colors.white} spread row centerV>
       <TouchableOpacity
         flexS
@@ -185,39 +204,41 @@ const NewMate = ({navigation}) => {
         centerV
         onPress={() => {
           navigation.navigate('MateInfo', {
-            uid: item.uid,
+            userId: item.user.id,
           });
         }}>
         <Avatar
           source={{
-            uri: STATIC_URL + item.avatar,
+            uri: envConfig.STATIC_URL + item.user.user_avatar,
           }}
         />
         <View marginL-10>
           <Text text80BL>{item.remark}</Text>
-          <Text text90L marginT-5 grey30 style={{width: 210}}>
-            {item.validate_msg}
-          </Text>
+          <View width={210}>
+            <Text text90L marginT-5 grey30>
+              {item.validate_msg}
+            </Text>
+          </View>
         </View>
       </TouchableOpacity>
       <View flexS row>
         <View center>
           <Text grey30 text90L>
-            {item.mate_status === 'waiting' ? '等待通过' : '已被拒绝'}
+            {t('mate.refused')}
           </Text>
         </View>
         <Button
           marginL-8
-          label={'删除'}
+          label={t('common.delete')}
           borderRadius={6}
-          labelStyle={{fontSize: 13}}
+          text70L
           avoidMinWidth={true}
           outline
           outlineColor={Colors.error}
           size={Button.sizes.xSmall}
           onPress={() => {
+            setMateId(item.id);
             setDeleteVisible(true);
-            setDeleteId(item.id);
           }}
         />
       </View>
@@ -226,58 +247,26 @@ const NewMate = ({navigation}) => {
 
   return (
     <View>
-      {applylist.length > 0 ? (
-        <>
-          <View padding-6 paddingL-12>
-            <Text text80 grey30>
-              加我为好友
-            </Text>
-          </View>
-          <FlatList
-            data={applylist}
-            renderItem={renderApplyItem}
-            keyExtractor={(item, index) => item + index}
-          />
-        </>
-      ) : null}
-
-      {waitinglist.length > 0 || refusedlist.length > 0 ? (
-        <>
-          <View padding-6 paddingL-12>
-            <Text text80 grey30>
-              我的好友申请
-            </Text>
-          </View>
-          <FlatList
-            data={waitinglist}
-            renderItem={renderOtherItem}
-            keyExtractor={(item, index) => item + index}
-          />
-          <FlatList
-            data={refusedlist}
-            renderItem={renderOtherItem}
-            keyExtractor={(item, index) => item + index}
-          />
-        </>
-      ) : (
-        <View marginT-16 center>
-          <Text text90L grey40>
-            还没有好友申请哦 ~
-          </Text>
-        </View>
-      )}
+      <BaseTopBar
+        routes={routes}
+        focusIndex={focusedIndex}
+        onChange={index => {
+          setFocusedIndex(index);
+          routes[index].refreshFunc();
+        }}
+      />
 
       <BaseDialog
         onConfirm={() => {
-          agreeOrRefuseApply('agreed');
+          agreeApply();
         }}
         visible={remarkVisible}
         setVisible={setRemarkVisible}
-        description={'好友备注'}
+        description={t('mate.remarks')}
         renderBody={
           <TextField
             marginT-8
-            placeholder={'请输入好友备注'}
+            placeholder={t('mate.remark_placeholder')}
             floatingPlaceholder
             onChangeText={value => {
               setRemark(value);
@@ -290,21 +279,21 @@ const NewMate = ({navigation}) => {
       <BaseDialog
         title={true}
         onConfirm={() => {
-          agreeOrRefuseApply('refused', refusedId);
+          refuseApply();
         }}
         visible={refusedVisible}
         setVisible={setRefusedVisible}
-        description={'您确定要拒绝该好友申请？'}
+        description={t('mate.refuse_tips')}
       />
 
       <BaseDialog
         title={true}
         onConfirm={() => {
-          deleteApplyInfo(deleteId);
+          deleteApplyInfo();
         }}
         visible={deleteVisible}
         setVisible={setDeleteVisible}
-        description={'您确定要删除该好友申请？'}
+        description={t('mate.delete_tips')}
       />
     </View>
   );

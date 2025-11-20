@@ -7,32 +7,33 @@ import {
   Colors,
   TextField,
   Avatar,
+  Button,
   TouchableOpacity,
 } from 'react-native-ui-lib';
-import {useToast} from '../../../utils/hooks/useToast';
+import {useToast} from '@utils/hooks/useToast';
+import {getUserDetail} from '@api/user';
+import {addMate, editMate, deleteMate, getIsMate} from '@api/mate';
+import {downloadFile} from '@utils/system/file_utils';
+import {useConfigStore} from '@store/configStore';
+import {useTranslation} from 'react-i18next';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import ListItem from '../../../components/common/ListItem';
-import {getUserInfo} from '../../../api/user';
-import {addmate, editMate, deletemate, getmateStatus} from '../../../api/mate';
-import {delSessionMsgs} from '../../../api/data_manager';
-import {DownloadFile} from '../../../utils/handle/fileHandle';
-import BaseDialog from '.@components/common/BaseDialog';
-import ImgModal from '../../../components/common/ImgModal';
+import BaseDialog from '@components/common/BaseDialog';
+import ImgModal from '@components/common/ImgModal';
+import ListItem from '@components/common/ListItem';
 
 const MateInfo = ({navigation, route}) => {
+  const {userId} = route.params || {};
   const {showToast} = useToast();
-  const userId = useSelector(state => state.userStore.userId);
-  // baseConfig
-  const {STATIC_URL} = useSelector(state => state.baseConfigStore.baseConfig);
-  const {uid} = route.params || {};
+  const {t} = useTranslation();
+  const {envConfig} = useConfigStore();
 
-  const [ismate, setIsMate] = useState(false);
+  const [isMate, setIsMate] = useState(false);
   /* 获取用户信息 */
   const [otherUserInfo, setOtherUserInfo] = useState({});
-  const getOtherUserInfo = async _userId => {
+  const getOtherUserInfo = async () => {
     try {
-      const res = await getUserInfo({id: _userId});
-      if (res.success) {
+      const res = await getUserDetail(userId);
+      if (res.code === 0) {
         setOtherUserInfo(res.data);
       }
     } catch (error) {
@@ -42,22 +43,17 @@ const MateInfo = ({navigation, route}) => {
 
   /*  判断是否为好友 */
   const [mateInfo, setMateInfo] = useState({});
-  const getMateStatusFnc = async (selfUid, otherUid, status = null) => {
+  const [mateRemarks, setMateRemarks] = useState('');
+  const getMateStatusFnc = async () => {
     try {
-      const mateRes = await getmateStatus({
-        selfUid,
-        otherUid,
-        mate_status: status,
-      });
-      if (mateRes.success) {
-        if (status === 'agreed') {
-          // console.log(mateRes.data);
-          setIsMate(true);
-          setMateInfo(mateRes.data);
-        }
-        return mateRes.success;
-      } else {
-        return false;
+      const mateRes = await getIsMate(userId);
+      if (mateRes.code === 0) {
+        const mate = mateRes.data;
+        setIsMate(true);
+        setMateInfo(mateRes.data);
+        setMateRemarks(
+          mate.user_id === userId ? mate.user_remarks : mate.friend_remarks,
+        );
       }
     } catch (error) {
       console.error(error);
@@ -66,50 +62,41 @@ const MateInfo = ({navigation, route}) => {
 
   /*  添加好友 */
   const [addVisible, setAddVisible] = useState(false);
-  const [addremark, setAddRemark] = useState('');
-  const [valmessage, setValMessage] = useState('');
+  const [addRemark, setAddRemark] = useState('');
+  const [valMessage, setValMessage] = useState('');
   const addFriend = async () => {
     try {
-      if (userId === uid) {
-        showToast('不能添加自己为好友', 'error');
-        return;
-      }
-      const statusRes = await getMateStatusFnc(userId, uid);
-      if (statusRes) {
-        showToast('你们已是好友或已申请', 'error');
-        return;
-      }
-      const addRes = await addmate({
-        agree_remark: addremark,
-        validate_msg: valmessage,
-        apply_uid: userId,
-        agree_uid: uid,
+      const addRes = await addMate({
+        friend_id: userId,
+        friend_remarks: addRemark,
+        validate_msg: valMessage,
       });
-      if (addRes.success) {
-        cancelAddMate();
+      if (addRes.code === 0) {
+        showToast(t('mate.add_success'), 'success');
+        reset();
+        return;
       }
-      showToast(addRes.message, addRes.success ? 'success' : 'error');
+      showToast(addRes.message, 'error');
     } catch (error) {
       console.error(error);
-      cancelAddMate();
+      reset();
     }
   };
-  const cancelAddMate = () => {
+
+  const reset = () => {
     setAddRemark('');
     setValMessage('');
   };
 
   /*  修改备注 */
   const [remarkVisible, setRemarkVisible] = useState(false);
-  const [newRemark, setNewRemark] = useState(mateInfo.remark || '');
+  const [newRemark, setNewRemark] = useState('');
   const editFriendRemark = async () => {
     try {
-      const editRes = await editMate({
-        id: mateInfo.id,
-        uid: userId,
-        remark: newRemark,
+      const editRes = await editMate(mateInfo.id, {
+        remarks: newRemark,
       });
-      showToast(editRes.message, editRes.success ? 'success' : 'error');
+      showToast(editRes.message, editRes.code === 0 ? 'success' : 'error');
     } catch (error) {
       console.error(error);
     }
@@ -119,11 +106,10 @@ const MateInfo = ({navigation, route}) => {
   const [deleteVisible, setDeleteVisible] = useState(false);
   const deleteFriend = async () => {
     try {
-      const delRes = await deletemate({id: mateInfo.id});
-      if (delRes.success) {
+      const delRes = await deleteMate(mateInfo.id);
+      if (delRes.code === 0) {
         setDeleteVisible(false);
         navigation.navigate('Mate');
-        delSessionMsgs({session_id: mateInfo.mate_id});
       }
       showToast(delRes.message, delRes.success ? 'success' : 'error');
     } catch (error) {
@@ -136,23 +122,21 @@ const MateInfo = ({navigation, route}) => {
   const [avatarVisible, setAvatarVisible] = useState(false);
   const saveAvatar = async (url, name) => {
     setAvatarVisible(false);
-    showToast('已开始保存头像...', 'success');
-    const pathRes = await DownloadFile(url, name, () => {}, true);
+    showToast(t('user.avatar_save'), 'success');
+    const pathRes = await downloadFile(url, name, () => {}, true);
     if (pathRes) {
-      showToast('图片已保存到' + pathRes, 'success');
+      showToast(t('user.save_to') + pathRes, 'success');
     } else {
-      showToast('保存失败', 'error');
+      showToast(t('user.save_failed'), 'error');
     }
   };
 
   useEffect(() => {
-    if (uid) {
-      getOtherUserInfo(uid);
+    if (userId) {
+      getOtherUserInfo();
+      getMateStatusFnc();
     }
-    if (uid && userId) {
-      getMateStatusFnc(userId, uid, 'agreed');
-    }
-  }, [uid, userId]);
+  }, [userId]);
 
   return (
     <View padding-16>
@@ -160,32 +144,33 @@ const MateInfo = ({navigation, route}) => {
         <View flexS row>
           <TouchableOpacity
             onPress={() => {
-              setAvatarUri(STATIC_URL + otherUserInfo.user_avatar);
+              setAvatarUri(envConfig.STATIC_URL + otherUserInfo.user_avatar);
               setAvatarVisible(true);
             }}>
             <Avatar
               size={80}
               source={{
-                uri: otherUserInfo.user_avatar
-                  ? STATIC_URL + otherUserInfo.user_avatar
-                  : null,
+                uri: envConfig.STATIC_URL + otherUserInfo.user_avatar,
               }}
             />
           </TouchableOpacity>
           <View paddingH-16>
-            {ismate ? (
+            {isMate ? (
               <Text text60 marginB-4>
-                {mateInfo.remark}
+                {mateRemarks}
               </Text>
             ) : null}
             <Text text80 marginB-4 grey30>
-              昵称：{otherUserInfo.user_name}
+              {t('user.user_name') + otherUserInfo.user_name}
             </Text>
             <Text text80 marginB-4 grey30>
-              账号：{otherUserInfo.self_account}
+              {t('user.account') + otherUserInfo.self_account}
+            </Text>
+            <Text text80 marginB-4 grey30>
+              {t('user.email') + otherUserInfo.account}
             </Text>
             <View flexS row>
-              <View>{}</View>
+              <View />
               <View flexS row centerV padding-4 style={styles.tag}>
                 {otherUserInfo?.sex === 'woman' ? (
                   <FontAwesome name="venus" color={Colors.magenta} size={12} />
@@ -193,67 +178,57 @@ const MateInfo = ({navigation, route}) => {
                   <FontAwesome name="mars" color={Colors.geekBlue} size={12} />
                 ) : null}
                 <Text marginL-4 grey30 text90>
-                  {otherUserInfo?.age}岁
+                  {otherUserInfo?.age + t('user.age_num')}
                 </Text>
               </View>
             </View>
           </View>
         </View>
       </Card>
-      {ismate ? (
-        <Card enableShadow={false} marginT-16>
-          <ListItem
-            ItemName={'修改备注'}
-            IconName={'edit'}
-            IconColor={Colors.primary}
-            onConfirm={() => {
-              setRemarkVisible(true);
+      {isMate ? (
+        <>
+          <Card enableShadow={false} marginT-16>
+            <ListItem
+              itemName={t('mate.edit_remarks')}
+              iconName={'edit'}
+              iconColor={Colors.primary}
+              onConfirm={() => {
+                setRemarkVisible(true);
+              }}
+            />
+          </Card>
+          <Button
+            bg-white
+            marginT-16
+            text70
+            color={Colors.primary}
+            borderRadius={12}
+            label={t('mate.send_message')}
+            onPress={() => {
+              navigation.navigate('Chat', {
+                session_id: mateInfo.mate_id,
+                session_name: mateRemarks,
+              });
             }}
           />
-        </Card>
-      ) : null}
-
-      {ismate ? (
-        <Card
-          enableShadow={false}
-          marginT-16
-          center
-          padding-12
-          onPress={() => {
-            navigation.navigate('Chat', {
-              session_id: mateInfo.mate_id,
-              chat_type: 'personal',
-              to_remark: mateInfo.remark,
-              to_uid: uid,
-            });
-          }}>
-          <Text text70 color={Colors.primary}>
-            发消息
-          </Text>
-        </Card>
-      ) : null}
-
-      {ismate ? (
-        <Card
-          enableShadow={false}
-          marginT-16
-          center
-          padding-12
-          onPress={() => {
-            setDeleteVisible(true);
-          }}>
-          <Text text70 color={Colors.error}>
-            删除好友
-          </Text>
-        </Card>
-      ) : null}
-
-      {ismate ? null : (
+          <Button
+            bg-white
+            marginT-16
+            text70
+            color={Colors.error}
+            borderRadius={12}
+            label={t('mate.delete_mate')}
+            onPress={() => {
+              setDeleteVisible(true);
+            }}
+          />
+        </>
+      ) : (
         <Card enableShadow={false} marginT-16>
           <ListItem
-            ItemName={'添加好友'}
-            IconName={'user-plus'}
-            IconColor={Colors.primary}
+            itemName={t('mate.add_mate')}
+            iconName={'user-plus'}
+            iconColor={Colors.primary}
             onConfirm={() => {
               setAddVisible(true);
             }}
@@ -263,15 +238,15 @@ const MateInfo = ({navigation, route}) => {
 
       <BaseDialog
         onConfirm={addFriend}
-        onCancel={cancelAddMate}
+        onCancel={reset}
         visible={addVisible}
         setVisible={setAddVisible}
-        description={'添加好友'}
+        description={t('mate.add_mate')}
         renderBody={
           <>
             <TextField
               marginT-8
-              placeholder={'请输入好友备注'}
+              placeholder={t('mate.remark_placeholder')}
               floatingPlaceholder
               text70L
               onChangeText={value => {
@@ -282,7 +257,7 @@ const MateInfo = ({navigation, route}) => {
             />
             <TextField
               marginT-8
-              placeholder={'请输入验证消息'}
+              placeholder={t('mate.message_placeholder')}
               text70L
               floatingPlaceholder
               onChangeText={value => {
@@ -300,11 +275,11 @@ const MateInfo = ({navigation, route}) => {
         onConfirm={editFriendRemark}
         visible={remarkVisible}
         setVisible={setRemarkVisible}
-        description={'修改备注'}
+        description={t('mate.edit_remarks')}
         renderBody={
           <TextField
             marginT-8
-            placeholder={'请输入好友备注'}
+            placeholder={t('mate.remark_placeholder')}
             text70L
             floatingPlaceholder
             onChangeText={value => {
@@ -321,18 +296,18 @@ const MateInfo = ({navigation, route}) => {
         onConfirm={deleteFriend}
         visible={deleteVisible}
         setVisible={setDeleteVisible}
-        description={'您确定要删除这个好友吗？'}
+        description={t('mate.delete_mate_confirm')}
       />
 
       {/* 图片预览弹窗 */}
       <ImgModal
-        Uri={avatarUri}
-        Visible={avatarVisible}
-        OnClose={() => {
+        uri={avatarUri}
+        visible={avatarVisible}
+        onClose={() => {
           setAvatarVisible(false);
         }}
-        IsSave={true}
-        OnSave={url => saveAvatar(url, otherUserInfo.user_avatar)}
+        allowSave={true}
+        onSave={url => saveAvatar(url, otherUserInfo.user_avatar)}
       />
     </View>
   );

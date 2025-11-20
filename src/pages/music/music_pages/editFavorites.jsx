@@ -15,7 +15,7 @@ import {getFavoritesDetail, updateFavorites} from '../../../api/music';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import BaseSheet from '../../../components/common/BaseSheet';
 import ImagePicker from 'react-native-image-crop-picker';
-import {UploadFile} from '../../../utils/handle/fileHandle';
+import {uploadFile} from '../../../utils/handle/fileHandle';
 import {getfileFormdata} from '../../../utils/common/base';
 import FullScreenLoading from '../../../components/common/FullScreenLoading';
 
@@ -77,8 +77,8 @@ const EditFavorites = ({route}) => {
     try {
       // 修改头像
       if (THUMBNAIL_URL + favoritesForm.favorites_cover !== coverUri) {
-        const res = await UploadFile(coverfile, () => {}, {
-          uid: userId,
+        const res = await uploadFile(coverfile, () => {}, {
+          userId: userId,
           fileType: 'image',
           useType: 'music',
         });
@@ -217,7 +217,7 @@ const EditFavorites = ({route}) => {
       </View>
       <BaseSheet
         Title={'选择收藏夹封面'}
-        Visible={showDialog}
+        visible={showDialog}
         SetVisible={setShowDialog}
         Actions={[
           {

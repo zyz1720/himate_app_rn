@@ -141,8 +141,8 @@ const FavoritesDetail = ({navigation, route}) => {
         />
       </View>
       <FavoriteModal
-        Visible={detailModalVisible}
-        OnClose={() => setdDetailModalVisible(false)}
+        visible={detailModalVisible}
+        onClose={() => setdDetailModalVisible(false)}
         BackgroundImg={THUMBNAIL_URL + favoritesForm?.favorites_cover}
         Title={favoritesForm?.favorites_name}
         Remark={favoritesForm?.favorites_remark}

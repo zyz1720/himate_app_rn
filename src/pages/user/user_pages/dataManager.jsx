@@ -22,14 +22,14 @@ import {
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import BaseSheet from '../../../components/common/BaseSheet';
 import {useToast} from '../../../utils/hooks/useToast';
-import {DownloadFile} from '../../../utils/handle/fileHandle';
+import {downloadFile} from '../../../utils/handle/fileHandle';
 import DocumentPicker from 'react-native-document-picker';
 import {
   getDocumentfileFormdata,
   formatDateTime,
 } from '../../../utils/common/base';
 import {
-  UploadFile,
+  uploadFile,
   getFileColor,
   getFileExt,
   getFileName,
@@ -44,7 +44,7 @@ import BaseDialog from '@components/common/BaseDialog';
 import {getStorage} from '../../../utils/common/localStorage';
 import {
   msgTypeMap,
-  chatTypeMap,
+  ChatTypeEnum,
   msgStatusMap,
 } from '../../../constants/file_ext_names';
 import dayjs from 'dayjs';
@@ -69,7 +69,7 @@ const DataManager = ({navigation, route}) => {
   const {showToast} = useToast();
 
   const [loading, setLoading] = useState(false);
-  const getFilesList = async (uid, type) => {
+  const getFilesList = async (userId, type) => {
     setLoading(true);
     let filePageNum = 0;
     if (type === 'chat') {
@@ -83,7 +83,7 @@ const DataManager = ({navigation, route}) => {
     }
     try {
       const res = await getUserUploadFiles({
-        upload_uid: uid,
+        upload_uid: userId,
         use_type: type,
         pageSize: filePageNum * 20,
       });
@@ -257,7 +257,7 @@ const DataManager = ({navigation, route}) => {
           originName = item.session_name;
         }
         if (msgInfo.chat_type === 'personal') {
-          if (item.uid !== msgInfo.send_uid) {
+          if (item.userId !== msgInfo.send_uid) {
             originName = item.remark;
           }
         }
@@ -314,7 +314,7 @@ const DataManager = ({navigation, route}) => {
             <View row>
               <Badge
                 backgroundColor={Colors.blue50}
-                label={chatTypeMap[item.chat_type] || '未知'}
+                label={ChatTypeEnum[item.chat_type] || '未知'}
               />
               <View marginL-6>
                 <Badge
@@ -410,11 +410,11 @@ const DataManager = ({navigation, route}) => {
   // 消息记录列表
   const [msgPageNum, setMsgPageNum] = useState(1);
   const [msgFilesList, setMsgFilesList] = useState([]);
-  const getMsgList = async uid => {
+  const getMsgList = async userId => {
     setLoading(true);
     try {
       const res = await getUserMsgList({
-        send_uid: uid,
+        send_uid: userId,
         pageSize: msgPageNum * 20,
       });
       if (res.success) {
@@ -478,13 +478,13 @@ const DataManager = ({navigation, route}) => {
       const media = files[i];
       const mediaRes = getDocumentfileFormdata(useType, media, true);
       setNowFileIndex(i + 1);
-      const res = await UploadFile(
+      const res = await uploadFile(
         mediaRes.file,
         value => {
           setProgress(value);
         },
         {
-          uid: userId,
+          userId: userId,
           fileType: mediaRes.type,
           useType: useType,
         },
@@ -508,7 +508,7 @@ const DataManager = ({navigation, route}) => {
     setIsDownload(true);
     setShowDialog(true);
     setShowActionSheet(false);
-    const savepath = await DownloadFile(
+    const savepath = await downloadFile(
       savePath,
       getFileName(savePath),
       progress => {
@@ -566,7 +566,7 @@ const DataManager = ({navigation, route}) => {
     for (let i = 0; i < selectedFiles.length; i++) {
       const file = selectedFiles[i];
       setNowFileIndex(i + 1);
-      const savePath = await DownloadFile(
+      const savePath = await downloadFile(
         STATIC_URL + file.file_name,
         file.file_name,
         progress => {
@@ -839,7 +839,7 @@ const DataManager = ({navigation, route}) => {
 
       <BaseSheet
         Title={'请选择上传的用途'}
-        Visible={showUploadType}
+        visible={showUploadType}
         SetVisible={setShowUploadType}
         Actions={[
           {
@@ -878,7 +878,7 @@ const DataManager = ({navigation, route}) => {
       />
       <BaseSheet
         Title={'文件操作'}
-        Visible={showActionSheet}
+        visible={showActionSheet}
         SetVisible={setShowActionSheet}
         Actions={[
           {
@@ -947,9 +947,9 @@ const DataManager = ({navigation, route}) => {
       />
       {/* 视频播放器 */}
       <VideoModal
-        Uri={fullscreenUri}
-        Visible={modalVisible}
-        OnClose={() => {
+        uri={fullscreenUri}
+        visible={modalVisible}
+        onClose={() => {
           setFullscreenUri(null);
           setModalVisible(!modalVisible);
         }}
@@ -961,10 +961,10 @@ const DataManager = ({navigation, route}) => {
       />
       {/* 图片预览 */}
       <ImgModal
-        Uri={fullscreenUri}
-        Visible={imageShow}
-        OnClose={() => setImageShow(false)}
-        OnSave={() => setImageShow(false)}
+        uri={fullscreenUri}
+        visible={imageShow}
+        onClose={() => setImageShow(false)}
+        onSave={() => setImageShow(false)}
       />
     </>
   );
