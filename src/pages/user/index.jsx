@@ -164,7 +164,7 @@ const User = ({navigation}) => {
             enableShadow={false}
             padding-16
             onPress={() => {
-              navigation.navigate('Edituser', {
+              navigation.navigate('EditUser', {
                 userId: userId,
               });
             }}>

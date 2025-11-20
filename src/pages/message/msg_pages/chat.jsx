@@ -38,7 +38,7 @@ import {
   getLocalUser,
   delLocalMsg,
   addOrUpdateLocalUser,
-} from '../../../utils/handle/chatHandle';
+} from '@utils/system/chat_utils';
 import {
   deepClone,
   getfileFormdata,
@@ -767,7 +767,7 @@ const Chat = React.memo(({navigation, route}) => {
 
   /* 点击头像 */
   const onAvatarPress = User => {
-    navigation.navigate('Mateinfo', {
+    navigation.navigate('MateInfo', {
       uid: User._id === 1 ? userId : User?.uid,
     });
   };

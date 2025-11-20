@@ -1,29 +1,32 @@
 import * as React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import {Colors, TouchableOpacity} from 'react-native-ui-lib';
+import {useSettingStore} from '@store/settingStore';
+import {useTranslation} from 'react-i18next';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import TabScreen from './TabScreen';
-import EditUser from '../../pages/user/user_pages/editUser';
-import AccountSafe from '../../pages/user/user_pages/accountSafe';
-import BaseQRCode from '../../pages/user/user_pages/qrCode';
-import Addmate from '../../pages/mate/mate_pages/addMate';
-import Mateinfo from '../../pages/mate/mate_pages/mateInfo';
-import Newmate from '../../pages/mate/mate_pages/newMate';
-import Chat from '../../pages/message/msg_pages/chat';
-import ChatHistory from '../../pages/message/msg_pages/chatHistory';
-import CreateGroup from '../../pages/group/createGroup';
-import GroupInfo from '../../pages/group/groupInfo';
-import Grouplist from '../../pages/group/groupList';
-import SearchMsg from '../../pages/message/msg_pages/searchMsg';
-import ChatMsg from '../../pages/user/user_pages/chatMsg';
-import DataManager from '../../pages/user/user_pages/dataManager';
-import BasePdfView from '../../pages/common/basePdfView';
+import EditUser from '@pages/user/user_pages/editUser';
+import AccountSafe from '@pages/user/user_pages/accountSafe';
+import BaseQRCode from '@pages/user/user_pages/qrCode';
+import AddMate from '@pages/mate/mate_pages/addMate';
+import MateInfo from '@pages/mate/mate_pages/mateInfo';
+import NewMate from '@pages/mate/mate_pages/newMate';
+import Chat from '@pages/message/msg_pages/chat';
+import ChatHistory from '@pages/message/msg_pages/chatHistory';
+import CreateGroup from '@pages/group/createGroup';
+import GroupInfo from '@pages/group/groupInfo';
+import GroupList from '@pages/group/groupList';
+import SearchMsg from '@pages/message/msg_pages/searchMsg';
+import ChatMsg from '@pages/user/user_pages/chatMsg';
+import DataManager from '@pages/user/user_pages/dataManager';
+import BasePdfView from '@pages/common/basePdfView';
 
 const Stack = createStackNavigator();
 
 function StackScreen() {
-  const themeColor = useSelector(state => state.settingStore.themeColor);
-  const isFullScreen = useSelector(state => state.settingStore.isFullScreen);
+  const {themeColor, isFullScreen} = useSettingStore();
+  const {t} = useTranslation();
+
   return (
     <Stack.Navigator initialRouteName="TabBar">
       <Stack.Screen
@@ -39,7 +42,7 @@ function StackScreen() {
           headerStyle: {backgroundColor: themeColor, height: 46},
           headerTitleAlign: 'center',
           headerTitleStyle: {fontSize: 16, color: Colors.white},
-          headerLeft: () => (
+          headerLeft: (
             <TouchableOpacity paddingH-26 onPress={() => navigation.goBack()}>
               <FontAwesome name="angle-left" color={Colors.white} size={26} />
             </TouchableOpacity>
@@ -48,38 +51,38 @@ function StackScreen() {
         {/* 用户 */}
         <Stack.Group>
           <Stack.Screen
-            name="Edituser"
+            name="EditUser"
             component={EditUser}
             options={{
-              title: '个人信息',
+              title: t('screen.EditUser'),
             }}
           />
           <Stack.Screen
             name="UserSafe"
             component={AccountSafe}
             options={{
-              title: '账号安全',
+              title: t('screen.UserSafe'),
             }}
           />
           <Stack.Screen
             name="QrCode"
             component={BaseQRCode}
             options={{
-              title: '二维码名片',
+              title: t('screen.QrCode'),
             }}
           />
           <Stack.Screen
             name="ChatMsg"
             component={ChatMsg}
             options={{
-              title: '聊天记录',
+              title: t('screen.ChatMsg'),
             }}
           />
           <Stack.Screen
             name="DataManager"
             component={DataManager}
             options={{
-              title: '云端数据',
+              title: t('screen.DataManager'),
             }}
           />
         </Stack.Group>
@@ -87,24 +90,24 @@ function StackScreen() {
         {/* 好友 */}
         <Stack.Group>
           <Stack.Screen
-            name="Addmate"
-            component={Addmate}
+            name="AddMate"
+            component={AddMate}
             options={{
-              title: '添加好友',
+              title: t('screen.AddMate'),
             }}
           />
           <Stack.Screen
-            name="Mateinfo"
-            component={Mateinfo}
+            name="MateInfo"
+            component={MateInfo}
             options={{
-              title: '个人资料',
+              title: t('screen.MateInfo'),
             }}
           />
           <Stack.Screen
-            name="Newmate"
-            component={Newmate}
+            name="NewMate"
+            component={NewMate}
             options={{
-              title: '新的朋友',
+              title: t('screen.NewMate'),
             }}
           />
         </Stack.Group>
@@ -115,12 +118,12 @@ function StackScreen() {
             name="Chat"
             component={Chat}
             options={({route, navigation}) => ({
-              title: route.params.to_remark,
-              headerRight: () => (
+              title: route.params.sessionName,
+              headerRight: (
                 <TouchableOpacity
                   paddingR-16
                   onPress={() => {
-                    if (route.params.chat_type === 'personal') {
+                    if (route.params.chat_type === 'private') {
                       navigation.navigate('ChatHistory', route.params);
                     }
                     if (route.params.chat_type === 'group') {
@@ -136,14 +139,14 @@ function StackScreen() {
             name="ChatHistory"
             component={ChatHistory}
             options={{
-              title: '聊天信息',
+              title: t('screen.ChatHistory'),
             }}
           />
           <Stack.Screen
             name="SearchMsg"
             component={SearchMsg}
             options={{
-              title: '查找聊天记录',
+              title: t('screen.SearchMsg'),
             }}
           />
         </Stack.Group>
@@ -154,21 +157,23 @@ function StackScreen() {
             name="CreateGroup"
             component={CreateGroup}
             options={({route}) => ({
-              title: route.params.is_create ? '创建群聊' : '邀请新成员',
+              title: route.params.isCreate
+                ? t('screen.CreateGroup')
+                : t('screen.InviteNewMember'),
             })}
           />
           <Stack.Screen
             name="GroupInfo"
             component={GroupInfo}
             options={{
-              title: '群聊详情',
+              title: t('screen.GroupInfo'),
             }}
           />
           <Stack.Screen
-            name="Grouplist"
-            component={Grouplist}
+            name="GroupList"
+            component={GroupList}
             options={{
-              title: '我的群聊',
+              title: t('screen.GroupList'),
             }}
           />
         </Stack.Group>
@@ -176,9 +181,9 @@ function StackScreen() {
         <Stack.Screen
           name="PdfView"
           component={BasePdfView}
-          options={({route}) => ({
-            title: 'PDF预览',
-          })}
+          options={{
+            title: t('screen.PdfView'),
+          }}
         />
       </Stack.Group>
     </Stack.Navigator>

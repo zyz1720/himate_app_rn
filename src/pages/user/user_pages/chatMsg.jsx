@@ -6,10 +6,10 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useRealm} from '@realm/react';
 import {encryptAES, decryptAES} from '../../../utils/handle/cryptoHandle';
 import BaseDialog from '@components/common/BaseDialog';
-import PasswordEye from '@components/about_input/PasswordEye';
+import PasswordEye from '@components/form/PasswordEye';
 import {writeJSONFile, readJSONFile} from '../../../utils/handle/fileHandle';
 import DocumentPicker from 'react-native-document-picker';
-import {setLocalMsg} from '../../../utils/handle/chatHandle';
+import {setLocalMsg} from '@utils/system/chat_utils';
 
 const ChatMsg = ({navigation, route}) => {
   const {session_id} = route.params || {};

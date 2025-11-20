@@ -1,22 +1,24 @@
 import * as React from 'react';
 import {createDrawerNavigator} from '@react-navigation/drawer';
-import Setting from '../../pages/setting/index';
-import StackScreen from './StackScreen';
 import {Colors, TouchableOpacity} from 'react-native-ui-lib';
+import {fullWidth} from '@style/index';
+import {useSettingStore} from '@store/settingStore';
+import {displayName} from '@root/app.json';
+import {useTranslation} from 'react-i18next';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Addmate from '../../pages/mate/mate_pages/addMate';
-import SearchMsg from '../../pages/message/msg_pages/searchMsg';
+import StackScreen from './StackScreen';
 import MusicScreen from './MusicScreen';
-import BaseWebView from '../../pages/common/baseWebView';
-import Permissions from '../../pages/common/permissions';
-import {fullWidth} from '../../styles';
+import AddMate from '@pages/mate/mate_pages/addMate';
+import SearchMsg from '@pages/message/msg_pages/searchMsg';
+import BaseWebView from '@pages/common/baseWebView';
+import Permissions from '@pages/common/permissions';
+import Setting from '@pages/setting/index';
 
 const Drawer = createDrawerNavigator();
 
 const DrawerScreen = () => {
-  const themeColor = useSelector(state => state.settingStore.themeColor);
-  const isFullScreen = useSelector(state => state.settingStore.isFullScreen);
-  const isMusicApp = useSelector(state => state.settingStore.isMusicApp);
+  const {themeColor, isFullScreen, isMusicApp} = useSettingStore();
+  const {t} = useTranslation();
 
   return (
     <Drawer.Navigator
@@ -28,7 +30,7 @@ const DrawerScreen = () => {
       <Drawer.Screen
         name="Stack"
         options={{
-          title: '主界面',
+          title: t('screen.Stack'),
           headerShown: false,
         }}
         component={StackScreen}
@@ -36,7 +38,7 @@ const DrawerScreen = () => {
       <Drawer.Screen
         name="Music"
         options={{
-          title: '音乐',
+          title: t('screen.Music'),
           headerShown: false,
         }}
         component={MusicScreen}
@@ -47,7 +49,7 @@ const DrawerScreen = () => {
           headerStyle: {backgroundColor: themeColor, height: 46},
           headerTitleAlign: 'center',
           headerTitleStyle: {fontSize: 16, color: Colors.white},
-          headerLeft: () => (
+          headerLeft: (
             <TouchableOpacity paddingH-26 onPress={() => navigation.goBack()}>
               <FontAwesome name="angle-left" color={Colors.white} size={26} />
             </TouchableOpacity>
@@ -56,16 +58,16 @@ const DrawerScreen = () => {
         {isFullScreen ? (
           <>
             <Drawer.Screen
-              name="Addmate"
+              name="AddMate"
               options={{
-                title: '添加好友',
+                title: t('screen.AddMate'),
               }}
-              component={Addmate}
+              component={AddMate}
             />
             <Drawer.Screen
               name="SearchMsg"
               options={{
-                title: '搜索消息',
+                title: t('screen.SearchMsg'),
               }}
               component={SearchMsg}
             />
@@ -74,7 +76,7 @@ const DrawerScreen = () => {
         <Drawer.Screen
           name="Setting"
           options={{
-            title: '系统设置',
+            title: t('screen.Setting'),
           }}
           component={Setting}
         />
@@ -82,14 +84,14 @@ const DrawerScreen = () => {
           name="Permissions"
           component={Permissions}
           options={{
-            title: '权限管理',
+            title: t('screen.Permissions'),
           }}
         />
         <Drawer.Screen
           name="WebView"
           component={BaseWebView}
           options={({route}) => ({
-            title: route.params?.title ?? 'Himate',
+            title: route.params?.title || displayName,
           })}
         />
       </Drawer.Group>

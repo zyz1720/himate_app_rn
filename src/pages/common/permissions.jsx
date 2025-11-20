@@ -1,120 +1,130 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {View, Card, Colors, Text} from 'react-native-ui-lib';
-import ListItem from '../../components/common/ListItem';
 import {openSettings} from 'react-native-permissions';
-import {useToast} from '../../utils/hooks/useToast';
+import {useToast} from '@utils/hooks/useToast';
+import {useTranslation} from 'react-i18next';
+import {usePermissionStore} from '@store/permissionStore';
+import ListItem from '@components/common/ListItem';
 
-const Permissions = ({navigation, route}) => {
-  const accessCamera = useSelector(state => state.permissionStore.accessCamera);
-  const accessMicrophone = useSelector(
-    state => state.permissionStore.accessMicrophone,
-  );
-  const accessFolder = useSelector(state => state.permissionStore.accessFolder);
-  const accessNotify = useSelector(state => state.permissionStore.accessNotify);
-
-  const dispatch = useDispatch();
-  dispatch(checkPermissions());
+const Permissions = () => {
+  const {
+    accessCamera,
+    accessMicrophone,
+    accessFolder,
+    accessNotify,
+    setAllPermissions,
+    setAccessNotify,
+    setAccessCamera,
+    setAccessMicrophone,
+    setAccessFolder,
+  } = usePermissionStore();
 
   const {showToast} = useToast();
+  const {t} = useTranslation();
+
+  useEffect(() => {
+    setAllPermissions();
+  }, []);
 
   return (
     <View flexG paddingH-16 paddingT-18>
       <Card enableShadow={false}>
         <View>
           <ListItem
-            ItemName={'相机'}
-            IconName={'camera'}
-            IconColor={Colors.grey10}
-            IconSize={20}
-            RightText={accessCamera ? '已授权' : '未授权'}
+            itemName={t('camera')}
+            iconName={'camera'}
+            iconColor={Colors.grey10}
+            iconSize={20}
+            rightText={accessCamera ? t('authorized') : t('unauthorized')}
             onConfirm={() => {
               if (!accessCamera) {
-                showToast('请授予应用相机使用权限', 'warning');
-                dispatch(requestCameraPermission());
+                showToast(t('camera_please'), 'warning');
+                setAccessCamera();
               }
             }}
           />
           <View paddingH-16 paddingB-16>
             <Text grey30 text90L>
-              授权后，应用才能访问相机、使用摄像头拍照/录像
+              {t('camera_desc')}
             </Text>
           </View>
         </View>
         <View>
           <ListItem
-            ItemName={'通知'}
-            IconName={'bell'}
-            IconColor={Colors.grey10}
-            IconSize={20}
-            RightText={accessNotify ? '已授权' : '未授权'}
+            itemName={t('notify')}
+            iconName={'bell'}
+            iconColor={Colors.grey10}
+            iconSize={20}
+            rightText={accessNotify ? t('authorized') : t('unauthorized')}
             onConfirm={() => {
               if (!accessNotify) {
-                showToast('请授予应用通知权限', 'warning');
-                dispatch(requestNotifyPermission());
+                showToast(t('notify_please'), 'warning');
+                setAccessNotify();
               }
             }}
           />
           <View paddingH-16 paddingB-16>
             <Text grey30 text90L>
-              授权后，应用才能推送消息到系统通知
+              {t('notify_desc')}
             </Text>
           </View>
         </View>
         <View>
           <ListItem
-            ItemName={'麦克风'}
-            IconName={'microphone'}
-            IconColor={Colors.grey10}
-            RightText={accessMicrophone ? '已授权' : '未授权'}
+            itemName={t('microphone')}
+            iconName={'microphone'}
+            iconColor={Colors.grey10}
+            iconSize={20}
+            rightText={accessMicrophone ? t('authorized') : t('unauthorized')}
             onConfirm={() => {
               if (!accessMicrophone) {
-                showToast('请授予应用麦克风使用权限', 'warning');
-                dispatch(requestMicrophonePermission());
+                showToast(t('microphone_please'), 'warning');
+                setAccessMicrophone();
               }
             }}
           />
           <View paddingH-16 paddingB-16>
             <Text grey30 text90L>
-              授权后，应用才能访问麦克风、开启语音功能
+              {t('microphone_desc')}
             </Text>
           </View>
         </View>
         <View>
           <ListItem
-            ItemName={'文件媒体'}
-            IconName={'folder'}
-            IconColor={Colors.grey10}
-            IconSize={20}
-            RightText={accessFolder ? '已授权' : '未授权'}
+            itemName={t('folder')}
+            iconName={'folder'}
+            iconColor={Colors.grey10}
+            iconSize={20}
+            rightText={accessFolder ? t('authorized') : t('unauthorized')}
             onConfirm={() => {
               if (!accessFolder) {
-                showToast('请授予应用文件和媒体使用权限', 'warning');
-                dispatch(requestFolderPermission());
+                showToast(t('folder_please'), 'warning');
+                setAccessFolder();
               }
             }}
           />
           <View paddingH-16 paddingB-16>
             <Text grey30 text90L>
-              授权后，应用才能保存照片、视频、等文件到本地
+              {t('folder_desc')}
             </Text>
           </View>
         </View>
         <View>
           <ListItem
-            ItemName={'其它权限'}
-            IconName={'gears'}
-            IconColor={Colors.grey10}
-            IconSize={20}
-            RightText={'去设置'}
+            itemName={t('other_permissions')}
+            iconName={'gears'}
+            iconColor={Colors.grey10}
+            iconSize={20}
+            rightText={t('go_settings')}
             onConfirm={() => {
               openSettings().catch(() =>
-                showToast('打开设置失败，请手动开启权限', 'warning'),
+                showToast(t('settings_error'), 'warning'),
               );
             }}
           />
           <View paddingH-16 paddingB-16>
             <Text grey30 text90L>
-              如过授权未成功，请在应用权限管理中手动开启
+              {t('settings_desc')}
             </Text>
           </View>
         </View>

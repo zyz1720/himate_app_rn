@@ -1,145 +1,83 @@
-import React, {useEffect} from 'react';
+import React, {useState} from 'react';
 import {View, Colors, Text, Button} from 'react-native-ui-lib';
-import {getmatelist} from '../../api/mate';
-import {useToast} from '../../utils/hooks/useToast';
-import MateList from '../../components/mate/MateList';
-import {addGroup} from '../../api/group';
-import {addGroupMember} from '../../api/group_member';
+import {getMateList} from '@api/mate';
+import {useToast} from '@utils/hooks/useToast';
+import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
+import {addGroup} from '@api/group';
+import {addGroupMember} from '@api/group_member';
+import {useTranslation} from 'react-i18next';
+import MateList from '@components/mate/MateList';
 
 const CreateGroup = ({navigation, route}) => {
-  const userId = useSelector(state => state.userStore.userId);
   const {showToast} = useToast();
-  const {
-    uid,
-    group_id: groupId,
-    gId: g_Id,
-    existMemberIds,
-    is_create,
-  } = route.params || {};
+  const {t} = useTranslation();
+  const {groupId, excludeIds, isCreate} = route.params || {};
 
-  /*   好友列表 */
-  const [matelist, setMatelist] = React.useState([]);
-  const getMatelist = _userId => {
-    getmatelist({uid: _userId, mate_status: 'agreed'})
-      .then(res => {
-        if (res.success) {
-          setMatelist(res.data.list);
-        }
-      })
-      .catch(error => {
-        console.error(error);
-      });
-  };
+  const {list, onEndReached} = useInfiniteScroll(getMateList);
 
   /* 创建群聊 */
-  const [selectUids, setSelectUids] = React.useState([]);
+  const [selectIds, setSelectIds] = useState([]);
   const handleCreateGroup = async () => {
-    if (is_create && selectUids.length < 2) {
-      showToast('至少选择两个好友', 'warning');
+    if (isCreate && selectIds.length < 2) {
+      showToast(t('group.at_least_two'), 'warning');
       return;
     }
     try {
-      if (groupId && g_Id && !is_create) {
-        addQueue([...selectUids], g_Id, groupId);
-        showToast('邀请群成员成功', 'error');
-        navigation.goBack();
-      } else {
-        const groupRes = await addGroup({creator_uid: userId});
-        if (groupRes.success) {
-          // 群主本身也要加入群聊
-          addQueue(
-            [userId, ...selectUids],
-            groupRes.data.id,
-            groupRes.data.group_id,
-          );
-          navigation.navigate('Grouplist');
+      if (isCreate) {
+        const res = await addGroup({ids: selectIds});
+        if (res.code === 0) {
+          showToast(t('group.create_group_success'), 'success');
+          navigation.goBack();
+          return;
         }
-        showToast(groupRes.message, groupRes.success ? 'success' : 'error');
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  /* 添加群成员队列 */
-  let count = 0;
-  const addQueue = async (list, gId, group_id) => {
-    if (count === list.length) {
-      count = 0;
-      return 'complete';
-    }
-    try {
-      const result = await addGroupMember({
-        gId,
-        group_id,
-        member_uid: list[count],
-      });
-      if (result.success) {
-        count++;
-        return addQueue(list, gId, group_id);
+        showToast(res.message, 'error');
       } else {
-        showToast(result.message, 'error');
-        count++;
-        return addQueue(list, gId, group_id);
+        const res = await addGroupMember({
+          groupId: groupId,
+          ids: selectIds,
+        });
+        if (res.code === 0) {
+          showToast(t('group.invite_success'), 'success');
+          navigation.navigate('GroupList');
+          return;
+        }
+        showToast(res.message, 'error');
       }
     } catch (error) {
       console.error(error);
-      count++;
-      return addQueue(list, gId, group_id);
     }
   };
-
-  useEffect(() => {
-    if (userId) {
-      getMatelist(userId);
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    if (uid) {
-      setSelectUids([uid]);
-    }
-  }, [uid]);
 
   return (
     <View>
-      <View>
-        <View
-          flexS
-          row
-          spread
-          centerH
-          padding-12
-          backgroundColor={Colors.white}>
-          <View center>
-            <Text text70 grey20 center>
-              已选择
-              <Text color={Colors.primary}> {selectUids.length} </Text>
-              位好友
-            </Text>
-          </View>
-          {selectUids.length > 0 ? (
-            <Button
-              label={'完成'}
-              size={Button.sizes.small}
-              borderRadius={8}
-              backgroundColor={Colors.primary}
-              onPress={handleCreateGroup}
-            />
-          ) : null}
+      <View flexS row spread centerH padding-12 backgroundColor={Colors.white}>
+        <View center>
+          <Text text70 grey20 center>
+            {t('group.selected')}
+            <Text color={Colors.primary}> {selectIds.length} </Text>
+            {t('group.mate')}
+          </Text>
         </View>
-        <MateList
-          OriginList={matelist}
-          Height={'92%'}
-          IsSelect={true}
-          SelectedIds={uid ? [uid] : []}
-          ExistMemberIds={existMemberIds}
-          IsNew={!groupId && !g_Id}
-          SelectChange={value => {
-            setSelectUids(value);
-          }}
-        />
+        {selectIds.length > 0 ? (
+          <Button
+            label={t('common.complete')}
+            size={Button.sizes.small}
+            borderRadius={8}
+            backgroundColor={Colors.primary}
+            onPress={handleCreateGroup}
+          />
+        ) : null}
       </View>
+      <MateList
+        originalList={list}
+        height={'92%'}
+        allowSelect={true}
+        excludeIds={excludeIds}
+        onSelectChange={value => {
+          setSelectIds(value);
+        }}
+        onEndReached={onEndReached}
+      />
     </View>
   );
 };

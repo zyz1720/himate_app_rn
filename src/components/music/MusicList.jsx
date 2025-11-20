@@ -12,49 +12,51 @@ import {
   Dialog,
   ProgressBar,
 } from 'react-native-ui-lib';
-import {statusBarHeight, fullHeight} from '../../styles';
+import {statusBarHeight, fullHeight} from '@style/index';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import {useToast} from '../../utils/hooks/useToast';
-import {isEmptyObject} from '../../utils/common/base';
+import {useToast} from '@utils/hooks/useToast';
+import {isEmptyObject} from '@utils/common/base';
 import {
-  editDefaultFavorites,
+  getDefaultFavorites,
   updateFavorites,
   getFavoritesDetail,
-  getFavoritesList,
-} from '../../api/music';
-import {DownloadFile, getFileExt} from '../../utils/handle/fileHandle';
+  getOneselfFavorites,
+} from '@api/favorities';
+import {DownloadFile, getFileExt} from '@utils/system/file_utils';
+import {useConfigStore} from '@store/configStore';
+import {useMusicStore} from '@store/musicStore';
+import {useTranslation} from 'react-i18next';
 
 const MusicList = props => {
   const {
-    List = [],
-    Total = 0,
-    OnEndReached = () => {},
-    OnPress = () => {},
-    FavoriteId,
-    RefreshList = () => {},
-    IsOwn = false,
-    IsLocal = false,
-    RightBut = null,
-    HeightScale = 0.92,
+    list = [],
+    total = 0,
+    onEndReached = () => {},
+    onPress = () => {},
+    favoriteId,
+    refreshList = () => {},
+    isOneself = false,
+    isLocal = false,
+    rightBut = null,
+    heightScale = 0.92,
   } = props;
+  const {t} = useTranslation();
   const {showToast} = useToast();
-  const dispatch = useDispatch();
-  // baseConfig
-  const {STATIC_URL, THUMBNAIL_URL} = useSelector(
-    state => state.baseConfigStore.baseConfig,
-  );
-  const playingMusic = useSelector(state => state.musicStore.playingMusic);
-  const userId = useSelector(state => state.userStore.userId);
+  const {envConfig} = useConfigStore();
+  const {
+    playingMusic,
+    addPlayList,
+    unshiftPlayList,
+    setPlayingMusic,
+    setPlayList,
+  } = useMusicStore();
 
   /* 获取用户收藏的音乐列表 */
   const [collectMusic, setCollectMusic] = useState([]);
   const getAllMusicList = async _userId => {
     try {
-      const res = await getFavoritesDetail({
-        creator_uid: _userId,
-        is_default: 1,
-      });
+      const res = await getDefaultFavorites();
       if (res.success) {
         setCollectMusic(res.data.music);
       }
@@ -68,7 +70,7 @@ const MusicList = props => {
   const [favoritesList, setFavoritesList] = useState([]);
   const getUserFavoritesList = async _userId => {
     try {
-      const res = await getFavoritesList({
+      const res = await getOneselfFavorites({
         pageSize: pageNum * 20,
         creator_uid: _userId,
       });
@@ -82,10 +84,10 @@ const MusicList = props => {
   };
 
   // 操作栏
-  const [modalVisible, setModalVisible] = React.useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
   // 选择歌单
-  const [favoriteVisible, setFavoriteVisible] = React.useState(false);
+  const [favoriteVisible, setFavoriteVisible] = useState(false);
 
   /* 多选 */
   const [isMultiSelect, setIsMultiSelect] = useState(false);
@@ -110,24 +112,26 @@ const MusicList = props => {
 
   const handleMusicOptions = [
     {
-      title: '添加到播放列表',
+      title: t('music.add_to_play_list'),
       icon: 'login',
       iconColor: Colors.grey30,
       onPress: () => {
         if (isMultiSelect) {
-          const selectedMusic = List.filter(item =>
+          const selectedMusic = list.filter(item =>
             selectedItems.includes(item.id),
           );
-          dispatch(addPlayList(selectedMusic));
+          addPlayList(selectedMusic);
         } else {
-          dispatch(addPlayList([nowMusic]));
+          addPlayList([nowMusic]);
         }
-        showToast('已添加到播放列表', 'success');
+        showToast(t('music.add_success'), 'success');
         setModalVisible(false);
       },
     },
     {
-      title: isFavorite(nowMusic?.id) ? '已收藏' : '收藏',
+      title: isFavorite(nowMusic?.id)
+        ? t('music.already_favorite')
+        : t('music.favorite'),
       icon: isFavorite(nowMusic?.id) ? 'heart' : 'hearto',
       iconColor: isFavorite(nowMusic?.id) ? Colors.red50 : Colors.grey30,
       onPress: () => {
@@ -138,32 +142,32 @@ const MusicList = props => {
           musicIds = [nowMusic.id];
         }
         if (musicIds.length === 0) {
-          showToast('请选择要收藏的歌曲', 'warning');
+          showToast(t('music.please_select_music'), 'warning');
           return;
         }
-        editDefaultFavorites({
-          handleType: isFavorite(nowMusic?.id) ? 'remove' : 'add',
-          creator_uid: userId,
-          musicIds,
-        })
-          .then(res => {
-            if (res.success) {
-              showToast(
-                isFavorite(nowMusic?.id) ? '已取消收藏' : '已收藏',
-                'success',
-              );
-            } else {
-              showToast(res.message, 'error');
-            }
-            setNowMusic({});
-            setModalVisible(false);
-            getAllMusicList(userId);
-          })
-          .catch(error => {
-            console.error(error);
-            setNowMusic({});
-            setModalVisible(false);
-          });
+        // editDefaultFavorites({
+        //   handleType: isFavorite(nowMusic?.id) ? 'remove' : 'add',
+        //   creator_uid: userId,
+        //   musicIds,
+        // })
+        //   .then(res => {
+        //     if (res.success) {
+        //       showToast(
+        //         isFavorite(nowMusic?.id) ? '已取消收藏' : '已收藏',
+        //         'success',
+        //       );
+        //     } else {
+        //       showToast(res.message, 'error');
+        //     }
+        //     setNowMusic({});
+        //     setModalVisible(false);
+        //     // getAllMusicList(userId);
+        //   })
+        //   .catch(error => {
+        //     console.error(error);
+        //     setNowMusic({});
+        //     setModalVisible(false);
+        //   });
       },
     },
     {
@@ -200,7 +204,7 @@ const MusicList = props => {
           return;
         }
         updateFavorites({
-          id: FavoriteId,
+          id: favoriteId,
           handleType: 'remove',
           musicIds,
         })
@@ -210,7 +214,7 @@ const MusicList = props => {
             } else {
               showToast(res.message, 'error');
             }
-            RefreshList();
+            refreshList();
             setNowMusic({});
             setModalVisible(false);
           })
@@ -222,7 +226,7 @@ const MusicList = props => {
       },
     },
   ];
-  if (!FavoriteId || !IsOwn) {
+  if (!favoriteId || !isOneself) {
     handleMusicOptions.pop();
   }
 
@@ -235,7 +239,7 @@ const MusicList = props => {
       musicIds = [nowMusic.id];
     }
     if (musicIds.length === 0) {
-      showToast('请选择歌曲', 'warning');
+      showToast(t('music.please_select'), 'warning');
       return;
     }
     try {
@@ -281,7 +285,7 @@ const MusicList = props => {
       return;
     }
     const selectedFiles = [];
-    List.forEach(item => {
+    list.forEach(item => {
       if (musicIds.includes(item.id)) {
         selectedFiles.push(item);
       }
@@ -291,7 +295,7 @@ const MusicList = props => {
       const file = selectedFiles[i];
       setNowFileIndex(i + 1);
       const savePath = await DownloadFile(
-        STATIC_URL + file.file_name,
+        envConfig.STATIC_URL + file.file_name,
         `${file.title} - ${file.artist.replace(/\//g, ' - ')}.${getFileExt(
           file.file_name,
         )}`,
@@ -315,13 +319,6 @@ const MusicList = props => {
     resetMultiSelect();
     setNowMusic({});
   };
-
-  useEffect(() => {
-    if (userId) {
-      getAllMusicList(userId);
-      getUserFavoritesList(userId);
-    }
-  }, [userId]);
 
   const renderItem = ({item}) => (
     <View row centerV>
@@ -353,16 +350,16 @@ const MusicList = props => {
           centerV
           padding-12
           onLongPress={() => {
-            if (IsLocal) {
+            if (isLocal) {
               return;
             }
             setIsMultiSelect(true);
             Vibration.vibrate(50);
           }}
           onPress={() => {
-            OnPress(item);
-            dispatch(setPlayingMusic(item));
-            dispatch(unshiftPlayList([item]));
+            onPress(item);
+            setPlayingMusic(item);
+            unshiftPlayList([item]);
           }}>
           <View row spread centerV>
             <View width={'80%'}>
@@ -385,21 +382,21 @@ const MusicList = props => {
                 }>
                 {(item.artists && item.artists?.length > 0
                   ? item.artists.join('/')
-                  : '未知歌手') +
+                  : t('music.empty_artist')) +
                   ' - ' +
-                  (item.album ?? '未知专辑')}
+                  (item.album ?? t('music.empty_album'))}
               </Text>
             </View>
             <View row bottom centerV spread>
               <TouchableOpacity
                 style={styles.musicBut}
                 onPress={() => {
-                  dispatch(addPlayList([item]));
-                  showToast('已添加到播放列表', 'success');
+                  addPlayList([item]);
+                  showToast(t('music.add_success'), 'success');
                 }}>
                 <AntDesign name="pluscircleo" color={Colors.grey50} size={20} />
               </TouchableOpacity>
-              {isMultiSelect || IsLocal ? null : (
+              {isMultiSelect || isLocal ? null : (
                 <TouchableOpacity
                   style={styles.musicBut}
                   marginL-6
@@ -428,16 +425,16 @@ const MusicList = props => {
           <TouchableOpacity
             style={styles.musicBut}
             onPress={() => {
-              dispatch(setPlayList(List));
-              dispatch(setPlayingMusic(List[0]));
+              setPlayList(list);
+              setPlayingMusic(list[0]);
             }}>
             <FontAwesome name="play-circle" color={Colors.grey50} size={26} />
           </TouchableOpacity>
           <Text marginL-12 text80BO grey20>
-            {Total || List.length}首歌曲
+            {t('music.total_music', {total: total || list.length})}
           </Text>
         </View>
-        {RightBut}
+        {rightBut}
       </View>
       <View row centerV spread marginB-12>
         <View />
@@ -446,7 +443,7 @@ const MusicList = props => {
             <Button
               marginR-12
               size={'xSmall'}
-              label={'操作'}
+              label={t('common.operation')}
               backgroundColor={Colors.primary}
               onPress={() => {
                 setModalVisible(true);
@@ -455,12 +452,14 @@ const MusicList = props => {
             <Button
               marginR-12
               size={'xSmall'}
-              label={isAllSelect ? '全不选' : '全选'}
+              label={
+                isAllSelect ? t('common.unselect_all') : t('common.select_all')
+              }
               backgroundColor={Colors.success}
               onPress={() => {
                 setIsAllSelect(prev => {
                   if (!prev) {
-                    setSelectedItems(List.map(item => item.id));
+                    setSelectedItems(list.map(item => item.id));
                   } else {
                     setSelectedItems([]);
                   }
@@ -470,7 +469,7 @@ const MusicList = props => {
             />
             <Button
               size={'xSmall'}
-              label={'取消'}
+              label={t('common.cancel')}
               backgroundColor={Colors.blue40}
               onPress={() => {
                 resetMultiSelect();
@@ -479,27 +478,27 @@ const MusicList = props => {
           </View>
         ) : null}
       </View>
-      <View height={fullHeight * HeightScale}>
+      <View height={fullHeight * heightScale}>
         <FlatList
-          data={List}
+          data={list}
           keyExtractor={(item, index) => item + index}
           onEndReached={() => {
-            OnEndReached();
+            onEndReached();
           }}
           onEndReachedThreshold={0.8}
           renderItem={renderItem}
           ListEmptyComponent={
             <View marginT-16 center>
               <Text text90L grey40>
-                没有发现任何音乐{' T_T'}
+                {t('empty.music')}
               </Text>
             </View>
           }
           ListFooterComponent={
-            List.length > 6 ? (
+            list.length > 6 ? (
               <View marginB-100 padding-12 center>
                 <Text text90L grey40>
-                  已经到底啦 ~
+                  {t('common.footer')}
                 </Text>
               </View>
             ) : null
@@ -532,7 +531,7 @@ const MusicList = props => {
                 <Text center text70BO marginT-12 grey30>
                   {nowMusic?.title +
                     ' - ' +
-                    (nowMusic?.artists?.join('/') || '未知歌手')}
+                    (nowMusic?.artists?.join('/') || t('music.empty_artist'))}
                 </Text>
                 <View paddingH-32 marginT-12>
                   <View height={1} backgroundColor={Colors.grey70} />
@@ -565,7 +564,7 @@ const MusicList = props => {
               ListEmptyComponent={
                 <View marginT-16 center>
                   <Text text90L grey30>
-                    还没有要播放的音乐~
+                    {t('empty.play_music')}
                   </Text>
                 </View>
               }
@@ -596,7 +595,7 @@ const MusicList = props => {
                 <AntDesign name="close" color={Colors.grey40} size={20} />
               </TouchableOpacity>
               <Button
-                label={'确认'}
+                label={t('common.confirm')}
                 size={'small'}
                 link
                 linkColor={Colors.primary}
@@ -615,7 +614,7 @@ const MusicList = props => {
               ListEmptyComponent={
                 <View marginT-16 center>
                   <Text text90L grey40>
-                    还没有任何歌单，快去新建一个吧~
+                    {t('music.empty_favorites_tips')}
                   </Text>
                 </View>
               }
@@ -626,7 +625,7 @@ const MusicList = props => {
                     color={Colors.primary}
                     size={20}
                     borderRadius={10}
-                    disabled={FavoriteId === item.id}
+                    disabled={favoriteId === item.id}
                     value={selectedFavoriteItems.includes(item.id)}
                     onValueChange={value => {
                       if (value) {
@@ -644,13 +643,13 @@ const MusicList = props => {
                   />
                   <View row centerV padding-6>
                     <Image
-                      source={{uri: THUMBNAIL_URL + item.favorites_cover}}
+                      source={{uri: envConfig.THUMBNAIL_URL + item.favorites_cover}}
                       style={styles.favoritesCover}
                     />
                     <View centerV marginL-12>
                       <Text>{item.favorites_name}</Text>
                       <Text marginT-4 text90L grey40>
-                        {item.musicCount}首歌曲
+                        {t('music.total_music', {total: item.musicCount})}
                       </Text>
                     </View>
                   </View>

@@ -1,8 +1,10 @@
 import * as React from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import Msg from '../../pages/message/index';
-import Mate from '../../pages/mate/index';
-import User from '../../pages/user/index';
+import {useSettingStore} from '@store/settingStore';
+import {useTranslation} from 'react-i18next';
+import Msg from '@pages/message/index';
+import Mate from '@pages/mate/index';
+import User from '@pages/user/index';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
@@ -10,41 +12,49 @@ import {Colors, TouchableOpacity} from 'react-native-ui-lib';
 
 const Tab = createBottomTabNavigator();
 
-const renderTabInfo = (name, type, focused = false) => {
-  let IconName = '';
-  let tablabel = '';
-  if (name === 'Msg') {
-    IconName = 'comments-o';
-    tablabel = '消息';
-    if (focused) {
-      IconName = 'comments';
-    }
-  }
-  if (name === 'Mate') {
-    IconName = 'address-book-o';
-    tablabel = '好友';
-    if (focused) {
-      IconName = 'address-book';
-    }
-  }
-  if (name === 'User') {
-    IconName = 'user-o';
-    tablabel = '我的';
-    if (focused) {
-      IconName = 'user';
-    }
-  }
-  if (type === 'icon') {
-    return IconName;
-  }
-  if (type === 'label') {
-    return tablabel;
-  }
-};
-
 const TabScreen = () => {
-  const themeColor = useSelector(state => state.settingStore.themeColor);
-  const isFullScreen = useSelector(state => state.settingStore.isFullScreen);
+  const {themeColor, isFullScreen} = useSettingStore();
+  const {t} = useTranslation();
+
+  const renderTabInfo = (name, type, focused = false) => {
+    let IconName = '';
+    let tablabel = '';
+    if (name === 'Msg') {
+      IconName = 'comments-o';
+      tablabel = t('screen.Msg');
+      if (focused) {
+        IconName = 'comments';
+      }
+    }
+    if (name === 'Mate') {
+      IconName = 'address-book-o';
+      tablabel = t('screen.Mate');
+      if (focused) {
+        IconName = 'address-book';
+      }
+    }
+    if (name === 'User') {
+      IconName = 'user-o';
+      tablabel = t('screen.User');
+      if (focused) {
+        IconName = 'user';
+      }
+    }
+    if (type === 'icon') {
+      return IconName;
+    }
+    if (type === 'label') {
+      return tablabel;
+    }
+  };
+
+  const renderTabBarIcon = (route, focused) => (
+    <FontAwesome
+      name={renderTabInfo(route.name, 'icon', focused)}
+      color={focused ? themeColor : Colors.grey10}
+      size={20}
+    />
+  );
 
   return (
     <Tab.Navigator
@@ -55,19 +65,13 @@ const TabScreen = () => {
         headerTitleAlign: 'center',
         headerTitleStyle: {fontSize: 16, color: Colors.white},
         tabBarActiveTintColor: themeColor,
-        tabBarIcon: ({focused}) => (
-          <FontAwesome
-            name={renderTabInfo(route.name, 'icon', focused)}
-            color={focused ? themeColor : Colors.grey10}
-            size={20}
-          />
-        ),
+        tabBarIcon: ({focused}) => renderTabBarIcon(route, focused),
       })}>
       <Tab.Screen
         name="Msg"
         options={({navigation}) => ({
-          title: '消息',
-          headerRight: () => (
+          title: t('screen.Msg'),
+          headerRight: (
             <TouchableOpacity
               paddingR-16
               onPress={() => navigation.navigate('SearchMsg')}>
@@ -82,10 +86,10 @@ const TabScreen = () => {
         options={({navigation}) => ({
           title: 'Mate',
           headerTitleAlign: 'left',
-          headerRight: () => (
+          headerRight: (
             <TouchableOpacity
               paddingR-12
-              onPress={() => navigation.navigate('Addmate')}>
+              onPress={() => navigation.navigate('AddMate')}>
               <FontAwesome name="user-plus" color={Colors.white} size={20} />
             </TouchableOpacity>
           ),
@@ -95,7 +99,7 @@ const TabScreen = () => {
       <Tab.Screen
         name="User"
         options={{
-          title: '个人中心',
+          title: t('screen.UserCenter'),
         }}
         component={User}
       />

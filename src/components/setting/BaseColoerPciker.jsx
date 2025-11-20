@@ -1,11 +1,9 @@
+import React from 'react';
 import {StyleSheet} from 'react-native';
 import {View, Text, TouchableOpacity} from 'react-native-ui-lib';
 
-const BaseColorPicker = props => {
-  const onConfirm = props.onConfirm;
-  const SlectColor = props.SlectColor;
-
-  const ColorList = [
+const BaseColorPicker = ({onConfirm, selectedColor}) => {
+  const colorList = [
     {id: 1, name: '薄暮', color: '#f5222d'},
     {id: 2, name: '火山', color: '#fa541c'},
     {id: 3, name: '日暮', color: '#ffa940'},
@@ -20,41 +18,39 @@ const BaseColorPicker = props => {
     {id: 12, name: '洋红', color: '#eb2f96'},
   ];
 
-  const renderColoritem = () => {
-    return ColorList.map(item => (
-      <TouchableOpacity key={item.id} onPress={() => onConfirm(item)}>
-        <View flexS width={80} center padding-8>
-          <View
-            height={34}
-            width={34}
-            flexG
-            center
-            style={
-              SlectColor === item.color
-                ? {
-                    borderRadius: 10,
-                    borderColor: item.color,
-                    borderWidth: 2,
-                  }
-                : null
-            }>
-            <View style={styles.smallbox} backgroundColor={item.color} />
-          </View>
-          <Text marginT-4 text90>
-            {item.name}
-          </Text>
+  return colorList.map(item => (
+    <TouchableOpacity key={item.id} onPress={() => onConfirm(item)}>
+      <View flexS width={80} center padding-8>
+        <View
+          height={34}
+          width={34}
+          flexG
+          center
+          style={
+            (selectedColor === item.color ? styles.selectedStyle : null,
+            {
+              borderColor: item.color,
+            })
+          }>
+          <View style={styles.smallbox} backgroundColor={item.color} />
         </View>
-      </TouchableOpacity>
-    ));
-  };
-
-  return renderColoritem();
+        <Text marginT-4 text90>
+          {item.name}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  ));
 };
+
 const styles = StyleSheet.create({
   smallbox: {
     width: 24,
     height: 24,
     borderRadius: 6,
+  },
+  selectedStyle: {
+    borderRadius: 10,
+    borderWidth: 2,
   },
 });
 

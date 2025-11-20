@@ -5,8 +5,8 @@ import {I18nextProvider} from 'react-i18next';
 import ToastProvider from '@/utils/hooks/useToast';
 import MusicCtrlProvider from '@components/music/MusicController';
 import SocketProvider from '@utils/hooks/useSocket';
-import i18n from './i18n/index';
 import {ChatMsg, UsersInfo, MusicInfo, LocalMusic} from '@const/realm_model';
+import i18n from './i18n/index';
 
 const App = () => {
   return (

@@ -21,7 +21,7 @@ import BaseSheet from '../../../components/common/BaseSheet';
 import {getfileFormdata, keepChangedFields} from '../../../utils/common/base';
 import FullScreenLoading from '../../../components/common/FullScreenLoading';
 
-const Edituser = ({route}) => {
+const EditUser = ({route}) => {
   const {userId} = route.params || {};
 
   const {showToast} = useToast();
@@ -382,4 +382,4 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
 });
-export default Edituser;
+export default EditUser;

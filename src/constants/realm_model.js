@@ -49,8 +49,8 @@ export class MusicInfo extends Realm.Object {
       artist: 'string',
       artists: 'string?[]',
       album: 'string?',
-      created_at: 'string',
-      update_at: 'string',
+      created_at: 'date',
+      updated_at: 'date',
     },
   };
 }
@@ -62,7 +62,7 @@ export class LocalMusic extends Realm.Object {
     properties: {
       id: 'string',
       title: 'string',
-      file_name: 'string',
+      file_key: 'string',
     },
   };
 }

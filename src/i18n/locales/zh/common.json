@@ -1,7 +1,16 @@
 {
-  "confirm": "确定",
-  "cancel": "取消",
-  "warning": "警告",
-  "loading": "加载中...",
-  "footer": "已经到底了 ~"
+  "common": {
+    "confirm": "确定",
+    "cancel": "取消",
+    "warning": "警告",
+    "save": "保存",
+    "complete": "完成",
+    "loading": "加载中...",
+    "modifying": "修改中...",
+    "init_loading": "正在初始化...",
+    "footer": "已经到底了 ~",
+    "operation": "操作",
+    "unselect_all": "全不选",
+    "select_all": "全选"
+  }
 }

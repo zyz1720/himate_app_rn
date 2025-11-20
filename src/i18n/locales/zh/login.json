@@ -1,1 +1,23 @@
-{}
+{
+    "send_code": "发送验证码",
+    "enter_email": "请输入邮箱！",
+    "email_error": "邮箱格式不正确！",
+    "enter_code": "请输入验证码！",
+    "code_error": "验证码为6位数字！",
+    "enter_password": "请输入密码！",
+    "password_error": "密码为6-20位数字或字母！",
+    "verify_password": "请确认密码！",
+    "verify_password_error": "两次输入密码不一致！",
+    "please_email_or_account": "请输入邮箱/账号",
+    "please_email": "请输入邮箱/账号",
+    "please_code": "请输入验证码",
+    "please_password": "请输入密码",
+    "please_confirm_password": "请再次确认密码",
+    "register": "注册",
+    "login": "登录",
+    "account_login": "账号登录",
+    "forget_password": "忘记密码？",
+    "agree": "我已阅读并同意 ",
+    "user_protocol": "用户使用协议",
+    "change_code": "看不清？换一张"
+}

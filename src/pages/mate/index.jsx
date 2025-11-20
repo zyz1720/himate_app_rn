@@ -56,7 +56,7 @@ const Mate = ({navigation}) => {
             IsBadge={true}
             BadgeCount={applycount}
             onConfirm={() => {
-              navigation.navigate('Newmate');
+              navigation.navigate('NewMate');
             }}
           />
           <View marginT-8>
@@ -66,19 +66,19 @@ const Mate = ({navigation}) => {
               IconColor={Colors.success}
               IconSize={20}
               onConfirm={() => {
-                navigation.navigate('Grouplist');
+                navigation.navigate('GroupList');
               }}
             />
           </View>
         </View>
         <MateList
-          OriginList={matelist}
-          Height={'84.3%'}
+          originalList={matelist}
+          height={'84.3%'}
           OnEndReached={() => {
             setPageNum(prev => prev + 1);
           }}
           onConfirm={item => {
-            navigation.navigate('Mateinfo', {
+            navigation.navigate('MateInfo', {
               uid: item.uid,
             });
           }}

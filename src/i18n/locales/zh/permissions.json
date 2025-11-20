@@ -1,0 +1,21 @@
+{
+    "authorized": "已授权",
+    "unauthorized": "未授权",
+    "camera": "相机",
+    "camera_please": "请授予应用相机使用权限",
+    "camera_desc": "授权后，应用才能访问相机、使用摄像头拍照/录像",
+    "microphone": "麦克风",
+    "microphone_please": "请授予应用麦克风使用权限",
+    "microphone_desc": "授权后，应用才能访问麦克风、使用麦克风录音",
+    "folder": "文件和媒体",
+    "folder_please": "请授予应用文件和媒体使用权限",
+    "folder_desc": "授权后，应用才能保存照片、视频、等文件到本地",
+    "notify": "通知",
+    "notify_please": "请授予应用通知使用权限",
+    "notify_desc": "授权后，应用才能发送通知到系统通知栏",
+    "other_permissions": "其它权限",
+    "go_settings": "去设置",
+    "settings_error": "打开设置失败，请手动开启权限",
+    "settings_desc": "如过授权未成功，请在应用权限管理中手动开启",
+    "photo": "图库"
+}

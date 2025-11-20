@@ -3,7 +3,7 @@ import {View, Card, Colors} from 'react-native-ui-lib';
 import {useToast} from '../../../utils/hooks/useToast';
 import {useRealm} from '@realm/react';
 import {getSessionDetail} from '../../../api/session';
-import {formatMsg, setLocalMsg} from '../../../utils/handle/chatHandle';
+import {formatMsg, setLocalMsg} from '@utils/system/chat_utils';
 import ListItem from '../../../components/common/ListItem';
 import BaseDialog from '@components/common/BaseDialog';
 import FullScreenLoading from '../../../components/common/FullScreenLoading';

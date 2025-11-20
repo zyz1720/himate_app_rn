@@ -45,7 +45,7 @@ const LrcItem = React.memo(
     const textWidth = useSharedValue(0);
 
     // 文本尺寸状态
-    const [textDimensions, setTextDimensions] = React.useState({
+    const [textDimensions, setTextDimensions] = useState({
       width: fullWidth * 0.84,
       height: 24,
     });

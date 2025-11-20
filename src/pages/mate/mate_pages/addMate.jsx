@@ -22,7 +22,7 @@ import {
 } from 'react-native-vision-camera';
 import {fullHeight} from '../../../styles';
 
-const Addmate = ({navigation, route}) => {
+const AddMate = ({navigation, route}) => {
   const {showToast} = useToast();
   const userId = useSelector(state => state.userStore.userId);
   const isFullScreen = useSelector(state => state.settingStore.isFullScreen);
@@ -154,7 +154,7 @@ const Addmate = ({navigation, route}) => {
               row
               centerV
               onPress={() => {
-                navigation.navigate('Mateinfo', {
+                navigation.navigate('MateInfo', {
                   uid: userDetail.id,
                 });
               }}>
@@ -288,4 +288,4 @@ const styles = StyleSheet.create({
     top: 12,
   },
 });
-export default Addmate;
+export default AddMate;

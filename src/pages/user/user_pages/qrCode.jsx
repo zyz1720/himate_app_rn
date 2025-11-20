@@ -64,7 +64,7 @@ const BaseQRCode = ({navigation, route}) => {
               color={Colors.primary}
               size="small"
               onPress={() => {
-                navigation.navigate('Addmate');
+                navigation.navigate('AddMate');
               }}
             />
             <View marginL-4>

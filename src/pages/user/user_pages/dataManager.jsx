@@ -39,7 +39,7 @@ import {
   setLocalMsg,
   getLocalUser,
   formatMsg,
-} from '../../../utils/handle/chatHandle';
+} from '@utils/system/chat_utils';
 import BaseDialog from '@components/common/BaseDialog';
 import {getStorage} from '../../../utils/common/localStorage';
 import {

@@ -10,21 +10,67 @@ import {StyleSheet, ImageBackground} from 'react-native';
 import {Image, View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
-import {fullWidth} from '../../styles';
+import {fullWidth} from '@style/index';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import {Marquee} from '@animatereactnative/marquee';
-import {isEmptyObject, deepClone, getRandomInt} from '../../utils/common/base';
-import {useToast} from '../../utils/hooks/useToast';
+import {isEmptyObject, deepClone} from '@utils/common/object_utils';
+import {getRandomInt} from '@utils/common/number_utils';
+import {useToast} from '@utils/hooks/useToast';
 import {useRealm} from '@realm/react';
 import MusicControl, {Command} from 'react-native-music-control';
 import {
-  getMusicList,
-  getFavoritesDetail,
-  editDefaultFavorites,
-} from '../../api/music';
+  getMusic,
+  getMusicDetail,
+  likeMusic,
+  removeFavoritesMusic,
+} from '@api/music';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {useUserStore} from '@store/userStore';
+import {useConfigStore} from '@store/configStore';
+import {useMusicStore} from '@store/musicStore';
+import {useTranslation} from 'react-i18next';
 import LyricModal from './LyricModal';
 import ToBePlayedModal from './ToBePlayedModal';
+
+const styles = StyleSheet.create({
+  musicBut: {
+    width: 30,
+    height: 30,
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  ctrlBackImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 60,
+    overflow: 'hidden',
+    elevation: 2,
+  },
+
+  CtrlContainer: {
+    position: 'absolute',
+    backgroundColor: 'transparent',
+    width: '100%',
+    bottom: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  image: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    borderColor: Colors.white,
+    borderWidth: 1,
+  },
+  marquee: {
+    flex: 1,
+    width: fullWidth * 0.56,
+    overflow: 'hidden',
+  },
+});
 
 export const MusicCtrlContext = createContext();
 export const useMusicCtrl = () => useContext(MusicCtrlContext);
@@ -34,17 +80,25 @@ const MusicCtrlProvider = React.memo(props => {
   const {children} = props;
   const {showToast} = useToast();
   const realm = useRealm();
-  const dispatch = useDispatch();
-  const userInfo = useSelector(state => state.userStore.userInfo);
-  const userId = useSelector(state => state.userStore.userId);
+  const {userInfo} = useUserStore();
   // baseConfig
-  const {STATIC_URL} = useSelector(state => state.baseConfigStore.baseConfig);
-  const showMusicCtrl = useSelector(state => state.musicStore.showMusicCtrl);
-  const playList = useSelector(state => state.musicStore.playList);
-  const playingMusic = useSelector(state => state.musicStore.playingMusic);
-  const closeTime = useSelector(state => state.musicStore.closeTime);
-  const randomNum = useSelector(state => state.musicStore.randomNum);
-  const isRandomPlay = useSelector(state => state.musicStore.isRandomPlay);
+  const {envConfig} = useConfigStore();
+  const {
+    showMusicCtrl,
+    alwaysShowMusicCtrl,
+    playList,
+    playingMusic,
+    closeTime,
+    randomNum,
+    isRandomPlay,
+    setPlayingMusic,
+    setIsClosed,
+    addPlayList,
+    setPlayList,
+    removePlayList,
+  } = useMusicStore();
+
+  const {t} = useTranslation();
 
   const [musicModalVisible, setMusicModalVisible] = useState(false);
   const [listModalVisible, setListModalVisible] = useState(false);
@@ -86,24 +140,20 @@ const MusicCtrlProvider = React.memo(props => {
           getRandMusic();
         } else if (playList.length > 0) {
           if (playType === 'single') {
-            dispatch(setPlayingMusic(playList[playingIndex]));
+            setPlayingMusic(playList[playingIndex]);
           } else if (playType === 'order') {
-            dispatch(
-              setPlayingMusic(
-                playingIndex === playList.length - 1
-                  ? playList[0]
-                  : playList[playingIndex + 1],
-              ),
+            setPlayingMusic(
+              playingIndex === playList.length - 1
+                ? playList[0]
+                : playList[playingIndex + 1],
             );
           } else if (playType === 'random') {
-            dispatch(
-              setPlayingMusic(
-                playList[Math.floor(Math.random() * playList.length)],
-              ),
+            setPlayingMusic(
+              playList[Math.floor(Math.random() * playList.length)],
             );
           }
         } else {
-          dispatch(setPlayingMusic({}));
+          setPlayingMusic({});
         }
       });
     }
@@ -112,27 +162,27 @@ const MusicCtrlProvider = React.memo(props => {
   // 上一首
   const previousRemote = useCallback(() => {
     if (playingIndex === 0 && playList.length > 0) {
-      dispatch(setPlayingMusic(playList[playList.length - 1]));
-      showToast('已经是第一首了~', 'warning');
+      setPlayingMusic(playList[playList.length - 1]);
+      showToast(t('music.already_first'), 'warning');
       return;
     }
     if (playList.length > 0) {
-      dispatch(setPlayingMusic(playList[playingIndex - 1]));
+      setPlayingMusic(playList[playingIndex - 1]);
     } else {
-      showToast('没有要播放的音乐~', 'warning');
+      showToast(t('music.no_music'), 'warning');
     }
   }, [playList, playingIndex]);
 
   // 播放或暂停
   const playOrPauseRemote = useCallback(() => {
     if (isLoading) {
-      showToast('正在加载音乐...', 'warning', true);
+      showToast(t('music.loading'), 'warning', true);
     }
     if (audioIsPlaying) {
       audioPlayer.pausePlayer();
     } else {
       if (isEmptyObject(playingMusic)) {
-        showToast('没有要播放的音乐~', 'warning');
+        showToast(t('music.no_music'), 'warning');
         return;
       }
       audioPlayer.resumePlayer();
@@ -146,15 +196,15 @@ const MusicCtrlProvider = React.memo(props => {
       return;
     }
     if (playingIndex === playList.length - 1) {
-      dispatch(setPlayingMusic(playList[0]));
-      showToast('已经是最后一首了~', 'warning');
+      setPlayingMusic(playList[0]);
+      showToast(t('music.already_last'), 'warning');
       return;
     }
     if (playList.length > 0) {
-      dispatch(setPlayingMusic(playList[playingIndex + 1]));
+      setPlayingMusic(playList[playingIndex + 1]);
       return;
     } else {
-      showToast('没有要播放的音乐~', 'warning');
+      showToast(t('music.no_music'), 'warning');
       return;
     }
   }, [isRandomPlay, playList, playingIndex]);
@@ -221,21 +271,21 @@ const MusicCtrlProvider = React.memo(props => {
     if (musicList.length > 0) {
       realm.write(() => {
         for (const ele of musicList) {
-          ele.updateAt = Date.now().toString();
+          ele.updated_at = Date.now().toString();
         }
       });
     } else {
-      localMusic.createdAt = Date.now().toString();
-      localMusic.updateAt = Date.now().toString();
+      localMusic.created_at = Date.now().toString();
+      localMusic.updated_at = Date.now().toString();
       realm.write(() => {
         realm.create('MusicInfo', localMusic);
       });
     }
   };
 
-  /* 开启通知栏控件 */
-  const startNotification = musicInfo => {
-    const {title, artist, album, duration, musicMore} = musicInfo;
+  /* 开启播放控件 */
+  const startPlayCtrl = musicInfo => {
+    const {title, artist, album, duration, musicExtra} = musicInfo;
     MusicControl.setNotificationId(5173, 'cancelPlayer');
     MusicControl.enableControl('play', true);
     MusicControl.enableControl('pause', true);
@@ -248,7 +298,9 @@ const MusicCtrlProvider = React.memo(props => {
     MusicControl.handleAudioInterruptions(true);
     MusicControl.setNowPlaying({
       title: title,
-      artwork: STATIC_URL + (musicMore?.music_cover || userInfo?.user_avatar),
+      artwork:
+        envConfig.STATIC_URL +
+        (musicExtra?.music_cover || userInfo?.user_avatar),
       artist: artist,
       album: album,
       duration: duration,
@@ -290,8 +342,7 @@ const MusicCtrlProvider = React.memo(props => {
         MusicControl.updatePlayback({
           state: MusicControl.STATE_PAUSED,
         });
-        dispatch(setIsClosed(true));
-
+        setIsClosed(true);
         clearTimeout(timer);
       }, closeTime * 60000);
     } else {
@@ -303,11 +354,11 @@ const MusicCtrlProvider = React.memo(props => {
   const getRandMusic = useCallback(async () => {
     const index = getRandomInt(randomNum.min, randomNum.max);
     try {
-      const res = await getMusicList({pageNum: index, pageSize: 1});
-      if (res.success && res.data.list.length > 0) {
+      const res = await getMusic({current: index, pageSize: 1});
+      if (res.code === 0 && res.data.list.length > 0) {
         const music = res.data.list[0];
-        dispatch(setPlayingMusic(music));
-        dispatch(addPlayList([music]));
+        setPlayingMusic(music);
+        addPlayList([music]);
       }
     } catch (error) {
       console.error(error);
@@ -316,39 +367,34 @@ const MusicCtrlProvider = React.memo(props => {
 
   // 随机播放
   useEffect(() => {
-    if (isRandomPlay && playList.length === 0) {
+    if (isRandomPlay) {
       getRandMusic();
     }
   }, [isRandomPlay]);
 
   // 播放新音乐的方法
   const playNewMusic = async () => {
-    if (!playingMusic?.file_name) {
+    if (!playingMusic?.file_key) {
       return;
     }
-
     const isStoped = await restMusicStatus();
     if (!isStoped) {
       return;
     }
-
     setIsLoading(true);
     try {
       let url = '';
       if (typeof playingMusic?.id === 'number') {
-        url = STATIC_URL + playingMusic?.file_name;
+        url = envConfig.STATIC_URL + playingMusic?.file_key;
       } else {
-        url = playingMusic?.file_name;
+        url = playingMusic?.file_key;
       }
 
       await audioPlayer.startPlayer(url);
-
       const index = playList.findIndex(item => item.id === playingMusic.id);
       lastPlayedId.current = playingMusic.id;
       setPlayingIndex(index);
-
-      startNotification(playingMusic);
-
+      startPlayCtrl(playingMusic);
       if (realm) {
         addOrUpdateLocalMusic(playingMusic);
       }
@@ -377,11 +423,11 @@ const MusicCtrlProvider = React.memo(props => {
     music => {
       const {title, artists} = music;
       let musicText =
-        (title ?? '还没有要播放的音乐') +
+        (title || t('music.empty_title')) +
         ' - ' +
-        (artists?.join('/') || '未知歌手');
+        (artists?.join('/') || t('music.empty_artist'));
       if (isLoading) {
-        musicText = '正在加载音乐...';
+        musicText = t('music.loading');
       }
       const speed = musicText.length > 16 ? 0.4 : 0;
       const spacing = musicText.length > 16 ? fullWidth * 0.2 : fullWidth * 0.6;
@@ -400,51 +446,29 @@ const MusicCtrlProvider = React.memo(props => {
     [isLoading],
   );
 
-  /* 获取用户收藏的音乐列表 */
-  const [collectMusic, setCollectMusic] = useState([]);
-  const getAllMusicList = async _userId => {
-    try {
-      const res = await getFavoritesDetail({
-        creator_uid: _userId,
-        is_default: 1,
-      });
-      if (res.success) {
-        setCollectMusic(res.data.music);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   // 编辑用户收藏的音乐
+  const [isLike, setIsLike] = useState(false);
   const editMyFavorite = async (id, isFavorite) => {
-    try {
-      const res = await editDefaultFavorites({
-        handleType: isFavorite ? 'remove' : 'add',
-        creator_uid: userId,
-        musicIds: [id],
-      });
-      if (res.success) {
-        showToast(isFavorite ? '已取消收藏' : '已收藏', 'success');
-        getAllMusicList(userId);
-      } else {
-        showToast(res.message, 'error');
-      }
-    } catch (error) {
-      console.error(error);
-    }
+    // try {
+    //   const res = await editDefaultFavorites({
+    //     handleType: isFavorite ? 'remove' : 'add',
+    //     creator_uid: userId,
+    //     musicIds: [id],
+    //   });
+    //   if (res.success) {
+    //     showToast(isFavorite ? '已取消收藏' : '已收藏', 'success');
+    //     getAllMusicList(userId);
+    //   } else {
+    //     showToast(res.message, 'error');
+    //   }
+    // } catch (error) {
+    //   console.error(error);
+    // }
   };
-
-  useEffect(() => {
-    if (userId) {
-      getAllMusicList(userId);
-    }
-  }, [userId]);
 
   useEffect(() => {
     return () => {
       audioPlayer.removePlayBackListener(subscription);
-      dispatch(initMusicStore());
       restMusicStatus();
     };
   }, []);
@@ -457,7 +481,7 @@ const MusicCtrlProvider = React.memo(props => {
           <ImageBackground
             blurRadius={40}
             style={styles.ctrlBackImage}
-            source={{uri: STATIC_URL + userInfo?.user_avatar}}
+            source={{uri: envConfig.STATIC_URL + userInfo?.user_avatar}}
             resizeMode="cover">
             <GestureHandlerRootView>
               <View row centerV spread>
@@ -480,9 +504,8 @@ const MusicCtrlProvider = React.memo(props => {
                         <Image
                           source={{
                             uri:
-                              STATIC_URL +
-                              (playingMusic?.musicMore?.music_cover ||
-                                'default_assets/default_music_cover.jpg'),
+                              envConfig.STATIC_URL +
+                              playingMusic?.musicExtra?.music_cover,
                           }}
                           style={styles.image}
                         />
@@ -533,7 +556,7 @@ const MusicCtrlProvider = React.memo(props => {
         OnClose={() => setMusicModalVisible(false)}
         Music={playingMusic}
         IsPlaying={audioIsPlaying}
-        IsFavorite={collectMusic.some(item => item.id === playingMusic.id)}
+        isLike={isLike}
         OnFavorite={editMyFavorite}
         PlayMode={playType}
         CurPosition={curPosition}
@@ -541,7 +564,7 @@ const MusicCtrlProvider = React.memo(props => {
         OnSliderChange={value => {
           onSliderChange(value);
         }}
-        OnChangeMode={() => {
+        onModeChange={() => {
           setPlayType(prev => {
             if (prev === 'order') {
               showToast('随机播放', 'success', true);
@@ -574,59 +597,19 @@ const MusicCtrlProvider = React.memo(props => {
         Visible={listModalVisible}
         OnClose={() => setListModalVisible(false)}
         OnClearList={() => {
-          dispatch(setPlayList([]));
+          setPlayList([]);
         }}
         Music={playingMusic}
         List={playList}
         OnPressItem={item => {
-          dispatch(setPlayingMusic(item));
+          setPlayingMusic(item);
         }}
         OnPressRemove={item => {
-          dispatch(removePlayList([item]));
+          removePlayList([item]);
         }}
       />
     </MusicCtrlContext.Provider>
   );
-});
-
-const styles = StyleSheet.create({
-  musicBut: {
-    width: 30,
-    height: 30,
-    borderRadius: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  ctrlBackImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 60,
-    overflow: 'hidden',
-    elevation: 2,
-  },
-
-  CtrlContainer: {
-    position: 'absolute',
-    backgroundColor: 'transparent',
-    width: '100%',
-    bottom: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  image: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    borderColor: Colors.white,
-    borderWidth: 1,
-  },
-  marquee: {
-    flex: 1,
-    width: fullWidth * 0.56,
-    overflow: 'hidden',
-  },
 });
 
 export default MusicCtrlProvider;

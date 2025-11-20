@@ -1,23 +1,26 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
-import { Colors } from 'react-native-ui-lib';
+import {StyleSheet} from 'react-native';
+import {Colors} from 'react-native-ui-lib';
+import {useTranslation} from 'react-i18next';
+import {fullWidth, fullHeight} from '@style/index';
+import {useToast} from '@utils/hooks/useToast';
 import Pdf from 'react-native-pdf';
-import { fullWidth, fullHeight } from '../../styles';
-import { useToast } from '../../utils/hooks/useToast';
 
-const BasePdfView = ({ route }) => {
-  const { url } = route.params || {};
-  const { showToast } = useToast();
+const BasePdfView = ({route}) => {
+  const {t} = useTranslation();
+  const {url} = route.params || {};
+  const {showToast} = useToast();
 
   return (
-
-    <Pdf style={styles.pdfView} source={{ uri: url, cache: true }} trustAllCerts={false} o
-      onError={(error) => {
-        showToast('加载pdf失败', 'error');
+    <Pdf
+      style={styles.pdfView}
+      source={{uri: url, cache: true}}
+      trustAllCerts={false}
+      onError={error => {
+        showToast('pdf' + t('error.load'), 'error');
         console.error(error);
       }}
     />
-
   );
 };
 const styles = StyleSheet.create({

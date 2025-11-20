@@ -7,5 +7,21 @@
   "yrc_roma": "逐字+音译歌词",
   "yrc": "逐字歌词",
   "sample_rate": "采样率：{{rate}} Hz",
-  "bitrate": "比特率：{{rate}} bps"
+  "bitrate": "比特率：{{rate}} bps",
+  "already_first": "已经是第一首了~",
+  "already_last": "已经是最后一首了~",
+  "no_music": "没有要播放的音乐~",
+  "loading": "正在加载音乐...",
+  "empty_title": "没有要播放的音乐",
+  "empty_artist": "未知歌手",
+  "empty_album": "未知专辑",
+  "add_to_play_list": "添加到播放列表",
+  "add_success": "已添加到播放列表",
+  "please_select_music": "请选择要收藏的歌曲",
+  "please_select": "请选择歌曲",
+  "already_favorite": "已收藏",
+  "favorite": "收藏",
+  "total_music": "{{total}}首歌曲",
+  "empty_favorites_tips": " 还没有任何歌单，快去新建一个吧~",
+  "now_playing": "当前正在播放"
 }

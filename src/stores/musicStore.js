@@ -19,33 +19,33 @@ export const useMusicStore = create()(
   persist(
     set => ({
       ...defaultState,
-      setPlayingMusic: id => {
-        getMusicDetail(id).then(res => {
+      setPlayingMusic: music => {
+        getMusicDetail(music?.id).then(res => {
           res.code === 0 && set({playingMusic: res.data || {}});
         });
       },
-      setPlayList: playList => set({playList}),
-      addPlayList: (playList = []) =>
+      setPlayList: (list = []) => set({playList: list}),
+      addPlayList: (list = []) =>
         set(state => {
-          playList.forEach(item => {
+          list.forEach(item => {
             if (!state.playList.some(e => e?.id === item?.id)) {
               state.playList.push(item);
             }
           });
           return state;
         }),
-      unshiftPlayList: (playList = []) =>
+      unshiftPlayList: (list = []) =>
         set(state => {
-          playList.forEach(item => {
+          list.forEach(item => {
             if (!state.playList.some(e => e?.id === item?.id)) {
               state.playList.unshift(item);
             }
           });
           return state;
         }),
-      removePlayList: (playList = []) =>
+      removePlayList: (list = []) =>
         set(state => {
-          playList.forEach(item => {
+          list.forEach(item => {
             const index = state.playList.findIndex(e => e?.id === item?.id);
             if (index > -1) {
               state.playList.splice(index, 1);

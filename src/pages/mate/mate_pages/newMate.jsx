@@ -18,14 +18,14 @@ import {
 } from '../../../api/mate';
 import BaseDialog from '@components/common/BaseDialog';
 
-const Newmate = ({navigation}) => {
+const NewMate = ({navigation}) => {
   const userId = useSelector(state => state.userStore.userId);
   // baseConfig
   const {STATIC_URL} = useSelector(state => state.baseConfigStore.baseConfig);
   const {showToast} = useToast();
 
   /* 申请好友列表 */
-  const [applylist, setAplylist] = React.useState([]);
+  const [applylist, setAplylist] = useState([]);
   const getApplylist = _userId => {
     getapplylist({uid: _userId})
       .then(res => {
@@ -40,7 +40,7 @@ const Newmate = ({navigation}) => {
   };
 
   /*   待通过好友列表 */
-  const [waitinglist, setWaitinglist] = React.useState([]);
+  const [waitinglist, setWaitinglist] = useState([]);
   const getWaitinglist = _userId => {
     getmatelist({uid: _userId, mate_status: 'waiting'})
       .then(res => {
@@ -57,7 +57,7 @@ const Newmate = ({navigation}) => {
   };
 
   /*   拒绝的好友列表 */
-  const [refusedlist, setRefusedlist] = React.useState([]);
+  const [refusedlist, setRefusedlist] = useState([]);
   const getRefusedlist = _userId => {
     getmatelist({uid: _userId, mate_status: 'refused'})
       .then(res => {
@@ -72,9 +72,9 @@ const Newmate = ({navigation}) => {
   };
 
   /*  同意好友申请 */
-  const [remarkVisible, setRemarkVisible] = React.useState(false);
-  const [remark, setRemark] = React.useState('');
-  const [mateId, setMateId] = React.useState(null);
+  const [remarkVisible, setRemarkVisible] = useState(false);
+  const [remark, setRemark] = useState('');
+  const [mateId, setMateId] = useState(null);
   const agreeOrRefuseApply = (status, Id) => {
     editmate({
       id: Id ? Id : mateId,
@@ -96,7 +96,7 @@ const Newmate = ({navigation}) => {
 
   /* 删除好友申请 */
   const [deleteVisible, setDeleteVisible] = useState(false);
-  const [deleteId, setDeleteId] = React.useState(null);
+  const [deleteId, setDeleteId] = useState(null);
   const deleteApplyInfo = async delete_id => {
     try {
       const delRes = await deletemate({id: delete_id});
@@ -112,8 +112,8 @@ const Newmate = ({navigation}) => {
   };
 
   /* 拒绝好友申请 */
-  const [refusedVisible, setRefusedVisible] = React.useState(false);
-  const [refusedId, setRefusedId] = React.useState(null);
+  const [refusedVisible, setRefusedVisible] = useState(false);
+  const [refusedId, setRefusedId] = useState(null);
 
   useEffect(() => {
     if (userId) {
@@ -130,7 +130,7 @@ const Newmate = ({navigation}) => {
         row
         centerV
         onPress={() => {
-          navigation.navigate('Mateinfo', {
+          navigation.navigate('MateInfo', {
             uid: item.apply_uid,
           });
         }}>
@@ -184,7 +184,7 @@ const Newmate = ({navigation}) => {
         row
         centerV
         onPress={() => {
-          navigation.navigate('Mateinfo', {
+          navigation.navigate('MateInfo', {
             uid: item.uid,
           });
         }}>
@@ -310,4 +310,4 @@ const Newmate = ({navigation}) => {
   );
 };
 
-export default Newmate;
+export default NewMate;

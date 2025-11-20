@@ -10,7 +10,7 @@ import {
 } from 'react-native-ui-lib';
 import dayjs from 'dayjs';
 import {useRealm} from '@realm/react';
-import {showMediaType, getLocalUser} from '../../../utils/handle/chatHandle';
+import {showMediaType, getLocalUser} from '@utils/system/chat_utils';
 import {fullHeight, fullWidth} from '../../../styles';
 import {useIsFocused} from '@react-navigation/native';
 
@@ -30,7 +30,7 @@ const SearchMsg = ({navigation, route}) => {
   }, [isFocused, keyword, session_id]);
 
   // 群聊列表
-  const [msgList, setMsgList] = React.useState([]);
+  const [msgList, setMsgList] = useState([]);
 
   /* 查询历史记录 */
   const getMsgList = async (keyword, sessionId) => {
@@ -107,7 +107,7 @@ const SearchMsg = ({navigation, route}) => {
   };
 
   /* 关键词高亮样式 */
-  const [keyword, setKeyword] = React.useState('');
+  const [keyword, setKeyword] = useState('');
   const setHighlightStyle = (text, highlightText) => {
     const regex = new RegExp(highlightText, 'gi');
     const parts = text?.split(regex) || [];

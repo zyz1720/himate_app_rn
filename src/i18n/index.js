@@ -1,7 +1,10 @@
 import i18n from 'i18next';
 import {initReactI18next} from 'react-i18next';
-import en from './locales/en/common.json';
-import zh from './locales/zh/common.json';
+import {importLocales} from '@utils/system/i18n_utils';
+
+// 导入并合并语言文件
+const en = importLocales('en');
+const zh = importLocales('zh');
 
 const resources = {
   en: {

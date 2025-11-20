@@ -1,84 +1,53 @@
 import React, {useEffect} from 'react';
 import {StatusBar} from 'react-native';
-import RootScreen from './RootScreen';
 import {Colors} from 'react-native-ui-lib';
-import {useToast} from '../utils/hooks/useToast';
-import {displayName as appDisplayName} from '../../app.json';
-import 'react-native-get-random-values';
+import {useToast} from '@utils/hooks/useToast';
+import {displayName} from '@root/app.json';
 import {install} from 'react-native-quick-crypto';
-import FullScreenLoading from '../components/common/FullScreenLoading';
+import {useConfigStore} from '@store/configStore';
+import {useUserStore} from '@store/userStore';
+import {useSettingStore} from '@store/settingStore';
+import {useErrorMsgStore} from '@store/errorMsgStore';
+import {useTranslation} from 'react-i18next';
+import FullScreenLoading from '@components/common/FullScreenLoading';
+import RootScreen from './RootScreen';
+import 'react-native-get-random-values';
 
 const RootView = () => {
   install();
+  const {t} = useTranslation();
   const {showToast} = useToast();
-  const dispatch = useDispatch();
-
-  const isLogin = useSelector(state => state.userStore.isLogin);
-  const userId = useSelector(state => state.userStore.userId);
-  const userLoading = useSelector(state => state.userStore.userLoading);
-
-  const themeColor = useSelector(state => state.settingStore.themeColor);
-  const isFullScreen = useSelector(state => state.settingStore.isFullScreen);
-  const isFastStatic = useSelector(state => state.settingStore.isFastStatic);
-  // getUrl
-  const baseConfig = useSelector(state => state.baseConfigStore.baseConfig);
-  const configLoading = useSelector(
-    state => state.baseConfigStore.configLoading,
-  );
-
-  /*  初始化应用设置 */
-  const settingInit = () => {
-    dispatch(initBaseConfigStore());
-    dispatch(initChatMsgStore());
-    dispatch(initSettingStore());
-    dispatch(initMusicStore());
-    dispatch(checkPermissions());
-  };
-
-  /**
-   * 监听baseConfig变化，当基本配置信息加载完成后初始化用户存储
-   * @effect
-   * @dependencies baseConfig
-   */
-  useEffect(() => {
-    if (baseConfig?.BASE_URL) {
-      dispatch(initUserStore());
-    }
-  }, [baseConfig?.BASE_URL]);
+  const {isLogin, setUserInfo} = useUserStore();
+  const {envConfig, configLoading, updateEnvConfig} = useConfigStore();
+  const {isFastStatic, themeColor, language, isFullScreen} = useSettingStore();
+  const {errorMsg, clearErrorMsgStore} = useErrorMsgStore();
 
   /**
    * 监听isLogin变化，当用户登录状态变化时，更新用户信息
    * @effect
-   * @dependencies isLogin, userId
+   * @dependencies isLogin
    */
   useEffect(() => {
-    if (isLogin && userId) {
-      dispatch(setUserInfo(userId));
+    if (isLogin) {
+      setUserInfo();
     }
-  }, [isLogin, userId]);
+  }, [isLogin]);
 
   // 是否启用高速静态资源
   useEffect(() => {
-    if (isFastStatic && baseConfig?.FAST_STATIC_URL) {
-      const config = {...baseConfig, STATIC_URL: baseConfig.FAST_STATIC_URL};
-      dispatch(setBaseConfig(config));
+    if (isFastStatic && envConfig?.FAST_STATIC_URL) {
+      const config = {...envConfig, STATIC_URL: envConfig.FAST_STATIC_URL};
+      updateEnvConfig(config);
     }
-  }, [isFastStatic, baseConfig?.FAST_STATIC_URL]);
+  }, [isFastStatic, envConfig?.FAST_STATIC_URL]);
 
-  // http请求错误提示
-  const errorMsg = useSelector(state => state.errorMsgStore.errorMsg);
+  // 全局错误提示
   useEffect(() => {
     if (errorMsg) {
       showToast(errorMsg, 'error');
-      dispatch(setErrorMsg(null));
     }
-    return () => dispatch(clearErrorMsgStore());
+    return () => clearErrorMsgStore();
   }, [errorMsg]);
-
-  // 应用初始化
-  useEffect(() => {
-    settingInit();
-  }, []);
 
   return (
     <>
@@ -96,12 +65,12 @@ const RootView = () => {
               ? 'dark-content'
               : 'light-content'
             : 'dark-content'
-        } // 字体颜色
+        }
         translucent={false} // 将状态栏填充的高度隐藏
         hidden={false}
       />
-      {configLoading || userLoading ? (
-        <FullScreenLoading Message={appDisplayName + '正在初始化...'} />
+      {configLoading ? (
+        <FullScreenLoading Message={displayName + t('common.init_loading')} />
       ) : (
         <RootScreen />
       )}

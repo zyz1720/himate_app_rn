@@ -1,21 +1,24 @@
 import * as React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import {Colors, TouchableOpacity} from 'react-native-ui-lib';
+import {useSettingStore} from '@store/settingStore';
+import {useTranslation} from 'react-i18next';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Music from '../../pages/music';
-import FindFavorites from '../../pages/music/music_pages/findFavorites';
-import LatelyMusic from '../../pages/music/music_pages/latelyMusic';
-import LocalMusic from '../../pages/music/music_pages/localMusic';
-import MyFavorites from '../../pages/music/music_pages/myFavorites';
-import SearchMusic from '../../pages/music/music_pages/searchMusic';
-import FavoritesDetail from '../../pages/music/music_pages/favoritesDetail';
-import EditFavorites from '../../pages/music/music_pages/editFavorites';
+import Music from '@pages/music';
+import FindFavorites from '@pages/music/music_pages/findFavorites';
+import LatelyMusic from '@pages/music/music_pages/latelyMusic';
+import LocalMusic from '@pages/music/music_pages/localMusic';
+import MyFavorites from '@pages/music/music_pages/myFavorites';
+import SearchMusic from '@pages/music/music_pages/searchMusic';
+import FavoritesDetail from '@pages/music/music_pages/favoritesDetail';
+import EditFavorites from '@pages/music/music_pages/editFavorites';
 
 const Stack = createStackNavigator();
 
 function MusicScreen() {
-  const themeColor = useSelector(state => state.settingStore.themeColor);
-  const isFullScreen = useSelector(state => state.settingStore.isFullScreen);
+  const {themeColor, isFullScreen} = useSettingStore();
+  const {t} = useTranslation();
+
   return (
     <Stack.Navigator initialRouteName="MusicHome">
       <Stack.Group
@@ -29,7 +32,7 @@ function MusicScreen() {
           name="MusicHome"
           component={Music}
           options={{
-            title: '音乐',
+            title: t('screen.Music'),
           }}
         />
       </Stack.Group>
@@ -39,7 +42,7 @@ function MusicScreen() {
           headerStyle: {backgroundColor: themeColor, height: 46},
           headerTitleAlign: 'center',
           headerTitleStyle: {fontSize: 16, color: Colors.white},
-          headerLeft: () => (
+          headerLeft: (
             <TouchableOpacity paddingH-26 onPress={() => navigation.goBack()}>
               <FontAwesome name="angle-left" color={Colors.white} size={26} />
             </TouchableOpacity>
@@ -49,49 +52,49 @@ function MusicScreen() {
           name="FindFavorites"
           component={FindFavorites}
           options={{
-            title: '发现歌单',
+            title: t('screen.FindFavorites'),
           }}
         />
         <Stack.Screen
           name="LatelyMusic"
           component={LatelyMusic}
           options={{
-            title: '最近播放',
+            title: t('screen.LatelyMusic'),
           }}
         />
         <Stack.Screen
           name="LocalMusic"
           component={LocalMusic}
           options={{
-            title: '本地音乐',
+            title: t('screen.LocalMusic'),
           }}
         />
         <Stack.Screen
           name="MyFavorites"
           component={MyFavorites}
           options={{
-            title: '我的收藏',
+            title: t('screen.MyFavorites'),
           }}
         />
         <Stack.Screen
           name="SearchMusic"
           component={SearchMusic}
           options={{
-            title: '搜索音乐',
+            title: t('screen.SearchMusic'),
           }}
         />
         <Stack.Screen
           name="FavoritesDetail"
           component={FavoritesDetail}
           options={{
-            title: '歌单详情',
+            title: t('screen.FavoritesDetail'),
           }}
         />
         <Stack.Screen
           name="EditFavorites"
           component={EditFavorites}
           options={{
-            title: '编辑歌单',
+            title: t('screen.EditFavorites'),
           }}
         />
       </Stack.Group>

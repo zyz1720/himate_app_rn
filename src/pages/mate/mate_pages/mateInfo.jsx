@@ -19,7 +19,7 @@ import {DownloadFile} from '../../../utils/handle/fileHandle';
 import BaseDialog from '.@components/common/BaseDialog';
 import ImgModal from '../../../components/common/ImgModal';
 
-const Mateinfo = ({navigation, route}) => {
+const MateInfo = ({navigation, route}) => {
   const {showToast} = useToast();
   const userId = useSelector(state => state.userStore.userId);
   // baseConfig
@@ -343,4 +343,4 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
 });
-export default Mateinfo;
+export default MateInfo;

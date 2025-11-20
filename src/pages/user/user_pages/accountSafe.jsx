@@ -3,7 +3,7 @@ import {StyleSheet, ScrollView, RefreshControl} from 'react-native';
 import {View, Text, Card, Colors, TextField, Button} from 'react-native-ui-lib';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useToast} from '../../../utils/hooks/useToast';
-import PasswordEye from '@components/about_input/PasswordEye';
+import PasswordEye from '@components/form/PasswordEye';
 import {
   editUserAccount,
   editUserPassword,
@@ -16,7 +16,7 @@ import {clearStorage} from '../../../utils/common/localStorage';
 import FullScreenLoading from '../../../components/common/FullScreenLoading';
 
 let timer = {};
-const Edituser = ({route}) => {
+const EditUser = ({route}) => {
   const {userId} = route.params;
 
   const {showToast} = useToast();
@@ -408,4 +408,4 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
 });
-export default Edituser;
+export default EditUser;

@@ -8,30 +8,35 @@ import {
   Checkbox,
   Colors,
 } from 'react-native-ui-lib';
-import {getEmailCode, getImgCaptcha} from '../../api/common';
-import {userLoginAccount, userLoginCode} from '../../api/login';
-import {userReg} from '../../api/user';
-import {useToast} from '../../utils/hooks/useToast';
-import {validateEmail} from '../../utils/common/base';
-import {displayName as appDisplayName} from '../../../app.json';
+import {getEmailCode, getImgCaptcha} from '@api/common';
+import {userLoginAccount, userLoginCode} from '@api/login';
+import {userReg} from '@api/user';
+import {useToast} from '@utils/hooks/useToast';
+import {validateEmail} from '@utils/common/string_utils';
+import {displayName} from '@root/app.json';
 import {SvgXml} from 'react-native-svg';
-import Animated, {FadeInUp, FadeInLeft} from 'react-native-reanimated';
-import PasswordEye from '@components/about_input/PasswordEye';
+import Animated, {FadeInUp} from 'react-native-reanimated';
+import {useUserStore} from '@store/userStore';
+import {useSettingStore} from '@store/settingStore';
+import {useConfigStore} from '@store/configStore';
+import {useTranslation} from 'react-i18next';
+import PasswordEye from '@components/form/PasswordEye';
 import BaseDialog from '@components/common/BaseDialog';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Feather from 'react-native-vector-icons/Feather';
 
 const Login = ({navigation}) => {
+  const {t} = useTranslation();
   const {showToast} = useToast();
-  const dispatch = useDispatch();
 
-  const themeColor = useSelector(state => state.settingStore.themeColor);
-  // baseConfig
-  const {STATIC_URL} = useSelector(state => state.baseConfigStore.baseConfig);
+  const {themeColor} = useSettingStore();
+  const {envConfig} = useConfigStore();
+  const {login} = useUserStore();
+
   /* 验证码倒计时 */
   const [sendFlag, setSendFlag] = useState(false);
-  const [codetext, setCodetext] = useState('发送验证码');
+  const [codetext, setCodetext] = useState(t('login.send_code'));
 
   let time = 60;
   const addTimer = () => {
@@ -43,7 +48,7 @@ const Login = ({navigation}) => {
         clearInterval(timer);
         time = 60;
         setSendFlag(false);
-        setCodetext('发送验证码');
+        setCodetext(t('login.send_code'));
       }
     }, 1000);
   };
@@ -69,7 +74,7 @@ const Login = ({navigation}) => {
   /* 发送验证码 */
   const sendCode = async () => {
     if (account === null || account === '') {
-      showToast('请输入邮箱！', 'error');
+      showToast(t('login.enter_email'), 'error');
       return;
     }
     if (!emailValidate(account)) {
@@ -118,7 +123,7 @@ const Login = ({navigation}) => {
             password,
           });
           if (loginRes.code === 0) {
-            dispatch(setIsLogin(loginRes.data));
+            login(loginRes.data);
           }
           showToast(
             loginRes.message,
@@ -137,7 +142,7 @@ const Login = ({navigation}) => {
           setButDisabled(true);
           const loginRes = await userLoginCode({account, code});
           if (loginRes.code === 0) {
-            dispatch(setIsLogin(loginRes.data));
+            login(loginRes.data);
           }
           showToast(
             loginRes.message,
@@ -211,18 +216,18 @@ const Login = ({navigation}) => {
     if (validateEmail(email)) {
       return true;
     }
-    showToast('请输入正确的邮箱号！', 'error');
+    showToast(t('login.email_error'), 'error');
     return false;
   };
 
   /* 验证码校验 */
   const codeValidate = _code => {
     if (!_code) {
-      showToast('请输入验证码！', 'error');
+      showToast(t('login.enter_code'), 'error');
       return false;
     }
     if (_code.length !== 6) {
-      showToast('请输入正确的验证码！', 'error');
+      showToast(t('login.code_error'), 'error');
       return false;
     }
     return true;
@@ -231,7 +236,7 @@ const Login = ({navigation}) => {
   /* 密码二次确认 */
   const rePassValidate = (old_password, new_password) => {
     if (old_password !== new_password) {
-      showToast('两次输入的密码不同，请再次确认！', 'warn');
+      showToast(t('login.verify_password_error'), 'warning');
       return false;
     }
     return true;
@@ -253,7 +258,7 @@ const Login = ({navigation}) => {
           </View>
         </View>
         <Text marginT-12 text40BO>
-          {appDisplayName}
+          {displayName}
         </Text>
       </View>
 
@@ -262,7 +267,11 @@ const Login = ({navigation}) => {
         <TextField
           text70
           style={styles.input}
-          placeholder={controlCode === 1 ? '请输入账号/邮箱' : '请输入邮箱'}
+          placeholder={
+            controlCode === 1
+              ? t('login.please_email_or_account')
+              : t('login.please_email')
+          }
           placeholderTextColor={Colors.grey40}
           onChangeText={value => setAccount(value)}
         />
@@ -276,7 +285,7 @@ const Login = ({navigation}) => {
               text70
               style={styles.input}
               placeholderTextColor={Colors.grey40}
-              placeholder="请输入验证码"
+              placeholder={t('login.please_code')}
               onChangeText={value => setCode(value)}
             />
             <Button
@@ -304,7 +313,7 @@ const Login = ({navigation}) => {
             text70
             style={styles.input}
             placeholderTextColor={Colors.grey40}
-            placeholder="请输入密码"
+            placeholder={t('login.please_password')}
             secureTextEntry={hideFlag}
             onChangeText={value => setPassword(value)}
           />
@@ -329,7 +338,7 @@ const Login = ({navigation}) => {
               text70
               style={styles.input}
               placeholderTextColor={Colors.grey40}
-              placeholder="请再次确认密码"
+              placeholder={t('login.please_confirm_password')}
               onChangeText={value => setRePassword(value)}
               secureTextEntry={true}
             />
@@ -344,7 +353,11 @@ const Login = ({navigation}) => {
             link
             text80
             linkColor={controlCode === 3 ? Colors.primary : Colors.grey40}
-            label={controlCode === 3 ? '账号登录' : '忘记密码?'}
+            label={
+              controlCode === 3
+                ? t('login.account_login')
+                : t('login.forget_password')
+            }
             onPress={() => {
               controlCode === 3 ? setControlCode(1) : setControlCode(3);
             }}
@@ -354,7 +367,9 @@ const Login = ({navigation}) => {
             link
             text80
             orange30
-            label={controlCode === 2 ? '账号登录' : '注册'}
+            label={
+              controlCode === 2 ? t('login.account_login') : t('login.register')
+            }
             onPress={() => {
               controlCode === 2 ? setControlCode(1) : setControlCode(2);
             }}
@@ -363,7 +378,7 @@ const Login = ({navigation}) => {
 
         <Button
           marginT-20
-          label={controlCode === 2 ? '注册' : '登录'}
+          label={controlCode === 2 ? t('login.register') : t('login.login')}
           disabled={butDisabled}
           backgroundColor={Colors.primary}
           disabledBackgroundColor={Colors.primary}
@@ -381,7 +396,7 @@ const Login = ({navigation}) => {
           size={18}
           borderRadius={9}
           color={Colors.primary}
-          label={'已阅读并同意 '}
+          label={t('login.agree')}
           labelStyle={styles.label}
           value={agreeFlag}
           onValueChange={value => setAgreeFlag(prv => !prv)}
@@ -390,11 +405,11 @@ const Login = ({navigation}) => {
           blue40
           link
           size="small"
-          label="用户使用协议"
+          label={t('login.user_protocol')}
           onPress={() => {
             navigation.navigate('WebView', {
-              title: '用户使用协议',
-              url: STATIC_URL + 'default_assets/user_protocol.html',
+              title: t('login.user_protocol'),
+              url: envConfig.STATIC_URL + 'default_assets/user_protocol.html',
             });
           }}
         />
@@ -404,7 +419,7 @@ const Login = ({navigation}) => {
         onConfirm={sendCode}
         visible={imgCodeVisible}
         setVisible={setImgCodeVisible}
-        description={'发送验证码'}
+        description={t('login.send_code')}
         Body={
           <View>
             <View height={80}>
@@ -412,7 +427,7 @@ const Login = ({navigation}) => {
             </View>
             <Button
               marginT-8
-              label="看不清？换一张"
+              label={t('login.change_code')}
               link
               disabled={sendFlag}
               text80L
@@ -420,7 +435,7 @@ const Login = ({navigation}) => {
               onPress={getImgCode}
             />
             <TextField
-              placeholder={'请输入图片验证码'}
+              placeholder={t('login.please_code')}
               text70L
               floatingPlaceholder
               onChangeText={value => {

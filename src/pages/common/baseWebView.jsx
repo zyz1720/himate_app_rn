@@ -2,15 +2,27 @@ import React from 'react';
 import {StyleSheet} from 'react-native';
 import {View} from 'react-native-ui-lib';
 import {WebView} from 'react-native-webview';
+import {useConfigStore} from '@store/configStore';
+import {useToast} from '@utils/hooks/useToast';
+import {useTranslation} from 'react-i18next';
 
-const BaseWebView = ({navigation, route}) => {
+const BaseWebView = ({route}) => {
   const {url} = route.params || {};
-  // baseConfig
-  const {STATIC_URL} = useSelector(state => state.baseConfigStore.baseConfig);
+  const {envConfig} = useConfigStore();
+  const {showToast} = useToast();
+  const {t} = useTranslation();
 
   return (
     <View style={styles.webView}>
-      <WebView source={{uri: url ?? STATIC_URL + 'default_assets/index.html'}} />
+      <WebView
+        source={{
+          uri: url || envConfig.STATIC_URL + 'default_assets/index.html',
+        }}
+        onError={error => {
+          showToast('web' + t('error.load'), 'error');
+          console.error(error);
+        }}
+      />
     </View>
   );
 };

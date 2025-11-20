@@ -7,21 +7,21 @@ import {
   Colors,
   TouchableOpacity,
 } from 'react-native-ui-lib';
-import {useToast} from '../../utils/hooks/useToast';
+import {useToast} from '@utils/hooks/useToast';
+import {roleMap, statusMap} from '@const/database_enum';
+import {getGroupList} from '@api/group';
+import {useConfigStore} from '@store/configStore';
 import dayjs from 'dayjs';
-import {getAllJoinGroupList} from '../../api/group_member';
-import FullScreenLoading from '../../components/common/FullScreenLoading';
+import FullScreenLoading from '@components/common/FullScreenLoading';
 
-const Grouplist = ({navigation}) => {
-  const userId = useSelector(state => state.userStore.userId);
-  // baseConfig
-  const {STATIC_URL} = useSelector(state => state.baseConfigStore.baseConfig);
+const GroupList = ({navigation}) => {
+  const {envConfig} = useConfigStore();
   const {showToast} = useToast();
 
   // 群聊列表
-  const [loading, setLoading] = React.useState(false);
-  const [selfGroupList, setSelfGroupList] = React.useState([]);
-  const [joinGroupList, setJoinGroupList] = React.useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selfGroupList, setSelfGroupList] = useState([]);
+  const [joinGroupList, setJoinGroupList] = useState([]);
   /* 获取群聊列表 */
   const getUserGroups = async uid => {
     try {
@@ -126,4 +126,4 @@ const Grouplist = ({navigation}) => {
   );
 };
 
-export default Grouplist;
+export default GroupList;

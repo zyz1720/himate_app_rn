@@ -1,6 +1,7 @@
 import {create} from 'zustand';
 import {getBaseConfig} from '@api/app_config';
-import {generateSecretKey} from '@utils/handle/cryptoHandle';
+import {generateSecretKey} from '@utils/system/crypto_utils';
+import {isEmptyObject} from '@utils/common/object_utils';
 
 const defaultState = {
   envConfig: {}, // 环境配置
@@ -10,7 +11,7 @@ const defaultState = {
 
 export const useConfigStore = create(set => ({
   ...defaultState,
-  setConfig: async () => {
+  setEnvConfig: async () => {
     try {
       set({configLoading: true});
       const config = await getBaseConfig();
@@ -26,4 +27,15 @@ export const useConfigStore = create(set => ({
       set({configLoading: false});
     }
   },
+  updateEnvConfig: config => {
+    set(state => ({
+      ...state,
+      envConfig: isEmptyObject(config) ? state.envConfig : config,
+    }));
+  },
 }));
+
+// 在应用初始化时获取环境配置
+const {setEnvConfig} = useConfigStore.getState();
+
+setEnvConfig();

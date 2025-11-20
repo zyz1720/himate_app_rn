@@ -21,7 +21,6 @@ const MateList = props => {
     height = '100%',
     allowSelect = false,
     onSelectChange = () => {},
-    selectedIds = [],
     excludeIds = [],
     onEndReached = () => {},
   } = props;
@@ -118,7 +117,7 @@ const MateList = props => {
     setScrollData(scrollSetting(needRes.letterList));
   }, [originalList]);
 
-  const [selectedItem, setSelectedItem] = useState(selectedIds);
+  const [selectedItem, setSelectedItem] = useState([]);
   return (
     <>
       <SectionList
