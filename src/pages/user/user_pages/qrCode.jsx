@@ -1,81 +1,60 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {View, Text, Card, Colors, Button, Avatar} from 'react-native-ui-lib';
-import {isEmptyObject} from '../../../utils/common/base';
+import {useUserStore} from '@store/userStore';
+import {useConfigStore} from '@store/configStore';
+import {useTranslation} from 'react-i18next';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import QRCode from 'react-native-qrcode-svg';
 
-const BaseQRCode = ({navigation, route}) => {
-  //   const {showToast} = useToast();
-  const {qrInfo, isMusic} = route.params || {};
-  const userInfo = useSelector(state => state.userStore.userInfo);
-
-  // baseConfig
-  const {STATIC_URL} = useSelector(state => state.baseConfigStore.baseConfig);
-
-  const [qrCodeInfo, setQrCodeInfo] = useState({});
-  useEffect(() => {
-    if (qrInfo) {
-      setQrCodeInfo(qrInfo);
-    } else if (!isEmptyObject(userInfo)) {
-      setQrCodeInfo({
-        value: userInfo?.self_account,
-        avatar: STATIC_URL + userInfo?.user_avatar,
-        name: userInfo?.user_name,
-        account: userInfo?.self_account,
-        tips: '扫描二维码，加我为好友',
-      });
-    }
-  }, [qrInfo, userInfo]);
+const BaseQRCode = ({navigation}) => {
+  const {t} = useTranslation();
+  const {userInfo} = useUserStore();
+  const {envConfig} = useConfigStore();
 
   return (
     <View flexG top paddingH-16 paddingT-16>
       <Card flexS centerV enableShadow={false} marginT-32 paddingV-32 center>
         <Avatar
           source={{
-            uri: qrCodeInfo?.avatar,
+            uri: userInfo?.user_avatar,
           }}
           size={80}
         />
         <Text text60 marginT-12>
-          {qrCodeInfo?.name}
+          {userInfo?.user_name}
         </Text>
-        {qrCodeInfo?.account ? (
+        {userInfo?.self_account ? (
           <Text text80 grey30>
-            账号: {qrCodeInfo.account}
+            {t('user.account')}: {userInfo.self_account}
           </Text>
         ) : null}
         <View marginT-16 center>
           <QRCode
             size={200}
-            logo={{uri: qrCodeInfo?.avatar}}
+            logo={{uri: envConfig.STATIC_URL + userInfo?.user_avatar}}
             logoBorderRadius={20}
             logoBackgroundColor="white"
-            value={qrCodeInfo?.value}
+            value={userInfo?.self_account}
           />
         </View>
         <Text grey30 marginT-16>
-          {qrCodeInfo?.tips}
+          {t('user.qr_code_tip')}
         </Text>
-        {qrCodeInfo?.account && !isMusic ? (
-          <View marginT-16 row center>
-            <Button
-              label="去添加好友"
-              link
-              color={Colors.primary}
-              size="small"
-              onPress={() => {
-                navigation.navigate('AddMate');
-              }}
-            />
-            <View marginL-4>
-              <FontAwesome
-                name="angle-right"
-                size={20}
-                color={Colors.primary}
-              />
-            </View>
+
+        <View marginT-16 row center>
+          <Button
+            label={t('user.add_friend')}
+            link
+            color={Colors.primary}
+            size="small"
+            onPress={() => {
+              navigation.navigate('AddMate');
+            }}
+          />
+          <View marginL-4>
+            <FontAwesome name="angle-right" size={20} color={Colors.primary} />
           </View>
-        ) : null}
+        </View>
       </Card>
     </View>
   );

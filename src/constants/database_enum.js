@@ -13,3 +13,9 @@ export const ChatTypeEnum = {
   private: 'private',
   group: 'group',
 };
+
+export const UserRoleEnum = {
+  default: 'default',
+  admin: 'admin',
+  vip: 'vip',
+};

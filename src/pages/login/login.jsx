@@ -15,16 +15,18 @@ import {useToast} from '@utils/hooks/useToast';
 import {validateEmail} from '@utils/common/string_utils';
 import {displayName} from '@root/app.json';
 import {SvgXml} from 'react-native-svg';
-import Animated, {FadeInUp} from 'react-native-reanimated';
 import {useUserStore} from '@store/userStore';
 import {useSettingStore} from '@store/settingStore';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
+import Animated, {FadeInUp} from 'react-native-reanimated';
 import PasswordEye from '@components/form/PasswordEye';
 import BaseDialog from '@components/common/BaseDialog';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Feather from 'react-native-vector-icons/Feather';
+
+let timer = null;
 
 const Login = ({navigation}) => {
   const {t} = useTranslation();
@@ -37,11 +39,10 @@ const Login = ({navigation}) => {
   /* 验证码倒计时 */
   const [sendFlag, setSendFlag] = useState(false);
   const [codetext, setCodetext] = useState(t('login.send_code'));
-
   let time = 60;
   const addTimer = () => {
     setSendFlag(true);
-    const timer = setInterval(() => {
+    timer = setInterval(() => {
       time -= 1;
       setCodetext(time + 's');
       if (time === 0) {
@@ -171,7 +172,7 @@ const Login = ({navigation}) => {
         if (regRes.code === 0) {
           const timer = setTimeout(() => {
             userLogin();
-            showToast('注册成功！已自动登录', 'success');
+            showToast(t('login.register_success'), 'success');
             clearTimeout(timer);
           }, 1000);
         } else {
@@ -188,11 +189,7 @@ const Login = ({navigation}) => {
   /* 账号校验 */
   const accountValidate = _account => {
     if (!_account) {
-      showToast('请输入账号或邮箱！', 'error');
-      return false;
-    }
-    if (_account.length < 6) {
-      showToast('请输入正确的账号或邮箱！', 'error');
+      showToast(t('login.please_email_or_account'), 'error');
       return false;
     }
     return true;
@@ -201,11 +198,11 @@ const Login = ({navigation}) => {
   /*  密码校验 */
   const passwordValidate = _password => {
     if (!_password) {
-      showToast('请输入密码！', 'error');
+      showToast(t('login.please_password'), 'error');
       return false;
     }
     if (_password.length < 6) {
-      showToast('请输入至少6位密码！', 'error');
+      showToast(t('login.password_invalid'), 'error');
       return false;
     }
     return true;

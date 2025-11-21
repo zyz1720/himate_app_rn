@@ -11,20 +11,17 @@ import {
   ProgressBar,
 } from 'react-native-ui-lib';
 import {StyleSheet, ActivityIndicator, Platform} from 'react-native';
-import {useToast} from '../../utils/hooks/useToast';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {downloadFile} from '../../utils/handle/fileHandle';
-import ListItem from '../../components/common/ListItem';
-import {getAppPackageDetail} from '../../api/app_package';
-import {
-  name as appName,
-  displayName as appDisplayName,
-} from '../../../app.json';
+import {useToast} from '@utils/hooks/useToast';
+import {downloadFile} from '@utils/system/file_utils';
+import {getAppPackageDetail} from '@api/app_package';
+import {name as appName, displayName} from '@root/app.json';
+import {isEmptyObject} from '@utils/common/base';
 import DeviceInfo from 'react-native-device-info';
 import ReactNativeBlobUtil from 'react-native-blob-util';
-import ImgModal from '../../components/common/ImgModal';
-import {isEmptyObject} from '../../utils/common/base';
-import FullScreenLoading from '../../components/common/FullScreenLoading';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import FullScreenLoading from '@components/common/FullScreenLoading';
+import ImgModal from '@components/common/ImgModal';
+import ListItem from '@components/common/ListItem';
 
 const User = ({navigation}) => {
   const {showToast} = useToast();
@@ -153,7 +150,7 @@ const User = ({navigation}) => {
   return (
     <>
       {isEmptyObject(userInfo) ? (
-        <FullScreenLoading Message={appDisplayName + ' 加载中...'} />
+        <FullScreenLoading Message={displayName + ' 加载中...'} />
       ) : (
         <View flexG top paddingH-16 paddingT-16>
           <Card
@@ -261,7 +258,7 @@ const User = ({navigation}) => {
               iconName={'cloud-download'}
               iconSize={20}
               iconColor={Colors.violet40}
-              RightText={versionName}
+              rightText={versionName}
               onConfirm={() => {
                 if (Platform.OS === 'ios') {
                   showToast('IOS暂不支持', 'warning');
@@ -272,13 +269,13 @@ const User = ({navigation}) => {
               }}
             />
             <ListItem
-              itemName={'关于' + appDisplayName}
+              itemName={'关于' + displayName}
               iconName={'cube'}
               iconSize={20}
               iconColor={Colors.cyan30}
               onConfirm={() => {
                 navigation.navigate('WebView', {
-                  title: '关于' + appDisplayName,
+                  title: '关于' + displayName,
                   url: STATIC_URL + 'default_assets/index.html',
                 });
               }}

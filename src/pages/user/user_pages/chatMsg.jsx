@@ -1,23 +1,24 @@
 import React, {useState} from 'react';
 import {View, Button, TextField, Card, Colors, Text} from 'react-native-ui-lib';
-import ListItem from '../../../components/common/ListItem';
-import {useToast} from '../../../utils/hooks/useToast';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import {useToast} from '@utils/hooks/useToast';
 import {useRealm} from '@realm/react';
-import {encryptAES, decryptAES} from '../../../utils/handle/cryptoHandle';
+import {encryptAES, decryptAES} from '@utils/system/crypto_utils';
+import {writeJSONFile, readJSONFile} from '@utils/system/file_utils';
+import {setLocalMsg} from '@utils/system/chat_utils';
+import {usePermissionStore} from '@store/permissionStore';
+import {useTranslation} from 'react-i18next';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import DocumentPicker from 'react-native-document-picker';
+import ListItem from '@components/common/ListItem';
 import BaseDialog from '@components/common/BaseDialog';
 import PasswordEye from '@components/form/PasswordEye';
-import {writeJSONFile, readJSONFile} from '../../../utils/handle/fileHandle';
-import DocumentPicker from 'react-native-document-picker';
-import {setLocalMsg} from '@utils/system/chat_utils';
 
-const ChatMsg = ({navigation, route}) => {
+const ChatMsg = ({route}) => {
   const {session_id} = route.params || {};
   const {showToast} = useToast();
+  const {t} = useTranslation();
   const realm = useRealm();
-  const dispatch = useDispatch();
-  const userId = useSelector(state => state.userStore.userId);
-  const accessFolder = useSelector(state => state.permissionStore.accessFolder);
+  const {accessFolder, setAccessFolder} = usePermissionStore();
 
   const [hideFlag, setHideFlag] = useState(true);
   const [inputVisible, setInputVisible] = useState(false);
@@ -30,17 +31,17 @@ const ChatMsg = ({navigation, route}) => {
     if (session_id) {
       localMsgs = localMsgs.filtered('session_id == $0', session_id);
     }
-    const newlist = localMsgs.toJSON();
-    const exportData = encryptAES(newlist, msgSecret + userId);
+    const newList = localMsgs.toJSON();
+    const exportData = encryptAES(newList, msgSecret);
     // console.log(exportData);
     const writeRes = await writeJSONFile(
       exportData,
       `chatHistory_${Date.now()}.json`,
     );
     if (writeRes) {
-      showToast('导出聊天记录成功！', 'success');
+      showToast(t('user.export_chat_success'), 'success');
     } else {
-      showToast('导出聊天记录失败！', 'error');
+      showToast(t('user.export_chat_failed'), 'error');
     }
   };
 
@@ -64,23 +65,22 @@ const ChatMsg = ({navigation, route}) => {
     for (let i = 0; i < importFile.length; i++) {
       const magData = await readJSONFile(importFile[i].uri);
       if (!magData?.encryptedData && !magData?.iv) {
-        showToast('请选择正确的聊天记录文件！', 'error');
+        showToast(t('user.chat_file_error'), 'error');
         continue;
       }
-      const msgList = decryptAES(
-        magData.encryptedData,
-        magData.iv,
-        msgSecret + userId,
-      );
+      const msgList = decryptAES(magData.encryptedData, magData.iv, msgSecret);
       if (!msgList) {
-        showToast('聊天记录密钥错误！', 'error');
+        showToast(t('user.chat_secret_error'), 'error');
         continue;
       }
       setLocalMsg(realm, msgList);
       successCount += 1;
     }
     if (successCount > 0) {
-      showToast(`成功导入${successCount}个聊天记录`, 'success');
+      showToast(
+        t('user.import_chat_success', {count: successCount}),
+        'success',
+      );
     }
   };
 
@@ -90,7 +90,7 @@ const ChatMsg = ({navigation, route}) => {
     const toDelete = realm.objects('ChatMsg');
     realm.write(() => {
       realm.delete(toDelete);
-      showToast('您已清除所有聊天记录！', 'success');
+      showToast(t('user.clear_chat_success'), 'success');
     });
   };
 
@@ -104,21 +104,23 @@ const ChatMsg = ({navigation, route}) => {
               color={Colors.red30}
               size={14}
             />
-            &nbsp;请务必牢记您的聊天记录密钥，否则将无法导入!
+            &nbsp;{t('user.chat_secret_warning')}
           </Text>
         </View>
         <Card enableShadow={false}>
           <View>
             <ListItem
-              itemName={session_id ? '导出聊天记录' : '导出所有聊天记录'}
+              itemName={
+                session_id ? t('user.export_chat') : t('user.export_all_chat')
+              }
               iconName={'download'}
               iconColor={Colors.grey10}
               iconSize={20}
-              RightText={'一键导出'}
+              rightText={t('user.export_chat')}
               onConfirm={() => {
                 if (!accessFolder) {
-                  showToast('请授予应用文件和媒体使用权限', 'warning');
-                  dispatch(requestFolderPermission());
+                  showToast(t('permissions.folder_please'), 'warning');
+                  setAccessFolder();
                   return;
                 }
                 setHandlerType('export');
@@ -127,22 +129,22 @@ const ChatMsg = ({navigation, route}) => {
             />
             <View paddingH-16 paddingB-16>
               <Text grey30 text90L>
-                温馨提示：只能导出文字类型的聊天记录！
+                {t('user.chat_secret_tip')}
               </Text>
             </View>
           </View>
           {!session_id ? (
             <View>
               <ListItem
-                itemName={'导入聊天记录'}
+                itemName={t('user.import_chat')}
                 iconName={'upload'}
                 iconColor={Colors.grey10}
                 iconSize={20}
-                RightText={'选择导入'}
+                rightText={t('user.import_chat_select')}
                 onConfirm={() => {
                   if (!accessFolder) {
-                    showToast('请授予应用文件和媒体使用权限', 'warning');
-                    dispatch(requestFolderPermission());
+                    showToast(t('permissions.folder_please'), 'warning');
+                    setAccessFolder();
                     return;
                   }
                   setHandlerType('import');
@@ -151,7 +153,7 @@ const ChatMsg = ({navigation, route}) => {
               />
               <View paddingH-16 paddingB-16>
                 <Text grey30 text90L>
-                  请选择本应用导出的标准格式的聊天记录文件进行导入，如果该聊天记录文件非本人的群聊或好友间的聊天记录，则无法正常显示！
+                  {t('user.import_chat_tip')}
                 </Text>
               </View>
             </View>
@@ -164,7 +166,7 @@ const ChatMsg = ({navigation, route}) => {
             text70
             red30
             borderRadius={12}
-            label="清除所有聊天记录"
+            label={t('user.clear_chat')}
             onPress={() => setClearMsgVisible(true)}
           />
         ) : null}
@@ -175,12 +177,12 @@ const ChatMsg = ({navigation, route}) => {
         }
         visible={inputVisible}
         setVisible={setInputVisible}
-        description={'聊天记录密钥'}
+        description={t('user.chat_secret')}
         renderBody={
           <View>
             <TextField
               marginT-8
-              placeholder={'请输入聊天记录密钥'}
+              placeholder={t('user.chat_secret_placeholder')}
               text70L
               floatingPlaceholder
               secureTextEntry={hideFlag}
@@ -205,7 +207,7 @@ const ChatMsg = ({navigation, route}) => {
         onConfirm={clearChatMsg}
         visible={clearMsgVisible}
         setVisible={setClearMsgVisible}
-        description={'您确定要清除所有聊天记录吗？'}
+        description={t('user.clear_chat_confirm')}
       />
     </>
   );

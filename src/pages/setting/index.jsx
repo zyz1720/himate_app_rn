@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {Platform} from 'react-native';
+import {Platform, StyleSheet} from 'react-native';
 import {
   View,
   Card,
@@ -9,39 +9,53 @@ import {
   ColorPicker,
   Switch,
 } from 'react-native-ui-lib';
-import {useToast} from '../../utils/hooks/useToast';
-import ListItem from '../../components/common/ListItem';
-import BaseColorPicker from '../../components/setting/BaseColoerPciker';
-import BaseSheet from '../../components/common/BaseSheet';
-import {addStorage} from '../../utils/common/localStorage';
-import {playSystemSound} from '../../utils/common/notification';
-import {displayName as appDisplayName} from '../../../app.json';
-import {getBaseConfig} from '../../api/base_config';
-import {deepClone} from '../../utils/common/base';
-import {getStorage} from '../../utils/common/localStorage';
+import {useToast} from '@utils/hooks/useToast';
+import {playSystemSound} from '@utils/system/notification';
+import {displayName} from '@root/app.json';
+import {getAppConfig} from '@api/app_config';
+import {deepClone} from '@utils/common/object_utils';
+import {useSettingStore} from '@store/settingStore';
+import {useUserStore} from '@store/userStore';
+import {useConfigStore} from '@store/configStore';
+import {UserRoleEnum} from '@const/database_enum';
+import {useTranslation} from 'react-i18next';
+import ListItem from '@components/common/ListItem';
+import BaseColorPicker from '@components/setting/BaseColorPicker';
+import BaseSheet from '@components/common/BaseSheet';
+
+const superRole = [UserRoleEnum.admin, UserRoleEnum.vip];
 
 const Setting = ({navigation}) => {
   const {showToast} = useToast();
-  const themeColor = useSelector(state => state.settingStore.themeColor);
-  const toastType = useSelector(state => state.settingStore.toastType);
-  const isMusicApp = useSelector(state => state.settingStore.isMusicApp);
-  const isFullScreen = useSelector(state => state.settingStore.isFullScreen);
-  const isPlaySound = useSelector(state => state.settingStore.isPlaySound);
-  const notSaveMsg = useSelector(state => state.settingStore.notSaveMsg);
-  const isFastStatic = useSelector(state => state.settingStore.isFastStatic);
-  const isEncryptMsg = useSelector(state => state.settingStore.isEncryptMsg);
-  const userInfo = useSelector(state => state.userStore.userInfo);
-
-  // baseConfig
-  const baseConfig = useSelector(state => state.baseConfigStore.baseConfig);
-
-  const dispatch = useDispatch();
+  const {
+    themeColor,
+    toastType,
+    isMusicApp,
+    isFullScreen,
+    isPlaySound,
+    notSaveMsg,
+    isFastStatic,
+    isEncryptMsg,
+    ringtone,
+    setThemeColor,
+    setToastType,
+    setIsPlaySound,
+    setIsFullScreen,
+    setNotSaveMsg,
+    setIsEncryptMsg,
+    setIsFastStatic,
+    setIsMusicApp,
+    setRingtone,
+  } = useSettingStore();
+  const {userInfo} = useUserStore();
+  const {envConfig, updateEnvConfig} = useConfigStore();
+  const {t} = useTranslation();
 
   const soundNames = [
-    {id: 1, name: '应用默认', value: 'default_1.mp3'},
-    {id: 2, name: '自定义1', value: 'default_2.mp3'},
-    {id: 3, name: '自定义2', value: 'default_3.mp3'},
-    {id: 3, name: '真由理(dudulu~)', value: 'default_4.mp3'},
+    {id: 1, name: t('setting.default'), value: 'default_1.mp3'},
+    {id: 2, name: t('setting.ring2'), value: 'default_2.mp3'},
+    {id: 3, name: t('setting.ring3'), value: 'default_3.mp3'},
+    {id: 4, name: t('setting.ring4'), value: 'default_4.mp3'},
   ];
 
   // 获取颜色
@@ -60,53 +74,23 @@ const Setting = ({navigation}) => {
   const [showDefaultApp, setShowDefaultApp] = useState(false);
 
   // 设置静态资源地址
-  const getStaticUrl = async () => {
-    try {
-      const {STATIC_URL} = await getBaseConfig();
-      return STATIC_URL;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  };
-
-  // 设置静态资源地址
   const settingStaticUrl = async value => {
-    const newUrlInfo = deepClone(baseConfig);
-    const staticUrl = await getStaticUrl();
-    const {FAST_STATIC_URL, LOW_STATIC_URL} = baseConfig;
+    const newUrlInfo = deepClone(envConfig);
+    const staticUrl = await getAppConfig();
     if (value) {
-      newUrlInfo.STATIC_URL = FAST_STATIC_URL;
+      newUrlInfo.STATIC_URL = staticUrl.FAST_STATIC_URL;
     } else {
-      newUrlInfo.STATIC_URL = staticUrl || LOW_STATIC_URL;
+      newUrlInfo.STATIC_URL = staticUrl.STATIC_URL;
     }
-    dispatch(setBaseConfig(newUrlInfo));
+    updateEnvConfig(newUrlInfo);
   };
-
-  // 铃声
-  const [soundName, setSoundName] = useState('default_1.mp3');
-  const getSoundName = async () => {
-    try {
-      const _soundName = await getStorage('setting', 'soundName');
-      if (_soundName) {
-        setSoundName(_soundName);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  useEffect(() => {
-    getStaticUrl();
-    getSoundName();
-  }, []);
 
   return (
     <>
       <View flexG paddingH-16 paddingT-16>
         <Card enableShadow={false}>
           <ListItem
-            itemName={'主题颜色'}
+            itemName={t('setting.themeColor')}
             iconName={'dropbox'}
             iconColor={themeColor}
             onConfirm={() => {
@@ -114,7 +98,7 @@ const Setting = ({navigation}) => {
             }}
           />
           <ListItem
-            itemName={'提示类型'}
+            itemName={t('setting.toastType')}
             iconName={'question-circle'}
             iconColor={Colors.blue30}
             onConfirm={() => {
@@ -122,20 +106,20 @@ const Setting = ({navigation}) => {
             }}
           />
           <ListItem
-            itemName={'全屏模式'}
+            itemName={t('setting.fullScreenMode')}
             iconName={'square-o'}
             iconColor={Colors.grey30}
-            RightView={
+            renderRight={
               <Switch
                 onColor={Colors.primary}
                 offColor={Colors.grey50}
                 value={isFullScreen}
-                onValueChange={value => dispatch(setIsFullScreen(value))}
+                onValueChange={value => setIsFullScreen(value)}
               />
             }
           />
           <ListItem
-            itemName={'默认应用'}
+            itemName={t('setting.defaultApp')}
             iconName={'tablet'}
             iconColor={Colors.blue50}
             onConfirm={() => {
@@ -145,7 +129,7 @@ const Setting = ({navigation}) => {
         </Card>
         <Card marginT-16 enableShadow={false}>
           <ListItem
-            itemName={'消息铃声'}
+            itemName={t('setting.messageSound')}
             iconName={'volume-up'}
             iconColor={Colors.cyan30}
             onConfirm={() => {
@@ -153,41 +137,41 @@ const Setting = ({navigation}) => {
             }}
           />
           <ListItem
-            itemName={'消息提醒'}
+            itemName={t('setting.messageAlert')}
             iconName={'bell'}
             iconColor={Colors.yellow30}
-            RightView={
+            renderRight={
               <Switch
                 onColor={Colors.primary}
                 offColor={Colors.grey50}
                 value={isPlaySound}
-                onValueChange={value => dispatch(setIsPlaySound(value))}
+                onValueChange={value => setIsPlaySound(value)}
               />
             }
           />
           <ListItem
-            itemName={'消息加密'}
+            itemName={t('setting.messageEncrypt')}
             iconName={'lock'}
             iconColor={Colors.grey30}
-            RightView={
+            renderRight={
               <Switch
                 onColor={Colors.primary}
                 offColor={Colors.grey50}
                 value={isEncryptMsg}
-                onValueChange={value => dispatch(setIsEncryptMsg(value))}
+                onValueChange={value => setIsEncryptMsg(value)}
               />
             }
           />
           <ListItem
-            itemName={'不保留消息'}
+            itemName={t('setting.notSaveMsg')}
             iconName={'times-circle'}
             iconColor={Colors.red30}
-            RightView={
+            renderRight={
               <Switch
                 onColor={Colors.primary}
                 offColor={Colors.grey50}
                 value={notSaveMsg}
-                onValueChange={value => dispatch(setNotSaveMsg(value))}
+                onValueChange={value => setNotSaveMsg(value)}
               />
             }
           />
@@ -195,7 +179,7 @@ const Setting = ({navigation}) => {
 
         <Card marginT-16 enableShadow={false}>
           <ListItem
-            itemName={'权限管理'}
+            itemName={t('setting.permissionManage')}
             iconName={'lock'}
             iconColor={Colors.red40}
             onConfirm={() => {
@@ -203,25 +187,25 @@ const Setting = ({navigation}) => {
             }}
           />
           <ListItem
-            itemName={'存储位置'}
+            itemName={t('setting.fileLocation')}
             iconName={'folder'}
             iconColor={Colors.blue40}
             onConfirm={() => {
               setShowFileLocation(true);
             }}
           />
-          {userInfo?.user_role !== 'default' ? (
+          {superRole.includes(userInfo?.user_role) ? (
             <ListItem
-              itemName={'静态资源加速'}
+              itemName={t('setting.fastStatic')}
               iconName={'rocket'}
               iconColor={Colors.red20}
-              RightView={
+              renderRight={
                 <Switch
                   onColor={Colors.primary}
                   offColor={Colors.grey50}
                   value={isFastStatic}
                   onValueChange={value => {
-                    dispatch(setIsFastStatic(value));
+                    setIsFastStatic(value);
                     settingStaticUrl(value);
                   }}
                 />
@@ -232,25 +216,24 @@ const Setting = ({navigation}) => {
       </View>
 
       <Dialog visible={showDialog} onDismiss={() => setShowDialog(false)}>
-        <Card padding-16 row left style={{flexWrap: 'wrap'}}>
+        <Card padding-16 row left style={styles.flexWrap}>
           <BaseColorPicker
-            SlectColor={themeColor}
+            selectedColor={themeColor}
             onConfirm={item => {
-              dispatch(setPrimaryColor(item.color));
-              showToast('设置成功！', 'success');
+              setThemeColor(item.color);
+              showToast(t('setting.setSuccess'), 'success');
               setShowDialog(false);
             }}
           />
           <View flexS row centerV paddingH-24>
-            <Text>自定义主题色</Text>
+            <Text>{t('setting.customThemeColor')}</Text>
             <ColorPicker
               colors={[Colors.primary]}
               initialColor={Colors.primary}
               value={Colors.primary}
-              onDismiss={() => console.log('取消')}
-              onSubmit={(color, textColor) => {
-                dispatch(setPrimaryColor(color));
-                showToast('设置成功！', 'success');
+              onSubmit={color => {
+                setThemeColor(color);
+                showToast(t('setting.setSuccess'), 'success');
                 setShowDialog(false);
               }}
             />
@@ -258,77 +241,76 @@ const Setting = ({navigation}) => {
         </Card>
       </Dialog>
       <BaseSheet
-        Title={'选择提示类型'}
+        Title={t('setting.toastType_select')}
         visible={showToastType}
         SetVisible={setShowToastType}
         Actions={[
           {
-            label: '系统默认',
+            label: t('setting.default'),
             color: toastType === 'system' ? Colors.primary : Colors.grey30,
             onPress: () => {
-              dispatch(setToastType('system'));
-              showToast('设置成功！', 'success', true);
+              setToastType('system');
+              showToast(t('setting.setSuccess'), 'success', true);
               setShowToastType(false);
             },
           },
           {
-            label: '顶部弹出',
+            label: t('setting.toast_top'),
             color: toastType === 'top' ? Colors.primary : Colors.grey30,
             onPress: () => {
-              dispatch(setToastType('top'));
-              showToast('设置成功！', 'success', true);
+              setToastType('top');
+              showToast(t('setting.setSuccess'), 'success', true);
               setShowToastType(false);
             },
           },
           {
-            label: '底部弹出',
+            label: t('setting.toast_bottom'),
             color: toastType === 'bottom' ? Colors.primary : Colors.grey30,
             onPress: () => {
-              dispatch(setToastType('bottom'));
-              showToast('设置成功！', 'success', true);
+              setToastType('bottom');
+              showToast(t('setting.setSuccess'), 'success', true);
               setShowToastType(false);
             },
           },
         ]}
       />
       <BaseSheet
-        Title={'选择默认启动的应用类型'}
+        Title={t('setting.defaultApp_select')}
         visible={showDefaultApp}
         SetVisible={setShowDefaultApp}
         Actions={[
           {
-            label: '聊天应用',
+            label: t('setting.chatApp'),
             color: isMusicApp ? Colors.grey30 : Colors.primary,
             onPress: () => {
-              dispatch(setIsMusicApp(false));
-              showToast('下次启动为聊天应用！', 'success', true);
+              setIsMusicApp(false);
+              showToast(t('setting.on_chatApp'), 'success', true);
               setShowDefaultApp(false);
             },
           },
           {
-            label: '音乐应用',
+            label: t('setting.musicApp'),
             color: isMusicApp ? Colors.primary : Colors.grey30,
             onPress: () => {
-              dispatch(setIsMusicApp(true));
-              showToast('下次启动为音乐应用！', 'success', true);
+              setIsMusicApp(true);
+              showToast(t('setting.on_musicApp'), 'success', true);
               setShowDefaultApp(false);
             },
           },
         ]}
       />
       <BaseSheet
-        Title={'消息铃声'}
+        Title={t('setting.messageSound')}
         visible={showAudio}
         SetVisible={setShowAudio}
         Actions={soundNames.map(item => {
           return {
             label: item.name,
-            color: soundName === item.value ? Colors.primary : Colors.grey30,
+            color: ringtone === item.value ? Colors.primary : Colors.grey30,
             onPress: () => {
               playSystemSound(item.value);
-              addStorage('setting', 'soundName', item.value);
-              getSoundName();
-              showToast('设置成功！', 'success', true);
+              setRingtone(item.value);
+              showToast(t('setting.setSuccess'), 'success', true);
               setShowAudio(false);
             },
           };
@@ -339,24 +321,26 @@ const Setting = ({navigation}) => {
         onDismiss={() => setShowFileLocation(false)}>
         <Card flexS padding-16>
           <View flexS paddingH-16>
-            <Text text70BO>图片/视频存储位置</Text>
+            <Text text70BO>{t('setting.imageVideoLocation')}</Text>
             {Platform.OS === 'ios' ? (
               <Text color={Colors.primary}>
-                我的iPhone/{appDisplayName}/Picture
+                {t('setting.imageVideoLocation_ios', {name: displayName})}
               </Text>
             ) : (
-              <Text color={Colors.primary}>系统相册/{appDisplayName}</Text>
+              <Text color={Colors.primary}>
+                {t('setting.imageVideoLocation_android', {name: displayName})}
+              </Text>
             )}
           </View>
           <View marginT-16 flexS paddingH-16>
-            <Text text70BO>其它文件存储位置</Text>
+            <Text text70BO>{t('setting.other_fileLocation')}</Text>
             {Platform.OS === 'ios' ? (
               <Text color={Colors.primary}>
-                我的iPhone/{appDisplayName}/Download
+                {t('setting.other_fileLocation_ios', {name: displayName})}
               </Text>
             ) : (
               <Text color={Colors.primary}>
-                内部存储/Download/{appDisplayName}
+                {t('setting.other_fileLocation_android', {name: displayName})}
               </Text>
             )}
           </View>
@@ -365,5 +349,11 @@ const Setting = ({navigation}) => {
     </>
   );
 };
+
+const styles = StyleSheet.create({
+  flexWrap: {
+    flexWrap: 'wrap',
+  },
+});
 
 export default Setting;

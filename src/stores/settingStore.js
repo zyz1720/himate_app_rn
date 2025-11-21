@@ -46,11 +46,17 @@ export const useSettingStore = create()(
       setIsFastStatic: flag => {
         set({isFastStatic: flag ?? false});
       },
-      initThemeColors: () => {
-        Colors.loadColors({...themeColors, primary: get().themeColor});
+      setIsMusicApp: flag => {
+        set({isMusicApp: flag ?? false});
+      },
+      setRingtone: ringtone => {
+        set({ringtone: ringtone || get().ringtone});
       },
       setLanguage: lang => {
         set({language: lang || 'zh'});
+      },
+      initThemeColors: () => {
+        Colors.loadColors({...themeColors, primary: get().themeColor});
       },
     }),
     {
@@ -59,3 +65,6 @@ export const useSettingStore = create()(
     },
   ),
 );
+
+const {initThemeColors} = useSettingStore.getState();
+initThemeColors();

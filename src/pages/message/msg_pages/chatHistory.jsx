@@ -1,28 +1,26 @@
 import React, {useState} from 'react';
 import {View, Card, Colors} from 'react-native-ui-lib';
-import {useToast} from '../../../utils/hooks/useToast';
-import {useRealm} from '@realm/react';
-import {getSessionDetail} from '../../../api/session';
+import {useToast} from '@utils/hooks/useToast';
+import {getSessionDetail} from '@api/session';
 import {formatMsg, setLocalMsg} from '@utils/system/chat_utils';
-import ListItem from '../../../components/common/ListItem';
+import ListItem from '@components/common/ListItem';
 import BaseDialog from '@components/common/BaseDialog';
-import FullScreenLoading from '../../../components/common/FullScreenLoading';
+import FullScreenLoading from '@components/common/FullScreenLoading';
 
 const ChatHistory = ({navigation, route}) => {
   const {showToast} = useToast();
-  const realm = useRealm();
   const {session_id, to_uid} = route.params || {};
 
   /* 清空历史消息 */
   const clearChatHistory = se_id => {
-    const toDelete = realm
-      .objects('ChatMsg')
-      .filtered('session_id == $0', se_id);
-    realm.write(() => {
-      realm.delete(toDelete);
-      showToast('清除成功', 'success');
-      navigation.navigate('Msg');
-    });
+    // const toDelete = realm
+    //   .objects('ChatMsg')
+    //   .filtered('session_id == $0', se_id);
+    // realm.write(() => {
+    //   realm.delete(toDelete);
+    //   showToast('清除成功', 'success');
+    //   navigation.navigate('Msg');
+    // });
   };
 
   /* 获取历史消息 */
@@ -36,7 +34,7 @@ const ChatHistory = ({navigation, route}) => {
         res.data.msgs.forEach(item => {
           newlist.push(formatMsg(item));
         });
-        setLocalMsg(realm, newlist);
+        // setLocalMsg(realm, newlist);
         navigation.navigate('Msg');
       }
       setLoading(false);

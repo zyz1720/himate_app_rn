@@ -7,5 +7,8 @@
   "music": "没有发现任何音乐  T_T",
   "mate_apply": "还没有好友申请 T_T",
   "mate_refused": "还没有拒绝过好友申请 ^_^",
-  "session": "还没有任何消息 T_T"
+  "session": "还没有任何消息 T_T",
+  "input": "请输入要修改的内容！",
+  "introduction": "还没有简介哦~",
+  "my_favorites": "还没有任何歌单，快去新建一个吧~"
 }

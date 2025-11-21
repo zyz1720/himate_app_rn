@@ -4,7 +4,6 @@
   "create_group_success": "创建群聊成功",
   "selected": "已选择",
   "mate": "个好友",
-  "input_empty": "请输入要修改的内容！",
   "delete_success": "群组已解散",
   "exit_success": "已退出该群组",
   "delete_member_success": "已踢出该群成员",

@@ -12,43 +12,39 @@ import {
   DateTimePicker,
   RadioButton,
 } from 'react-native-ui-lib';
+import {keepChangedFields} from '@utils/common/object_utils';
+import {useToast} from '@utils/hooks/useToast';
+import {useTranslation} from 'react-i18next';
+import {getUserInfo, editUserInfo} from '@api/user';
+import {useConfigStore} from '@store/configStore';
+import {useUserStore} from '@store/userStore';
+import {uploadFile} from '@utils/system/file_utils';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {useToast} from '../../../utils/hooks/useToast';
-import {getUserdetail, EditUserInfo} from '../../../api/user';
-import {uploadFile} from '../../../utils/handle/fileHandle';
-import ImagePicker from 'react-native-image-crop-picker';
-import BaseSheet from '../../../components/common/BaseSheet';
-import {getfileFormdata, keepChangedFields} from '../../../utils/common/base';
-import FullScreenLoading from '../../../components/common/FullScreenLoading';
+import FullScreenLoading from '@components/common/FullScreenLoading';
+import AvatarPicker from '@components/form/AvatarPicker';
 
-const EditUser = ({route}) => {
-  const {userId} = route.params || {};
+const EditUser = () => {
+  const {t} = useTranslation();
 
+  const {envConfig} = useConfigStore();
+  const {setUserInfo: reSetUserInfo} = useUserStore();
   const {showToast} = useToast();
   const [userInfo, setUserInfo] = useState({});
   const [originalUserInfo, setOriginalUserInfo] = useState({});
 
-  const accessCamera = useSelector(state => state.permissionStore.accessCamera);
-  const accessFolder = useSelector(state => state.permissionStore.accessFolder);
-
-  // baseConfig
-  const {STATIC_URL} = useSelector(state => state.baseConfigStore.baseConfig);
-
-  const dispatch = useDispatch();
-
   const genderEnum = [
     {
-      label: '男',
+      label: t('user.man'),
       value: 'man',
       color: Colors.geekBlue,
     },
     {
-      label: '女',
+      label: t('user.woman'),
       value: 'woman',
       color: Colors.magenta,
     },
     {
-      label: '保密',
+      label: t('user.unknown'),
       value: 'unknown',
       color: Colors.grey30,
     },
@@ -58,10 +54,9 @@ const EditUser = ({route}) => {
   const dataInit = async () => {
     setRefreshing(true);
     try {
-      const res = await getUserdetail({id: userId});
-      if (res.success) {
+      const res = await getUserInfo();
+      if (res.code === 0) {
         const {user_avatar, user_name, sex, self_account, birthday} = res.data;
-        dispatch(setUserData(userId));
         setUserInfo({
           user_avatar,
           user_name,
@@ -70,7 +65,7 @@ const EditUser = ({route}) => {
           birthday,
         });
         setOriginalUserInfo(res.data);
-        setAvatarUri(STATIC_URL + user_avatar);
+        setAvatarUri(envConfig.STATIC_URL + user_avatar);
       }
     } catch (error) {
       console.error(error);
@@ -93,6 +88,7 @@ const EditUser = ({route}) => {
   };
 
   // 处理数据
+  const [isCleanCache, setIsCleanCache] = useState(false);
   const handleData = async () => {
     const keys = Object.keys(userInfo);
 
@@ -100,43 +96,36 @@ const EditUser = ({route}) => {
       const key = keys[i];
       const element = userInfo[key];
       if (element === null || element === '') {
-        showToast('请输入要修改的内容！', 'error');
+        showToast(t('empty.input'), 'error');
         return false;
       }
       if (key === 'self_account' && element.length < 6) {
-        showToast('请至少输入6位账号', 'error');
+        showToast(t('user.account_min_length'), 'error');
         return false;
       }
     }
 
-    if (avatarfile) {
+    if (avatarFile) {
       try {
-        const res = await uploadFile(avatarfile, () => {}, {
-          userId: userId,
-          fileType: 'image',
-          useType: 'user',
+        const res = await uploadFile(avatarFile, () => {}, {
+          file_type: 'image',
+          use_type: 'user',
         });
         const upRes = JSON.parse(res.text());
-        if (upRes.success) {
+        if (upRes.code === 0) {
           const useAvatar = upRes.data.file_name;
           setUserInfo({...userInfo, user_avatar: useAvatar});
           return true;
         } else {
-          showToast('上传头像失败', 'error');
+          showToast(t('user.avatar_upload_failed'), 'error');
           return false;
         }
       } catch (error) {
         console.error(error);
-        showToast('上传头像失败', 'error');
+        showToast(t('user.avatar_upload_failed'), 'error');
         return false;
       } finally {
-        ImagePicker.clean()
-          .then(() => {
-            console.log('清除缓存的头像tmp');
-          })
-          .catch(error => {
-            console.error(error);
-          });
+        setIsCleanCache(true);
       }
     }
     return true;
@@ -147,23 +136,21 @@ const EditUser = ({route}) => {
   const submitData = async () => {
     try {
       setSubmitting(true);
-      // 修改头像
-      const isToSubmit = await handleData();
-      if (!isToSubmit) {
+      const valid = await handleData();
+      if (!valid) {
         return;
       }
-      // 检查是否有修改
       const changedFields = keepChangedFields(originalUserInfo, userInfo);
       if (!changedFields) {
-        showToast('没有修改任何内容', 'warning');
+        showToast(t('user.no_modified_content'), 'warning');
         return;
       }
-      changedFields.id = userId;
-      const res = await EditUserInfo(changedFields);
-      if (res.success) {
+      const res = await editUserInfo(changedFields);
+      if (res.code === 0) {
         dataInit();
+        reSetUserInfo();
       }
-      showToast(res.message, res.success ? 'success' : 'error');
+      showToast(res.message, res.code === 0 ? 'success' : 'error');
     } catch (error) {
       console.error(error);
     } finally {
@@ -173,18 +160,10 @@ const EditUser = ({route}) => {
 
   // 刷新页面
   const [refreshing, setRefreshing] = useState(false);
-  const [showDialog, setShowDialog] = useState(false);
 
-  // 提交头像 setAvatarfile
+  const [showPicker, setShowPicker] = useState(false);
   const [avatarUri, setAvatarUri] = useState(null);
-  const [avatarfile, setAvatarfile] = useState(null);
-
-  useEffect(() => {
-    if (avatarfile) {
-      const fileRes = getfileFormdata('user', avatarfile);
-      setAvatarUri(fileRes.uri);
-    }
-  }, [avatarfile]);
+  const [avatarFile, setAvatarFile] = useState(null);
 
   useEffect(() => {
     dataInit();
@@ -208,10 +187,10 @@ const EditUser = ({route}) => {
             center
             enableShadow={false}
             padding-16
-            onPress={() => setShowDialog(true)}>
+            onPress={() => setShowPicker(true)}>
             <View flex>
               <Text grey40 text65>
-                头像
+                {t('user.avatar')}
               </Text>
             </View>
             <Image source={{uri: avatarUri}} style={styles.image} />
@@ -220,15 +199,15 @@ const EditUser = ({route}) => {
           <Card flexS enableShadow={false} marginT-16 padding-16>
             <View flexG row spread centerV style={styles.inputLine}>
               <TextField
-                label={'昵称'}
+                label={t('user.user_name')}
                 labelColor={Colors.grey40}
                 text70
                 enableErrors={shouldShowError(userInfo.user_name)}
                 style={styles.input}
-                placeholder={'请输入昵称'}
+                placeholder={t('user.user_name_placeholder')}
                 placeholderTextColor={Colors.grey50}
                 validate={[value => value.length !== 0]}
-                validationMessage={['昵称不能为空！']}
+                validationMessage={[t('user.user_name_empty')]}
                 maxLength={10}
                 value={userInfo.user_name}
                 validateOnChange={true}
@@ -240,15 +219,15 @@ const EditUser = ({route}) => {
             </View>
             <View flexG row spread centerV marginT-16 style={styles.inputLine}>
               <TextField
-                label={'账号'}
+                label={t('user.account')}
                 labelColor={Colors.grey40}
                 text70
                 enableErrors={shouldShowError(userInfo.self_account)}
                 style={styles.input}
-                placeholder={'请输入账号'}
+                placeholder={t('user.account_placeholder')}
                 placeholderTextColor={Colors.grey50}
                 validate={[value => value.length > 5]}
-                validationMessage={['请至少输入六位账号！']}
+                validationMessage={[t('user.account_min_length')]}
                 maxLength={16}
                 validateOnChange={true}
                 value={userInfo.self_account}
@@ -260,10 +239,10 @@ const EditUser = ({route}) => {
             </View>
             <View flexG row spread centerV marginT-16 style={styles.inputLine}>
               <DateTimePicker
-                label="生日"
+                label={t('user.birthday')}
                 labelColor={Colors.grey40}
-                title={'选择出生日期'}
-                placeholder={'请选择出生日期'}
+                title={t('user.birthday_title')}
+                placeholder={t('user.birthday_placeholder')}
                 mode={'date'}
                 value={new Date(userInfo.birthday)}
                 onChange={value => {
@@ -273,7 +252,7 @@ const EditUser = ({route}) => {
               />
             </View>
             <View flexG row spread centerV marginT-16>
-              <Text grey40>性别</Text>
+              <Text grey40>{t('user.gender')}</Text>
               <RadioGroup
                 gap={16}
                 row
@@ -301,73 +280,26 @@ const EditUser = ({route}) => {
               bg-primary
               text70
               white
-              label="保存更改"
+              label={t('common.save')}
               borderRadius={12}
               onPress={submitData}
             />
           )}
         </View>
       </ScrollView>
-      <BaseSheet
-        Title={'选择头像'}
-        visible={showDialog}
-        SetVisible={setShowDialog}
-        Actions={[
-          {
-            label: '相机',
-            color: Colors.primary,
-            onPress: () => {
-              if (!accessCamera) {
-                showToast('请授予应用相机使用权限', 'warning');
-                dispatch(requestCameraPermission());
-                return;
-              }
-              ImagePicker.openCamera({
-                width: 300,
-                height: 300,
-                cropping: true,
-                mediaType: 'photo',
-                cropperCircleOverlay: true,
-                cropperActiveWidgetColor: Colors.primary,
-              })
-                .then(image => {
-                  setAvatarfile(image);
-                  updateNeedSave();
-                })
-                .finally(() => {
-                  setShowDialog(false);
-                });
-            },
-          },
-          {
-            label: '图库',
-            color: Colors.primary,
-            onPress: () => {
-              if (!accessFolder) {
-                showToast('请授予应用文件和媒体使用权限', 'warning');
-                dispatch(requestFolderPermission());
-                return;
-              }
-              ImagePicker.openPicker({
-                width: 300,
-                height: 300,
-                cropping: true,
-                mediaType: 'photo',
-                cropperCircleOverlay: true,
-                cropperActiveWidgetColor: Colors.primary,
-              })
-                .then(image => {
-                  setAvatarfile(image);
-                  updateNeedSave();
-                })
-                .finally(() => {
-                  setShowDialog(false);
-                });
-            },
-          },
-        ]}
+      <AvatarPicker
+        visible={showPicker}
+        setVisible={setShowPicker}
+        isCleanCache={isCleanCache}
+        onSelected={fileInfo => {
+          setAvatarUri(fileInfo.uri);
+          setAvatarFile(fileInfo);
+          updateNeedSave(true);
+        }}
       />
-      {submitting ? <FullScreenLoading Message={'修改中...'} /> : null}
+      {submitting ? (
+        <FullScreenLoading Message={t('common.modifying')} />
+      ) : null}
     </>
   );
 };

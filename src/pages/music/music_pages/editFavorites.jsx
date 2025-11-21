@@ -10,49 +10,41 @@ import {
   Button,
 } from 'react-native-ui-lib';
 import {StyleSheet, ScrollView} from 'react-native';
-import {useToast} from '../../../utils/hooks/useToast';
-import {getFavoritesDetail, updateFavorites} from '../../../api/music';
+import {useToast} from '@utils/hooks/useToast';
+import {getFavoritesDetail, updateFavorites} from '@api/favorites';
+import {useConfigStore} from '@store/configStore';
+import {useTranslation} from 'react-i18next';
+import {uploadFile} from '@utils/system/file_utils';
+import FullScreenLoading from '@components/common/FullScreenLoading';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import BaseSheet from '../../../components/common/BaseSheet';
-import ImagePicker from 'react-native-image-crop-picker';
-import {uploadFile} from '../../../utils/handle/fileHandle';
-import {getfileFormdata} from '../../../utils/common/base';
-import FullScreenLoading from '../../../components/common/FullScreenLoading';
+import AvatarPicker from '@components/form/AvatarPicker';
 
 const EditFavorites = ({route}) => {
   const {favoritesId} = route.params || {};
-
   const {showToast} = useToast();
-  const dispatch = useDispatch();
-
-  const userId = useSelector(state => state.userStore.userId);
-  const accessCamera = useSelector(state => state.permissionStore.accessCamera);
-  const accessFolder = useSelector(state => state.permissionStore.accessFolder);
-
-  // baseConfig
-  const {THUMBNAIL_URL} = useSelector(
-    state => state.baseConfigStore.baseConfig,
-  );
+  const {envConfig} = useConfigStore();
+  const {t} = useTranslation();
 
   /* 获取收藏夹详情 */
   const [loading, setLoading] = useState(false);
   const [favoritesForm, setFavoritesForm] = useState({});
-  const [favoritesName, setFavoritesName] = useState('');
-  const [favoritesRemark, setFavoritesRemark] = useState('');
   const [coverUri, setCoverUri] = useState('');
+  const [coverFile, setCoverFile] = useState(null);
+
   const [isPublic, setIsPublic] = useState(false);
-  const getFavorites = async f_id => {
-    setLoading(true);
+  const getFavorites = async () => {
     try {
-      const res = await getFavoritesDetail({id: f_id, isFindMusic: 0});
-      if (res.success) {
+      setLoading(true);
+      const res = await getFavoritesDetail({
+        id: favoritesId,
+        current: 1,
+        pageSize: 0,
+      });
+      if (res.code === 0) {
         setFavoritesForm(res.data);
-        const {favorites_name, favorites_remark, favorites_cover, is_public} =
-          res.data;
-        setFavoritesName(favorites_name);
-        setFavoritesRemark(favorites_remark);
-        setCoverUri(THUMBNAIL_URL + favorites_cover);
-        setIsPublic(is_public === 1);
+        const {favorites_cover, is_public} = res.data;
+        setCoverUri(envConfig.THUMBNAIL_URL + favorites_cover);
+        setIsPublic(is_public === 'yes');
       }
     } catch (error) {
       console.error(error);
@@ -61,47 +53,62 @@ const EditFavorites = ({route}) => {
     }
   };
 
-  /* 编辑收藏夹 */
-  const [showDialog, setShowDialog] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
 
   // 是否需要保存
-  const [isSave, setIsSave] = useState(false);
+  const [allowSave, setAllowSave] = useState(false);
   const updateNeedSave = () => {
-    setIsSave(true);
+    setAllowSave(true);
+  };
+
+  // 处理数据
+  const [isCleanCache, setIsCleanCache] = useState(false);
+  const handleData = async () => {
+    favoritesForm.is_public = isPublic ? 'yes' : 'no';
+
+    const keys = Object.keys(favoritesForm);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      const element = favoritesForm[key];
+      if (element === null || element === '') {
+        showToast(t('empty.input'), 'error');
+        return false;
+      }
+    }
+
+    if (coverFile) {
+      try {
+        const res = await uploadFile(coverFile, () => {}, {
+          file_type: 'image',
+          use_type: 'music',
+        });
+        const uploadRes = JSON.parse(res.text());
+        if (uploadRes.code === 0) {
+          const cover = uploadRes.data.file_key;
+          setFavoritesForm({...favoritesForm, favorites_cover: cover});
+          return true;
+        }
+        showToast(uploadRes.message, 'error');
+      } catch (error) {
+        console.error(error);
+        return false;
+      } finally {
+        setIsCleanCache(true);
+      }
+    }
+    return true;
   };
 
   // 提交编辑
   const submitForm = async () => {
-    setLoading(true);
-    let cover = favoritesForm.favorites_cover;
     try {
-      // 修改头像
-      if (THUMBNAIL_URL + favoritesForm.favorites_cover !== coverUri) {
-        const res = await uploadFile(coverfile, () => {}, {
-          userId: userId,
-          fileType: 'image',
-          useType: 'music',
-        });
-        const upRes = JSON.parse(res.text());
-        if (upRes.success) {
-          cover = upRes.data.file_name;
-        }
-        ImagePicker.clean()
-          .then(() => {
-            console.log('清除缓存的图片成功!');
-          })
-          .catch(error => {
-            console.error(error);
-          });
+      setLoading(true);
+      const valid = await handleData();
+      if (!valid) {
+        return;
       }
-      const updateRes = await updateFavorites({
-        id: favoritesForm.id,
-        favorites_name: favoritesName,
-        favorites_remark: favoritesRemark,
-        favorites_cover: cover,
-        is_public: isPublic ? 1 : 0,
-      });
-      showToast(updateRes.message, updateRes.success ? 'success' : 'error');
+      const res = await updateFavorites(favoritesId, favoritesForm);
+      showToast(res.message, res.code === 0 ? 'success' : 'error');
     } catch (error) {
       console.error(error);
     } finally {
@@ -109,19 +116,9 @@ const EditFavorites = ({route}) => {
     }
   };
 
-  // 提交头像 setCoverfile
-  const [coverfile, setCoverfile] = useState(null);
-
-  useEffect(() => {
-    if (coverfile) {
-      const fileRes = getfileFormdata('music', coverfile);
-      setCoverUri(fileRes.uri);
-    }
-  }, [coverfile]);
-
   useEffect(() => {
     if (favoritesId) {
-      getFavorites(favoritesId);
+      getFavorites();
     }
   }, [favoritesId]);
 
@@ -134,10 +131,10 @@ const EditFavorites = ({route}) => {
           row
           center
           padding-16
-          onPress={() => setShowDialog(true)}>
+          onPress={() => setShowPicker(true)}>
           <View flex>
             <Text grey40 text70>
-              收藏夹封面
+              {t('music.favorites_cover')}
             </Text>
           </View>
           <View marginR-12>
@@ -150,18 +147,18 @@ const EditFavorites = ({route}) => {
             labelColor={Colors.grey10}
             text70
             enableErrors
-            placeholder={'收藏夹名称'}
+            placeholder={t('music.favorites_name')}
             floatingPlaceholder
             color={Colors.grey10}
             placeholderTextColor={Colors.grey50}
             validate={[value => value.length !== 0]}
-            validationMessage={['收藏夹名称不能为空！']}
+            validationMessage={[t('music.favorites_name_empty')]}
             maxLength={20}
             showCharCounter
-            value={favoritesName}
+            value={favoritesForm.favorites_name}
             validateOnChange={true}
             onChangeText={value => {
-              setFavoritesName(value);
+              setFavoritesForm(prev => ({...prev, favorites_name: value}));
               updateNeedSave();
             }}
           />
@@ -171,23 +168,23 @@ const EditFavorites = ({route}) => {
               text70
               enableErrors
               floatingPlaceholder
-              placeholder={'收藏夹简介'}
+              placeholder={t('music.favorites_remarks')}
               color={Colors.grey10}
               placeholderTextColor={Colors.grey50}
               multiline
               numberOfLines={3}
               maxLength={1000}
               showCharCounter
-              value={favoritesRemark}
+              value={favoritesForm.favorites_remarks}
               validateOnChange={true}
               onChangeText={value => {
-                setFavoritesRemark(value);
+                setFavoritesForm(prev => ({...prev, favorites_remarks: value}));
                 updateNeedSave();
               }}
             />
           </View>
           <View marginT-10 row centerV>
-            <Text grey40>是否公开</Text>
+            <Text grey40>{t('music.is_public')}</Text>
             <View marginL-12>
               <Switch
                 onColor={Colors.primary}
@@ -201,13 +198,13 @@ const EditFavorites = ({route}) => {
             </View>
           </View>
         </Card>
-        {isSave && (
+        {allowSave && (
           <Button
             marginT-16
             bg-primary
             text70
             white
-            label="保存更改"
+            label={t('common.save')}
             borderRadius={12}
             onPress={() => {
               submitForm();
@@ -215,55 +212,15 @@ const EditFavorites = ({route}) => {
           />
         )}
       </View>
-      <BaseSheet
-        Title={'选择收藏夹封面'}
-        visible={showDialog}
-        SetVisible={setShowDialog}
-        Actions={[
-          {
-            label: '相机',
-            color: Colors.primary,
-            onPress: () => {
-              if (!accessCamera) {
-                showToast('请授予应用相机使用权限', 'warning');
-                dispatch(requestCameraPermission());
-                return;
-              }
-              ImagePicker.openCamera({
-                mediaType: 'photo',
-                cropperActiveWidgetColor: Colors.primary,
-              })
-                .then(image => {
-                  setCoverfile(image);
-                })
-                .finally(() => {
-                  setShowDialog(false);
-                });
-            },
-          },
-          {
-            label: '图库',
-            color: Colors.primary,
-            onPress: () => {
-              if (!accessFolder) {
-                showToast('请授予应用文件和媒体使用权限', 'warning');
-                dispatch(requestFolderPermission());
-                return;
-              }
-              ImagePicker.openPicker({
-                cropping: true,
-                mediaType: 'photo',
-                cropperActiveWidgetColor: Colors.primary,
-              })
-                .then(image => {
-                  setCoverfile(image);
-                })
-                .finally(() => {
-                  setShowDialog(false);
-                });
-            },
-          },
-        ]}
+      <AvatarPicker
+        visible={showPicker}
+        setVisible={setShowPicker}
+        isCleanCache={isCleanCache}
+        onSelected={fileInfo => {
+          setCoverUri(fileInfo.uri);
+          setCoverFile(fileInfo);
+          updateNeedSave();
+        }}
       />
       {loading ? <FullScreenLoading /> : null}
       <View height={120} />

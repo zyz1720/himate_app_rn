@@ -1,6 +1,6 @@
 import {create} from 'zustand';
 import {persist, createJSONStorage} from 'zustand/middleware';
-import {getUserInfo} from '@api/user';
+import {getUserInfo, userLogout} from '@api/user';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const defaultState = {
@@ -27,12 +27,11 @@ export const useUserStore = create()(
         }
       },
       logout: () => {
-        set({
-          userInfo: {},
-          access_token: null,
-          refresh_token: null,
-          token_type: null,
-          isLogin: false,
+        set(defaultState);
+      },
+      logoff: () => {
+        userLogout().then(res => {
+          res.code === 0 && set(defaultState);
         });
       },
       setUserInfo: () => {

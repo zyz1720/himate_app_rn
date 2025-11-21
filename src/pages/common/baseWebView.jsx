@@ -19,7 +19,7 @@ const BaseWebView = ({route}) => {
           uri: url || envConfig.STATIC_URL + 'default_assets/index.html',
         }}
         onError={error => {
-          showToast('web' + t('error.load'), 'error');
+          showToast('web' + t('common.load_error'), 'error');
           console.error(error);
         }}
       />

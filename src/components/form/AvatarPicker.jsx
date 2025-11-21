@@ -18,7 +18,7 @@ const AvatarPicker = props => {
     if (isCleanCache) {
       ImagePicker.clean()
         .then(() => {
-          console.log('清除缓存的头像tmp');
+          console.log('清除缓存的图片tmp');
         })
         .catch(error => {
           console.error(error);

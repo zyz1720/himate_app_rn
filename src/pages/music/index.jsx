@@ -17,77 +17,77 @@ import {
   Slider,
 } from 'react-native-ui-lib';
 import {FlatList, StyleSheet, Vibration} from 'react-native';
-import {useToast} from '../../utils/hooks/useToast';
+import {useToast} from '@utils/hooks/useToast';
+import {fullHeight, fullWidth} from '@style/index';
+import {
+  getOneselfFavorites,
+  addFavorites,
+  getFavorites,
+  deleteFavorites,
+  importFavorites,
+} from '@api/favorites';
+import {getMusic, getMusicFromDefaultFavorites} from '@api/music';
+import {useConfigStore} from '@store/configStore';
+import {useMusicStore} from '@store/musicStore';
+import {useUserStore} from '@store/userStore';
+import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
+import {useTranslation} from 'react-i18next';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import {fullHeight, fullWidth} from '../../styles';
-import {
-  getFavoritesList,
-  addFavorities,
-  deleteFavorites,
-} from '../../api/music';
 import BaseDialog from '@components/common/BaseDialog';
 import {useRealm} from '@realm/react';
 import dayjs from 'dayjs';
-import {getMusicList, importFavorites} from '../../api/music';
-import {useIsFocused} from '@react-navigation/native';
 
 const Music = ({navigation}) => {
   const {showToast} = useToast();
-  const dispatch = useDispatch();
+  const {t} = useTranslation();
   const realm = useRealm();
-  const isFocused = useIsFocused();
 
-  const userInfo = useSelector(state => state.userStore.userInfo);
-  const userId = useSelector(state => state.userStore.userId);
-  const isClosed = useSelector(state => state.musicStore.isClosed);
-  const randomNum = useSelector(state => state.musicStore.randomNum);
+  const {userInfo} = useUserStore();
+  const {isClosed, randomNum, setRandomNum, setCloseTime, setIsRandomPlay} =
+    useMusicStore();
+  const {envConfig} = useConfigStore();
 
-  // baseConfig
-  const {STATIC_URL, THUMBNAIL_URL} = useSelector(
-    state => state.baseConfigStore.baseConfig,
-  );
+  const {list, total, onEndReached, refreshData} =
+    useInfiniteScroll(getOneselfFavorites);
 
   useEffect(() => {
-    if (userId && isFocused) {
-      getAllFavoritesList();
-      getUserFavoritesList(userId);
-      getDefaultFavoritesCount(userId);
-      getAllMusicList();
-      if (realm) {
-        getLocalMusicInfo();
-      }
+    getDefaultFavoritesCount();
+    getAllFavoritesCount();
+    getAllMusicCount();
+    if (realm) {
+      getLocalMusicInfo();
     }
-  }, [isFocused, userId]);
+  }, []);
 
   const [showAddDialog, setShowAddDialog] = useState(false);
 
   // 宫格列表数据
   const [itemData, setItemData] = useState([
     {
-      title: '发现歌单',
+      title: t('music.find_favorites'),
       icon: 'cloud',
       iconColor: Colors.blue50,
       num: 0,
       route: 'FindFavorites',
     },
     {
-      title: '最近播放',
+      title: t('music.recent_play'),
       icon: 'clock-o',
       iconColor: Colors.green50,
       num: 0,
       route: 'LatelyMusic',
     },
     {
-      title: '本地音乐',
+      title: t('music.local_music'),
       icon: 'folder-open',
       iconColor: Colors.yellow40,
       num: 0,
       route: 'LocalMusic',
     },
     {
-      title: '我的收藏',
+      title: t('music.my_favorites'),
       icon: 'heart',
       iconColor: Colors.red40,
       num: 0,
@@ -95,36 +95,13 @@ const Music = ({navigation}) => {
     },
   ]);
 
-  // 个人歌单列表
-  const [pageNum, setPageNum] = useState(0);
-  const [favoritesList, setFavoritesList] = useState([]);
-  const [favoritesCount, setFavoritesCount] = useState(0);
-  const getUserFavoritesList = async _userId => {
-    try {
-      const res = await getFavoritesList({
-        pageSize: pageNum * 20,
-        creator_uid: _userId,
-      });
-      if (res.success) {
-        // console.log(res.data.list);
-        setFavoritesList(res.data.list);
-        setFavoritesCount(res.data.count);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   /* 默认收藏数量 */
-  const getDefaultFavoritesCount = async _userId => {
+  const getDefaultFavoritesCount = async () => {
     try {
-      const res = await getFavoritesList({
-        is_default: 1,
-        creator_uid: _userId,
-      });
-      if (res.success) {
+      const res = await getMusicFromDefaultFavorites({pageSize: 0});
+      if (res.code === 0) {
         setItemData(prev => {
-          prev[3].num = res.data.list[0]?.musicCount;
+          prev[3].num = res.data.total;
           return prev;
         });
       }
@@ -138,14 +115,13 @@ const Music = ({navigation}) => {
   const submitData = async () => {
     setShowAddDialog(false);
     try {
-      const addRes = await addFavorities({
-        creator_uid: userId,
+      const addRes = await addFavorites({
         favorites_name: favoritesName,
       });
-      if (addRes.success) {
-        getUserFavoritesList(userId);
+      if (addRes.code === 0) {
+        refreshData();
       }
-      showToast(addRes.message, addRes.success ? 'success' : 'error');
+      showToast(addRes.message, addRes.code === 0 ? 'success' : 'error');
     } catch (error) {
       console.error(error);
     }
@@ -153,17 +129,17 @@ const Music = ({navigation}) => {
 
   /* 删除歌单 */
   const [delVisible, setDelVisible] = useState(false);
-  const [delids, setDelids] = useState([]);
+  const [delIds, setDelIds] = useState([]);
   const [delName, setDelName] = useState('');
-  const delFavorites = async del_ids => {
+  const delFavorites = async () => {
     try {
       const delRes = await deleteFavorites({
-        ids: del_ids || delids,
+        ids: delIds,
       });
-      if (delRes.success) {
-        getUserFavoritesList(userId);
+      if (delRes.code === 0) {
+        refreshData();
       }
-      showToast(delRes.message, 'success');
+      showToast(delRes.message, delRes.code === 0 ? 'success' : 'error');
       resetMultiSelect();
     } catch (error) {
       console.error(error);
@@ -221,26 +197,24 @@ const Music = ({navigation}) => {
 
   // 获取所有歌曲数
   const [allMusicNum, setAllMusicNum] = useState(1);
-  const getAllMusicList = async () => {
+  const getAllMusicCount = async () => {
     try {
-      const res = await getMusicList();
-      if (res.success) {
-        setAllMusicNum(res.data.count);
-        dispatch(setRandomNum({min: 1, max: res.data.count}));
+      const res = await getMusic({pageSize: 0});
+      if (res.code === 0) {
+        setAllMusicNum(res.data.total);
+        setRandomNum(1, res.data.total);
       }
     } catch (error) {
       console.error(error);
     }
   };
 
-  const getAllFavoritesList = async () => {
+  const getAllFavoritesCount = async () => {
     try {
-      const res = await getFavoritesList({
-        is_public: 1,
-      });
-      if (res.success) {
+      const res = await getFavorites({pageSize: 0});
+      if (res.code === 0) {
         setItemData(prev => {
-          prev[0].num = res.data.count;
+          prev[0].num = res.data.total;
           return prev;
         });
       }
@@ -258,17 +232,17 @@ const Music = ({navigation}) => {
       const urls = importUrl.match(urlRegex);
       if (urls && urls?.[0]) {
         const trueUrl = urls?.[0];
-        showToast('歌单导入中...', 'success');
-        const res = await importFavorites({userId: userId, url: trueUrl});
+        showToast(t('music.import_loading'), 'success');
+        const res = await importFavorites(trueUrl);
         showToast(res.message, res.success ? 'success' : 'error');
-        getUserFavoritesList(userId);
-        getAllMusicList();
+        refreshData();
+        getAllMusicCount();
       } else {
-        showToast('请输入正确的歌单链接', 'error');
+        showToast(t('music.url_error'), 'error');
       }
     } catch (error) {
       console.error(error);
-      showToast('歌单导入失败', 'error');
+      showToast(t('music.import_favorites_error'), 'error');
     }
   };
 
@@ -287,14 +261,14 @@ const Music = ({navigation}) => {
         }}>
         <FontAwesome name="search" color={Colors.primary} size={16} />
         <View marginL-8>
-          <TextField readOnly placeholder={'搜索你想找的音乐'} />
+          <TextField readOnly placeholder={t('common.search')} />
         </View>
       </Card>
       <Card marginT-16 padding-12>
         <View row centerV marginB-12>
           <View>
             <Image
-              source={{uri: STATIC_URL + userInfo?.user_avatar}}
+              source={{uri: envConfig.STATIC_URL + userInfo?.user_avatar}}
               style={styles.image}
             />
           </View>
@@ -314,14 +288,14 @@ const Music = ({navigation}) => {
             <Text grey20 text100L marginT-6>
               {latelyDay > 0 ? (
                 <Text grey20 text100L marginT-6>
-                  距离上次听歌已经过去
+                  {t('music.recent_play_tips')}
                   <Text blue60 text80L marginT-6>
                     {latelyDay}
                   </Text>
-                  天了
+                  {t('music.recent_play_day')}
                 </Text>
               ) : (
-                '今天也来听听音乐吧 ~'
+                t('music.welcome')
               )}
             </Text>
           </View>
@@ -340,7 +314,7 @@ const Music = ({navigation}) => {
                 size={20}
               />
               <Text text80 marginL-4 grey30>
-                随机播放
+                {t('music.random_play')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -357,7 +331,7 @@ const Music = ({navigation}) => {
                 size={20}
               />
               <Text text80 marginL-4 grey30>
-                定时关闭
+                {t('music.alarm_close')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -396,9 +370,9 @@ const Music = ({navigation}) => {
       <View marginT-16 flexS>
         <View row centerV spread>
           <View row centerV>
-            <Text text70BL>我的歌单</Text>
+            <Text text70BL>{t('music.my_playlist')}</Text>
             <Text text80L grey40 marginL-4>
-              {favoritesCount}
+              {total}
             </Text>
           </View>
           <View row centerV>
@@ -407,7 +381,7 @@ const Music = ({navigation}) => {
                 <Button
                   marginR-12
                   size={'xSmall'}
-                  label={'删除'}
+                  label={t('common.delete')}
                   link
                   color={Colors.red30}
                   onPress={() => {
@@ -415,19 +389,23 @@ const Music = ({navigation}) => {
                       delFavorites(selectedItems);
                       return;
                     }
-                    showToast('请选择要删除的歌单', 'error');
+                    showToast(t('common.delete_select'), 'error');
                   }}
                 />
                 <Button
                   marginR-12
                   size={'xSmall'}
-                  label={isAllSelect ? '全不选' : '全选'}
+                  label={
+                    isAllSelect
+                      ? t('common.unselect_all')
+                      : t('common.select_all')
+                  }
                   link
                   color={Colors.primary}
                   onPress={() => {
                     setIsAllSelect(prev => {
                       if (!prev) {
-                        setSelectedItems(favoritesList.map(item => item.id));
+                        setSelectedItems(list.map(item => item.id));
                       } else {
                         setSelectedItems([]);
                       }
@@ -438,7 +416,7 @@ const Music = ({navigation}) => {
                 <Button
                   marginR-12
                   size={'xSmall'}
-                  label={'取消'}
+                  label={t('common.cancel')}
                   link
                   color={Colors.blue40}
                   onPress={() => {
@@ -476,12 +454,10 @@ const Music = ({navigation}) => {
           </View>
         </View>
         <FlatList
-          data={favoritesList}
-          keyExtractor={(item, index) => item + index}
-          onEndReached={() => {
-            setPageNum(prev => prev + 1);
-          }}
-          renderItem={({item, index}) => (
+          data={list}
+          keyExtractor={(item, index) => item?.id + index}
+          onEndReached={onEndReached}
+          renderItem={({item}) => (
             <View marginT-8 row centerV>
               {isMultiSelect ? (
                 <Checkbox
@@ -510,14 +486,14 @@ const Music = ({navigation}) => {
                 itemsTintColor={Colors.red30}
                 rightItems={[
                   {
-                    text: isMultiSelect ? '' : '删除',
+                    text: isMultiSelect ? '' : t('common.delete'),
                     background: Colors.background,
                     onPress: () => {
                       if (isMultiSelect) {
                         return;
                       }
                       setDelName(item.favorites_name);
-                      setDelids([item.id]);
+                      setDelIds([item.id]);
                       setDelVisible(true);
                     },
                   },
@@ -536,13 +512,15 @@ const Music = ({navigation}) => {
                     });
                   }}>
                   <Image
-                    source={{uri: THUMBNAIL_URL + item.favorites_cover}}
+                    source={{
+                      uri: envConfig.THUMBNAIL_URL + item.favorites_cover,
+                    }}
                     style={styles.favoritesCover}
                   />
                   <View centerV marginL-12>
                     <Text>{item.favorites_name}</Text>
                     <Text marginT-4 text90L grey40>
-                      {item.musicCount}首歌曲
+                      {t('common.num_songs', {num: item.musicCount})}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -565,13 +543,13 @@ const Music = ({navigation}) => {
         }}
         visible={showAddDialog}
         setVisible={setShowAddDialog}
-        description={'新建歌单'}
+        description={t('common.create_favorites')}
         renderBody={
           <View>
             <TextField
               text70
               placeholderTextColor={Colors.grey40}
-              placeholder={'请输入歌单名称'}
+              placeholder={t('common.input_favorites_name')}
               floatingPlaceholder
               value={favoritesName}
               maxLength={10}
@@ -589,16 +567,16 @@ const Music = ({navigation}) => {
         }}
         visible={showImportDialog}
         setVisible={setShowImportDialog}
-        description={'导入外部歌单'}
+        description={t('common.import_favorites')}
         renderBody={
           <View>
             <Text marginT-2 text90L blue40>
-              暂只支持QQ音乐，同名歌单将覆盖原歌单
+              {t('common.import_favorites_tips')}
             </Text>
             <TextField
               text70
               placeholderTextColor={Colors.grey40}
-              placeholder={'请输入歌单分享链接'}
+              placeholder={t('common.input_favorites_url')}
               floatingPlaceholder
               value={importUrl}
               onChangeText={value => {
@@ -616,7 +594,7 @@ const Music = ({navigation}) => {
         }}
         visible={delVisible}
         setVisible={setDelVisible}
-        description={`您确定要删除 ${delName} 吗？`}
+        description={t('common.delete_select', {name: delName})}
       />
       <Dialog
         visible={showAlarmDialog}
@@ -627,7 +605,7 @@ const Music = ({navigation}) => {
         <Card flexS padding-16>
           <View row centerV>
             <Text text70BL marginR-12>
-              定时关闭
+              {t('common.alarm_close')}
             </Text>
             <Switch
               onColor={Colors.primary}
@@ -635,10 +613,10 @@ const Music = ({navigation}) => {
               value={alarmSwitch}
               onValueChange={value => {
                 if (value) {
-                  dispatch(setCloseTime(alarmTime));
+                  setCloseTime(alarmTime);
                 } else {
                   setAlarmTime(0);
-                  dispatch(setCloseTime(0));
+                  setCloseTime(0);
                 }
                 setAlarmSwitch(value);
               }}
@@ -646,7 +624,7 @@ const Music = ({navigation}) => {
           </View>
           <View marginT-8>
             <Text text90L grey30 marginV-6>
-              将在{alarmTime}分钟后停止播放
+              {t('common.alarm_close_tips', {time: alarmTime})}
             </Text>
             <Slider
               thumbTintColor={Colors.primary}
@@ -659,7 +637,7 @@ const Music = ({navigation}) => {
               onValueChange={value => {
                 setAlarmTime(value);
                 if (alarmSwitch) {
-                  dispatch(setCloseTime(value));
+                  setCloseTime(value);
                 }
               }}
             />
@@ -682,7 +660,7 @@ const Music = ({navigation}) => {
         <Card flexS padding-16>
           <View row centerV>
             <Text text70BL marginR-12>
-              随机播放
+              {t('common.random_play')}
             </Text>
             <Switch
               onColor={Colors.primary}
@@ -690,11 +668,12 @@ const Music = ({navigation}) => {
               value={randomSwitch}
               onValueChange={value => {
                 if (value) {
-                  dispatch(setIsRandomPlay(value));
-                  showToast('随机播放已开启', 'success');
+                  setIsRandomPlay(value);
+                  showToast(t('common.random_play_on'), 'success');
                 } else {
-                  dispatch(setRandomNum({min: 1, max: allMusicNum}));
-                  dispatch(setIsRandomPlay(value));
+                  setRandomNum(1, allMusicNum);
+                  setIsRandomPlay(value);
+                  showToast(t('common.random_play_off'), 'success');
                 }
                 setRandomSwitch(value);
               }}
@@ -702,7 +681,10 @@ const Music = ({navigation}) => {
           </View>
           <View marginT-8>
             <Text text90L grey30 marginV-4>
-              将在曲库中第{randomNum.min}-{randomNum.max}首歌曲之间随机播放
+              {t('common.random_play_range', {
+                min: randomNum?.min,
+                max: randomNum?.max,
+              })}
             </Text>
             <Slider
               thumbTintColor={Colors.primary}
@@ -716,7 +698,7 @@ const Music = ({navigation}) => {
               useRange={true}
               step={1}
               onRangeChange={values => {
-                dispatch(setRandomNum(values));
+                setRandomNum(values);
               }}
             />
           </View>

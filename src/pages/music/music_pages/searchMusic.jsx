@@ -1,54 +1,19 @@
 import React, {useState, useRef, useEffect} from 'react';
 import {View, Text, Card, Colors, Button, TextField} from 'react-native-ui-lib';
 import {StyleSheet} from 'react-native';
-import {getMusicList} from '../../../api/music';
-import MusicList from '../../../components/music/MusicList';
+import {getMusic} from '@api/music';
+import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
+import {useTranslation} from 'react-i18next';
+import MusicList from '@components/music/MusicList';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import FullScreenLoading from '../../../components/common/FullScreenLoading';
+import FullScreenLoading from '@components/common/FullScreenLoading';
 
 const SearchMusic = () => {
+  const {t} = useTranslation();
+  const {list, total, loading, onEndReached, refreshData} =
+    useInfiniteScroll(getMusic);
   /* 获取收藏夹列表 */
-  const [isLoading, setIsLoading] = useState(false);
   const [keyword, setKeyword] = useState('');
-  const [pageNum, setPageNum] = useState(0);
-  const [music, setMusic] = useState([]);
-  const [totalMusic, setTotalMusic] = useState(0);
-  const pageSize = 20;
-  const isEnd = useRef(false);
-  const getAllMusicList = async () => {
-    try {
-      setIsLoading(pageNum < 2);
-      const res = await getMusicList({
-        pageNum,
-        pageSize,
-        title: keyword,
-        artist: keyword,
-        album: keyword,
-      });
-      if (res.success) {
-        const {list, count} = res.data;
-        setTotalMusic(count);
-        setMusic(prev => [...prev, ...list]);
-        if (list.length < pageSize && pageNum !== 0) {
-          isEnd.current = true;
-        }
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const resetState = () => {
-    setPageNum(0);
-    setMusic([]);
-    isEnd.current = false;
-  };
-
-  useEffect(() => {
-    getAllMusicList();
-  }, [pageNum]);
 
   return (
     <>
@@ -56,22 +21,21 @@ const SearchMusic = () => {
         <Card row centerV>
           <TextField
             containerStyle={styles.input}
-            placeholder={'请输入歌曲关键字'}
+            placeholder={t('common.search_keyword')}
             value={keyword}
             onChangeText={value => {
               setKeyword(value);
               if (!value) {
-                getAllMusicList();
+                refreshData();
               }
             }}
           />
           <Button
-            label={'搜索'}
+            label={t('common.search')}
             link
             linkColor={Colors.primary}
             onPress={() => {
-              resetState();
-              getAllMusicList();
+              refreshData({keyword});
             }}
           />
         </Card>
@@ -79,22 +43,18 @@ const SearchMusic = () => {
           <View row centerV marginL-4 marginB-12>
             <FontAwesome name="clock-o" color={Colors.blue40} size={18} />
             <Text text70BO blue40 marginL-4>
-              最近更新
+              {t('music.recent_update')}
             </Text>
           </View>
           <MusicList
-            HeightScale={0.8}
-            List={music}
-            Total={totalMusic}
-            onEndReached={() => {
-              if (!isEnd.current) {
-                setPageNum(prev => prev + 1);
-              }
-            }}
+            heightScale={0.8}
+            list={list}
+            total={total}
+            onEndReached={onEndReached}
           />
         </View>
       </View>
-      {isLoading ? <FullScreenLoading /> : null}
+      {loading ? <FullScreenLoading /> : null}
     </>
   );
 };

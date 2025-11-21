@@ -1,85 +1,124 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, ScrollView, RefreshControl} from 'react-native';
 import {View, Text, Card, Colors, TextField, Button} from 'react-native-ui-lib';
+import {useToast} from '@utils/hooks/useToast';
+import {editUserAccount, editUserPassword, getUserInfo} from '@api/user';
+import {validateEmail} from '@utils/common/string_utils';
+import {useUserStore} from '@store/userStore';
+import {getEmailCode, getImgCaptcha} from '@api/common';
+import {useTranslation} from 'react-i18next';
+import {SvgXml} from 'react-native-svg';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {useToast} from '../../../utils/hooks/useToast';
-import PasswordEye from '@components/form/PasswordEye';
-import {
-  editUserAccount,
-  editUserPassword,
-  editUserInfo,
-  getUserInfo,
-} from '../../../api/user';
-import {validateEmail} from '../../../utils/common/base';
+import FullScreenLoading from '@components/common/FullScreenLoading';
 import BaseDialog from '@components/common/BaseDialog';
-import {clearStorage} from '../../../utils/common/localStorage';
-import FullScreenLoading from '../../../components/common/FullScreenLoading';
+import PasswordEye from '@components/form/PasswordEye';
 
 let timer = {};
 const EditUser = ({route}) => {
   const {userId} = route.params;
+  const {t} = useTranslation();
+  const {setUserInfo, logout, logoff} = useUserStore();
 
   const {showToast} = useToast();
-  const [userInfo, setUserInfo] = useState({});
-  const [usermail, setUsermail] = useState(null);
+  const [userAccount, setUserAccount] = useState({});
+  const [userEmail, setUserEmail] = useState(null);
   const [code, setCode] = useState(null);
-  const [oldpassword, setOldpassword] = useState(null);
-  const [newpassword, setNewpassword] = useState(null);
+  const [oldPassword, setOldPassword] = useState(null);
+  const [newPassword, setNewPassword] = useState(null);
 
-  const dispatch = useDispatch();
   // 初始化数据
   const dataInit = async () => {
-    setRefreshing(true);
     try {
+      setRefreshing(true);
       const res = await getUserInfo();
       if (res.code === 0) {
         const {account} = res.data;
-        setUserInfo({account});
-        dispatch(setUserData(userId));
-        setUsermail(account);
-        setRefreshing(false);
+        setUserAccount(account);
+        setUserEmail(account);
       }
     } catch (error) {
       console.error(error);
+    } finally {
       setRefreshing(false);
     }
   };
-  // 是否需要保存
-  const isNeedSave = value => {
-    if (Object.values(userInfo).includes(value)) {
-      return true;
+
+  /*获取图片验证码 */
+  const [imgCodeVisible, setImgCodeVisible] = useState(false);
+  const [captchaId, setCaptchaId] = useState(null);
+  const [imgCode, setImgCode] = useState(null);
+  const [captchaImg, setCaptchaImg] = useState(null);
+  const getImgCode = async () => {
+    try {
+      const res = await getImgCaptcha();
+      if (res.code === 0) {
+        const {captcha_id, captcha_img} = res.data;
+        setCaptchaId(captcha_id);
+        setCaptchaImg(captcha_img);
+      }
+    } catch (error) {
+      console.error(error);
     }
-    return false;
+  };
+
+  const isNeedSave = value => {
+    if (userAccount === value) {
+      return false;
+    }
+    return true;
   };
 
   // 保存修改
-  const [mailshow, setMailshow] = useState(false);
-  const [passwordshow, setPasswordshow] = useState(false);
+  const [emailShow, setEmailShow] = useState(false);
+  const [passwordShow, setPasswordShow] = useState(false);
 
-  // 发送验证码
-  const [codeTime, setCodeTime] = useState(60);
-  let sendtime = 60;
-  const sendCode = async () => {
-    try {
-      if (codeTime === 60) {
-        timer = setInterval(() => {
-          sendtime -= 1;
-          setCodeTime(sendtime);
-          if (sendtime === 0) {
-            sendtime = 60;
-            setCodeTime(sendtime);
-            clearInterval(timer);
-          }
-        }, 1000);
-        const mailRes = await getCodeBymail(userInfo?.account);
-        if (mailRes.success) {
-          showToast('已向您发送验证码', 'success');
-        } else {
-          showToast(mailRes.message, 'error');
-        }
-      } else {
-        showToast('请勿重复操作', 'warning');
+  /* 验证码倒计时 */
+  const [sendFlag, setSendFlag] = useState(false);
+  const [codetext, setCodetext] = useState(t('common.save'));
+  let time = 60;
+  const addTimer = () => {
+    setSendFlag(true);
+    timer = setInterval(() => {
+      time -= 1;
+      setCodetext(time + 's');
+      if (time === 0) {
+        clearInterval(timer);
+        time = 60;
+        setSendFlag(false);
+        setCodetext(t('common.save'));
       }
+    }, 1000);
+  };
+
+  /* 邮箱校验 */
+  const emailValidate = email => {
+    if (validateEmail(email)) {
+      return true;
+    }
+    showToast(t('login.email_error'), 'error');
+    return false;
+  };
+
+  /* 发送验证码 */
+  const sendCode = async () => {
+    if (userAccount === null || userAccount === '') {
+      showToast(t('login.enter_email'), 'error');
+      return;
+    }
+    if (!emailValidate(userAccount)) {
+      return;
+    }
+    try {
+      const emailRes = await getEmailCode({
+        email: userAccount,
+        captchaId: captchaId,
+        captchaCode: imgCode,
+      });
+      if (emailRes.code === 0) {
+        addTimer();
+        setShowCodeDialog(true);
+      }
+      showToast(emailRes.message, emailRes.code === 0 ? 'success' : 'error');
     } catch (error) {
       console.error(error);
     }
@@ -87,57 +126,54 @@ const EditUser = ({route}) => {
 
   // 提交修改
   const [uploading, setUploading] = useState(false);
-  const submitData = async value => {
-    const trueKey = Object.keys(value)[0];
-    const trueValue = Object.values(value)[0];
-    if (trueValue === null || trueValue === '') {
-      showToast('请输入要修改的内容！', 'error');
+  const submitEmail = async () => {
+    if (userEmail === null || userEmail === '') {
+      showToast(t('empty.input'), 'error');
       return;
     }
-    if (trueKey === 'account' && !validateEmail(trueValue)) {
-      showToast('请输入正确的邮箱号', 'error');
+    if (!emailValidate(userEmail)) {
+      showToast(t('user.email_invalid'), 'error');
       return;
     }
-    if (trueKey === 'password' && trueValue.length < 6) {
-      showToast('请输入至少六位密码', 'error');
-      return;
-    }
-    value.id = userId;
     try {
       setUploading(true);
-      if (trueKey === 'account') {
-        const validateRes = await mailValidate({
-          account: userInfo?.account,
-          code,
-        });
-        showToast(
-          validateRes.message,
-          validateRes.success ? 'success' : 'error',
-        );
-        if (!validateRes.success) {
-          setUploading(false);
-          return;
-        }
-      }
-      if (trueKey === 'password') {
-        value.oldpassword = oldpassword;
-      }
-      const res = await EditUserInfo(value);
-      if (res.success) {
-        dataInit();
-        if (trueKey === 'account') {
-          setMailshow(false);
-          setShowCodeDialog(false);
-          setCode(null);
-        }
-        if (trueKey === 'password') {
-          setPasswordshow(false);
-          setShowPassDialog(false);
-          setNewpassword(null);
-          setOldpassword(null);
-        }
-      }
-      showToast(res.message, res.success ? 'success' : 'error');
+      const res = await editUserAccount({
+        newAccount: userEmail,
+        code: code,
+      });
+      showToast(res.message, res.code === 0 ? 'success' : 'error');
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  /*  密码校验 */
+  const passwordValidate = _password => {
+    if (!_password) {
+      showToast(t('login.please_old_password'), 'error');
+      return false;
+    }
+    if (_password.length < 6) {
+      showToast(t('user.password_too_short'), 'error');
+      return false;
+    }
+    return true;
+  };
+
+  const submitPassword = async () => {
+    if (!passwordValidate(oldPassword)) {
+      return;
+    }
+    try {
+      setUploading(true);
+      const res = await editUserPassword({
+        password: newPassword,
+        oldPassword: oldPassword,
+        code: code,
+      });
+      showToast(res.message, res.code === 0 ? 'success' : 'error');
     } catch (error) {
       console.error(error);
     } finally {
@@ -151,10 +187,10 @@ const EditUser = ({route}) => {
   const [showPassDialog, setShowPassDialog] = useState(false);
 
   // 下划线
-  const rederLine = () => {
+  const renderLine = () => {
     const arr = [1, 2, 3, 4, 5, 6];
     return arr.map(item => {
-      return <View key={item} style={styles.codeboxline} />;
+      return <View key={item} style={styles.codeBoxLine} />;
     });
   };
 
@@ -164,26 +200,16 @@ const EditUser = ({route}) => {
 
   // 退出登录
   const [showLoginOut, setShowLoginOut] = useState(false);
-  const loginOut = () => {
-    dispatch(clearUserStore());
-    clearStorage();
-    showToast('您已退出登录！', 'success');
+  const userLogout = () => {
+    logout();
+    showToast(t('user.log_out_success'), 'success');
   };
 
   // 注销账号
   const [showLogOff, setShowLogOff] = useState(false);
-  const logOff = async () => {
-    try {
-      const res = await userLogOff({ids: [userId]});
-      if (res.success) {
-        dispatch(clearUserStore());
-        clearStorage();
-        showToast('您已注销账号！', 'success');
-      }
-    } catch (error) {
-      console.error(error);
-      showToast('注销账号失败！', 'error');
-    }
+  const userLogoff = () => {
+    logoff();
+    showToast(t('user.log_off_success'), 'success');
   };
 
   useEffect(() => {
@@ -202,89 +228,93 @@ const EditUser = ({route}) => {
         }>
         <View flexG paddingH-16 paddingT-16>
           <View marginB-16 flexG center>
-            <Text text90L grey30>
+            <Text>
               <FontAwesome
                 name="exclamation-circle"
                 color={Colors.yellow40}
                 size={14}
               />
-              &nbsp;更换邮箱时请先确保新邮箱为可用状态!
+              <Text text90L grey30 marginL-4>
+                {t('user.change_email')}
+              </Text>
             </Text>
           </View>
           <Card flexS padding-16>
             <View flexG row spread centerV style={styles.inputLine}>
               <TextField
-                label={'绑定邮箱'}
+                label={t('user.bind_email')}
                 labelColor={Colors.grey40}
                 text70
-                enableErrors={mailshow}
+                enableErrors={emailShow}
                 style={styles.input}
-                placeholder={'请输入新邮箱'}
+                placeholder={t('user.new_email')}
                 placeholderTextColor={Colors.grey50}
                 validate={[
                   value => value.length !== 0,
                   value => validateEmail(value),
                 ]}
-                validationMessage={['账号不能为空！', '请输入正确的邮箱号']}
-                value={usermail}
+                validationMessage={[
+                  t('user.email_empty'),
+                  t('user.email_invalid'),
+                ]}
+                value={userEmail}
                 validateOnChange={true}
                 onChangeText={value => {
-                  setUsermail(value);
-                  setMailshow(!isNeedSave(value));
+                  setUserEmail(value);
+                  setEmailShow(isNeedSave(value));
                 }}
                 onBlur={() => {
-                  setMailshow(!isNeedSave(usermail));
+                  setEmailShow(isNeedSave(userEmail));
                 }}
               />
-              <View marginB-20 style={{display: mailshow ? 'flex' : 'none'}}>
-                <Button
-                  label={'保存'}
-                  size={Button.sizes.small}
-                  borderRadius={8}
-                  backgroundColor={Colors.primary}
-                  onPress={() => {
-                    setShowCodeDialog(true);
-                    sendCode();
-                  }}
-                />
-              </View>
+              {emailShow ? (
+                <View marginB-20>
+                  <Button
+                    label={codetext}
+                    size={Button.sizes.small}
+                    borderRadius={8}
+                    disabled={sendFlag}
+                    backgroundColor={Colors.primary}
+                    onPress={() => {
+                      setImgCodeVisible(true);
+                      getImgCode();
+                    }}
+                  />
+                </View>
+              ) : null}
             </View>
             <View flexG row spread centerV marginT-16>
               <TextField
-                label={'新密码'}
+                label={t('user.new_password')}
                 labelColor={Colors.grey40}
                 text70
-                enableErrors={passwordshow}
+                enableErrors={passwordShow}
                 style={styles.input}
-                placeholder={'请输入新密码'}
+                placeholder={t('user.new_password_placeholder')}
                 placeholderTextColor={Colors.grey50}
-                validate={[selfaccount => selfaccount.length > 5]}
-                validationMessage={['请至少输入六位密码！']}
+                validate={[password => password.length > 5]}
+                validationMessage={[t('user.password_too_short')]}
                 validateOnChange={true}
-                value={newpassword}
+                value={newPassword}
                 secureTextEntry={hideFlag}
                 onChangeText={value => {
-                  setNewpassword(value);
-                  setPasswordshow(true);
+                  setNewPassword(value);
+                  setPasswordShow(true);
                 }}
-                // onBlur={() => {
-                //   setTimeout(() => {
-                //     setPasswordshow(false);
-                //   }, 1000);
-                // }}
               />
               <PasswordEye setVisible={setHideFlag} visible={hideFlag} />
-              <View style={{display: passwordshow ? 'flex' : 'none'}}>
+              {passwordShow ? (
                 <Button
-                  label={'保存'}
+                  label={codetext}
                   size={Button.sizes.small}
                   borderRadius={8}
+                  disabled={sendFlag}
                   backgroundColor={Colors.primary}
                   onPress={() => {
                     setShowPassDialog(true);
                   }}
                 />
-              </View>
+              ) : null}
             </View>
           </Card>
 
@@ -293,7 +323,7 @@ const EditUser = ({route}) => {
             bg-white
             text70
             red30
-            label="注销账号"
+            label={t('user.log_off')}
             borderRadius={12}
             onPress={() => setShowLogOff(true)}
           />
@@ -303,27 +333,27 @@ const EditUser = ({route}) => {
             text70
             orange40
             borderRadius={12}
-            label="退出登录"
+            label={t('common.log_out')}
             onPress={() => setShowLoginOut(true)}
           />
         </View>
       </ScrollView>
       <BaseDialog
         onConfirm={() => {
-          submitData({account: usermail});
+          submitEmail();
         }}
         onCancel={() => {
           setUploading(false);
         }}
         visible={showCodeDialog}
         setVisible={setShowCodeDialog}
-        description={'修改邮箱'}
+        description={t('user.bind_email')}
         renderBody={
           <>
             <View>
               <TextField
-                style={{letterSpacing: 34}}
-                label={'验证码'}
+                style={styles.letterSpacing}
+                label={t('user.code')}
                 text40
                 value={code}
                 onChangeText={value => {
@@ -335,32 +365,32 @@ const EditUser = ({route}) => {
               />
             </View>
             <View flexS row spread paddingH-8>
-              {rederLine()}
+              {renderLine()}
             </View>
           </>
         }
       />
       <BaseDialog
         onConfirm={() => {
-          submitData({password: newpassword});
+          submitPassword();
         }}
         onCancel={() => {
           setUploading(false);
         }}
         visible={showPassDialog}
         setVisible={setShowPassDialog}
-        description={'修改密码'}
+        description={t('user.change_password')}
         renderBody={
           <View style={styles.inputLine}>
             <View>
               <TextField
-                label={'旧密码'}
+                label={t('user.old_password')}
                 text70
                 style={styles.input}
-                value={oldpassword}
+                value={oldPassword}
                 secureTextEntry={hideFlagOld}
                 onChangeText={value => {
-                  setOldpassword(value);
+                  setOldPassword(value);
                 }}
               />
               <PasswordEye
@@ -376,19 +406,51 @@ const EditUser = ({route}) => {
       />
       <BaseDialog
         title={true}
-        onConfirm={loginOut}
+        onConfirm={userLogout}
         visible={showLoginOut}
         setVisible={setShowLoginOut}
-        description={'您确定要退出登录吗？'}
+        description={t('user.log_out_confirm')}
       />
       <BaseDialog
         title={true}
-        onConfirm={logOff}
+        onConfirm={userLogoff}
         visible={showLogOff}
         setVisible={setShowLogOff}
-        description={'您确定要注销账号吗？'}
+        description={t('user.log_off_confirm')}
       />
-      {uploading ? <FullScreenLoading Message={'修改中...'} /> : null}
+      <BaseDialog
+        onConfirm={sendCode}
+        visible={imgCodeVisible}
+        setVisible={setImgCodeVisible}
+        description={t('login.send_code')}
+        Body={
+          <View>
+            <View height={80}>
+              <SvgXml width="100%" height="100%" xml={captchaImg} />
+            </View>
+            <Button
+              marginT-8
+              label={t('login.change_code')}
+              link
+              disabled={sendFlag}
+              text80L
+              linkColor={Colors.primary}
+              onPress={getImgCode}
+            />
+            <TextField
+              placeholder={t('login.please_code')}
+              text70L
+              floatingPlaceholder
+              onChangeText={value => {
+                setImgCode(value);
+              }}
+              maxLength={4}
+              showCharCounter={true}
+            />
+          </View>
+        }
+      />
+      {uploading ? <FullScreenLoading Message={t('common.modifying')} /> : null}
     </>
   );
 };
@@ -402,10 +464,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     paddingBottom: 8,
   },
-  codeboxline: {
+  codeBoxLine: {
     width: 40,
     borderBottomColor: Colors.grey50,
     borderBottomWidth: 1,
+  },
+  letterSpacing: {
+    letterSpacing: 34,
   },
 });
 export default EditUser;

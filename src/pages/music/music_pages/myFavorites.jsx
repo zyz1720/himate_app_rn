@@ -1,53 +1,45 @@
 import React, {useState, useEffect} from 'react';
 import {View} from 'react-native-ui-lib';
-import {getFavoritesDetail} from '../../../api/music';
-import MusicList from '../../../components/music/MusicList';
-import FullScreenLoading from '../../../components/common/FullScreenLoading';
+import {getMusicFromDefaultFavorites} from '@api/music';
+import {getDefaultFavorites} from '@api/favorites';
+import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
+import MusicList from '@components/music/MusicList';
+import FullScreenLoading from '@components/common/FullScreenLoading';
 
 const MyFavorites = () => {
-  const userId = useSelector(state => state.userStore.userId);
+  const [favoritesId, setFavoritesId] = useState(null);
+  const {list, loading, onEndReached, refreshData} = useInfiniteScroll(
+    getMusicFromDefaultFavorites,
+  );
 
-  const [music, setMusic] = useState([]);
-  const [favoriteId, setFavoriteId] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  /* 获取用户收藏的音乐列表 */
-  const getAllMusicList = async _userId => {
+  const getDefaultFavoritesId = async () => {
     try {
-      setLoading(true);
-      const res = await getFavoritesDetail({
-        creator_uid: _userId,
-        is_default: 1,
-      });
-      if (res.success) {
-        setFavoriteId(res.data.id);
-        setMusic(res.data.music);
+      const res = await getDefaultFavorites();
+      if (res.code === 0) {
+        setFavoritesId(res.data.id);
       }
     } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
+      console.log(error);
     }
   };
 
   useEffect(() => {
-    if (userId) {
-      getAllMusicList(userId);
-    }
-  }, [userId]);
+    getDefaultFavoritesId();
+  }, []);
 
   return (
     <View padding-12>
-      {loading ? <FullScreenLoading /> : null}
       <MusicList
-        HeightScale={0.92}
-        List={music}
-        FavoriteId={favoriteId}
-        RefreshList={() => {
-          getAllMusicList(userId);
+        heightScale={0.92}
+        list={list}
+        favoriteId={favoritesId}
+        isOneself={true}
+        onEndReached={onEndReached}
+        refreshList={() => {
+          refreshData();
         }}
-        IsOwn={true}
       />
+      {loading ? <FullScreenLoading /> : null}
     </View>
   );
 };

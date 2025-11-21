@@ -8,38 +8,42 @@ import {
   Avatar,
 } from 'react-native-ui-lib';
 import {StyleSheet} from 'react-native';
-import {useIsFocused} from '@react-navigation/native';
-import {getFavoritesDetail} from '../../../api/music';
-import MusicList from '../../../components/music/MusicList';
-import FavoriteModal from '../../../components/music/FavoriteModal';
-import {isEmptyObject} from '../../../utils/common/base';
-import dayjs from 'dayjs';
+import {getFavoritesDetail} from '@api/favorites';
+import {getMusicFromFavorites} from '@api/music';
+import {isEmptyObject} from '@utils/common/object_utils';
+import {useConfigStore} from '@store/configStore';
+import {useUserStore} from '@store/userStore';
+import {useTranslation} from 'react-i18next';
+import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
+import MusicList from '@components/music/MusicList';
+import FavoriteModal from '@components/music/FavoriteModal';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import FullScreenLoading from '../../../components/common/FullScreenLoading';
+import FullScreenLoading from '@components/common/FullScreenLoading';
+import dayjs from 'dayjs';
 
 const FavoritesDetail = ({navigation, route}) => {
   const {favoritesId} = route.params || {};
+  const {t} = useTranslation();
+  const {envConfig} = useConfigStore();
+  const {userInfo} = useUserStore();
 
-  const isFocused = useIsFocused();
+  // 获取收藏夹音乐列表
+  const getMusicList = async params => {
+    return getMusicFromFavorites(favoritesId, params);
+  };
 
-  const userId = useSelector(state => state.userStore.userId);
-
-  // baseConfig
-  const {STATIC_URL, THUMBNAIL_URL} = useSelector(
-    state => state.baseConfigStore.baseConfig,
-  );
+  const {list, onEndReached, refreshData} = useInfiniteScroll(getMusicList);
 
   /* 获取收藏夹详情 */
   const [loading, setLoading] = useState(false);
-  const [favoritesForm, setFavoritesForm] = useState({});
-  const [music, setMusic] = useState([]);
-  const getFavorites = async f_id => {
-    setLoading(true);
+  const [favoritesInfo, setFavoritesInfo] = useState({});
+
+  const getFavoritesInfo = async () => {
     try {
-      const res = await getFavoritesDetail({id: f_id});
-      if (res.success) {
-        setFavoritesForm(res.data);
-        setMusic(res.data.music);
+      setLoading(true);
+      const res = await getFavoritesDetail(favoritesId);
+      if (res.code === 0) {
+        setFavoritesInfo(res.data);
       }
     } catch (error) {
       console.error(error);
@@ -49,66 +53,70 @@ const FavoritesDetail = ({navigation, route}) => {
   };
 
   useEffect(() => {
-    if (favoritesId && isFocused) {
-      getFavorites(favoritesId);
+    if (favoritesId) {
+      getFavoritesInfo();
     }
-  }, [favoritesId, isFocused]);
+  }, [favoritesId]);
 
-  const [detailModalVisible, setdDetailModalVisible] = useState(false);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
 
   return (
     <>
-      {isEmptyObject(favoritesForm) ? null : (
+      {isEmptyObject(favoritesInfo) ? null : (
         <>
           <View padding-24 row spread>
             <View flexS row width={'70%'}>
               <TouchableOpacity
                 onPress={() => {
-                  setdDetailModalVisible(true);
+                  setDetailModalVisible(true);
                 }}>
                 <Image
-                  source={{uri: THUMBNAIL_URL + favoritesForm.favorites_cover}}
+                  source={{
+                    uri:
+                      envConfig.THUMBNAIL_URL + favoritesInfo.favorites_cover,
+                  }}
                   style={styles.image}
                 />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
-                  setdDetailModalVisible(true);
+                  setDetailModalVisible(true);
                 }}>
                 <View marginL-12>
                   <Text text60 grey10 marginT-4 numberOfLines={2}>
-                    {favoritesForm.favorites_name}
+                    {favoritesInfo.favorites_name}
                   </Text>
                   <View row centerV marginT-10>
                     <Avatar
                       size={26}
                       source={{
-                        uri: STATIC_URL + favoritesForm.creator_avatar,
+                        uri:
+                          envConfig.STATIC_URL + favoritesInfo.creator_avatar,
                       }}
                     />
                     <Text text90 marginL-4 grey20>
-                      {favoritesForm.creator_name}
+                      {favoritesInfo.creator_name}
                     </Text>
                   </View>
                   <Text marginT-10 text90L grey40>
-                    创建于
-                    {dayjs(favoritesForm.create_time).format('YYYY/MM/DD')}
+                    {t('common.created') +
+                      dayjs(favoritesInfo.create_time).format('YYYY/MM/DD')}
                   </Text>
                 </View>
               </TouchableOpacity>
             </View>
-            {favoritesForm?.creator_uid === userId ? (
+            {favoritesInfo?.creator_uid === userInfo?.id ? (
               <TouchableOpacity
                 onPress={() => {
                   navigation.navigate('EditFavorites', {
-                    favoritesId: favoritesForm.id,
+                    favoritesId: favoritesInfo.id,
                   });
                 }}
                 row
                 centerV>
                 <FontAwesome name="edit" color={Colors.grey40} size={20} />
                 <Text marginL-4 text80BO grey40>
-                  编辑
+                  {t('common.edit')}
                 </Text>
               </TouchableOpacity>
             ) : (
@@ -118,36 +126,37 @@ const FavoritesDetail = ({navigation, route}) => {
           <TouchableOpacity
             paddingH-16
             onPress={() => {
-              setdDetailModalVisible(true);
+              setDetailModalVisible(true);
             }}>
             <Text grey20 text70BO>
-              歌单简介
+              {t('music.favorites_remarks')}
             </Text>
             <Text grey40 text90L marginT-4 numberOfLines={1}>
-              {favoritesForm.favorites_remark ?? '还没有简介哦~'}
+              {favoritesInfo.favorites_remark || t('empty.introduction')}
             </Text>
           </TouchableOpacity>
         </>
       )}
       <View paddingH-12 marginT-12>
         <MusicList
-          List={music}
-          HeightScale={0.68}
-          FavoriteId={favoritesId}
-          RefreshList={() => {
-            getFavorites(favoritesId);
+          list={list}
+          heightScale={0.68}
+          favoriteId={favoritesId}
+          refreshList={() => {
+            refreshData();
           }}
-          IsOwn={favoritesForm?.creator_uid === userId}
+          onEndReached={onEndReached}
+          isOneself={favoritesInfo?.creator_uid === userInfo?.id}
         />
       </View>
       <FavoriteModal
         visible={detailModalVisible}
-        onClose={() => setdDetailModalVisible(false)}
-        BackgroundImg={THUMBNAIL_URL + favoritesForm?.favorites_cover}
-        Title={favoritesForm?.favorites_name}
-        Remark={favoritesForm?.favorites_remark}
-        CreateAvatar={STATIC_URL + favoritesForm?.creator_avatar}
-        CreateName={favoritesForm?.creator_name}
+        onClose={() => setDetailModalVisible(false)}
+        BackgroundImg={envConfig.THUMBNAIL_URL + favoritesInfo?.favorites_cover}
+        Title={favoritesInfo?.favorites_name}
+        Remark={favoritesInfo?.favorites_remark}
+        CreateAvatar={envConfig.STATIC_URL + favoritesInfo?.user.user_avatar}
+        CreateName={favoritesInfo?.user.user_name}
       />
       {loading ? <FullScreenLoading /> : null}
     </>

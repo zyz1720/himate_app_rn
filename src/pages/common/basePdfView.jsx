@@ -17,7 +17,7 @@ const BasePdfView = ({route}) => {
       source={{uri: url, cache: true}}
       trustAllCerts={false}
       onError={error => {
-        showToast('pdf' + t('error.load'), 'error');
+        showToast('pdf' + t('common.load_error'), 'error');
         console.error(error);
       }}
     />

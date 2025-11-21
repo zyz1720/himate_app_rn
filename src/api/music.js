@@ -9,12 +9,20 @@ export const getMusicDetail = id => instance.get(`app/music/detail/${id}`);
 // 收藏音乐
 export const likeMusic = data => instance.get('app/music/default', data);
 
+// 获取收藏夹音乐列表
+export const getMusicFromDefaultFavorites = params =>
+  instance.get('app/music/favorites/default', {params});
+
+// 获取收藏夹音乐列表
+export const getMusicFromFavorites = (favoritesId, params) =>
+  instance.get(`app/music/favorites/${favoritesId}`, {params});
+
 // 添加音乐到收藏夹
-export const favoritesMusic = data => instance.get('app/music/favorites', data);
+export const appendMusicToFavorites = data =>
+  instance.post('app/music/favorites', data);
 
-// 移除音乐收藏
-export const removeFavoritesMusic = data =>
-  instance.delete('app/music/favorites', data);
+// 从收藏夹移除音乐
+export const removeMusicToFavorites = (favoritesId, data) =>
+  instance.delete(`app/music/favorites/${favoritesId}`, data);
 
-// 第三方歌单导入
-export const importFavorites = url => instance.get(`music-api/sync/${url}`);
+

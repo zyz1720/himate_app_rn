@@ -19,5 +19,7 @@
     "forget_password": "忘记密码？",
     "agree": "我已阅读并同意 ",
     "user_protocol": "用户使用协议",
-    "change_code": "看不清？换一张"
+    "change_code": "看不清？换一张",
+    "password_invalid": "请输入至少6位密码！",
+    "register_success": "注册成功！已自动登录"
 }

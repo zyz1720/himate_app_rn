@@ -8,24 +8,26 @@ import {
   Button,
 } from 'react-native-ui-lib';
 import {FlatList, StyleSheet, Platform, Modal} from 'react-native';
-import {useToast} from '../../../utils/hooks/useToast';
-import ReactNativeBlobUtil from 'react-native-blob-util';
-import MusicList from '../../../components/music/MusicList';
+import {useToast} from '@utils/hooks/useToast';
 import {useRealm} from '@realm/react';
 import {v4 as uuid} from 'uuid';
-import {fullHeight, statusBarHeight} from '../../../styles';
+import {fullHeight, statusBarHeight} from '@style/index';
+import {audioExtNames} from '@const/file_ext_names';
+import {usePermissionStore} from '@store/permissionStore';
+import {useTranslation} from 'react-i18next';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import BaseDialog from '@components/common/BaseDialog';
-import {audioExtNames} from '../../../constants/file_ext_names';
-import FullScreenLoading from '../../../components/common/FullScreenLoading';
+import FullScreenLoading from '@components/common/FullScreenLoading';
+import MusicList from '@components/music/MusicList';
 
 const LocalMusic = () => {
   const {showToast} = useToast();
   const realm = useRealm();
-  const dispatch = useDispatch();
+  const {t} = useTranslation();
 
-  const accessFolder = useSelector(state => state.permissionStore.accessFolder);
+  const {accessFolder, setAccessFolder} = usePermissionStore();
 
   // 扫描本地音乐
   const [loading, setLoading] = useState(false);
@@ -196,14 +198,14 @@ const LocalMusic = () => {
   return (
     <View padding-12>
       <MusicList
-        List={audioFiles}
-        IsLocal={true}
-        HeightScale={0.92}
-        RightBut={
+        list={audioFiles}
+        isLocal={true}
+        heightScale={0.92}
+        rightBut={
           <View row centerV>
             <View paddingR-12>
               <Button
-                label="清空记录"
+                label={t('music.clear_label')}
                 size="small"
                 link
                 linkColor={Colors.red40}
@@ -214,13 +216,13 @@ const LocalMusic = () => {
             </View>
             <View>
               <Button
-                label="扫描歌曲"
+                label={t('music.scan_music')}
                 size="small"
                 backgroundColor={Colors.primary}
                 onPress={() => {
                   if (!accessFolder) {
-                    showToast('请授予应用文件和媒体使用权限', 'warning');
-                    dispatch(requestFolderPermission());
+                    showToast(t('permissions.folder_please'), 'warning');
+                    setAccessFolder();
                     return;
                   }
                   setDirVisible(true);
@@ -231,7 +233,6 @@ const LocalMusic = () => {
           </View>
         }
       />
-      {loading ? <FullScreenLoading Message="正在扫描中..." /> : null}
       <Modal
         animationType="fade"
         transparent={true}
@@ -256,7 +257,7 @@ const LocalMusic = () => {
               </TouchableOpacity>
               <View row centerV>
                 <Button
-                  label={'返回上一级'}
+                  label={t('music.back_label')}
                   size={'small'}
                   link
                   linkColor={Colors.blue40}
@@ -266,7 +267,7 @@ const LocalMusic = () => {
                       nowDirPath === '' ||
                       nowDirPath === ReactNativeBlobUtil.fs.dirs.LegacySDCardDir
                     ) {
-                      showToast('已经是根目录了', 'warning', true);
+                      showToast(t('music.is_root_dir'), 'warning', true);
                       return;
                     }
                     const paths = nowDirPath.split('/');
@@ -276,7 +277,7 @@ const LocalMusic = () => {
                   }}
                 />
                 <Button
-                  label={'确认'}
+                  label={t('common.confirm')}
                   size={'small'}
                   link
                   linkColor={Colors.primary}
@@ -293,7 +294,7 @@ const LocalMusic = () => {
               ListEmptyComponent={
                 <View marginT-16 center>
                   <Text text90L grey40>
-                    已经是最后一级目录了
+                    {t('music.is_last_dir')}
                   </Text>
                 </View>
               }
@@ -354,8 +355,9 @@ const LocalMusic = () => {
         }}
         visible={delVisible}
         setVisible={setDelVisible}
-        description={'您确定清空本地音乐记录吗？'}
+        description={t('music.local_clear_confirm')}
       />
+      {loading ? <FullScreenLoading Message={t('music.scanning')} /> : null}
     </View>
   );
 };

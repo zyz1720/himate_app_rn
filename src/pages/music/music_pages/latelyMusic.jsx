@@ -1,12 +1,14 @@
 import React, {useState, useEffect} from 'react';
 import {View, Colors, Button} from 'react-native-ui-lib';
-import {useToast} from '../../../utils/hooks/useToast';
-import MusicList from '../../../components/music/MusicList';
+import {useToast} from '@utils/hooks/useToast';
 import {useRealm} from '@realm/react';
+import {useTranslation} from 'react-i18next';
 import BaseDialog from '@components/common/BaseDialog';
+import MusicList from '@components/music/MusicList';
 
 const LatelyMusic = () => {
   const {showToast} = useToast();
+  const {t} = useTranslation();
   const realm = useRealm();
   const [localMusic, setLocalMusic] = useState([]);
 
@@ -23,7 +25,7 @@ const LatelyMusic = () => {
     realm.write(() => {
       realm.delete(toDelete);
     });
-    showToast('清空成功', 'success');
+    showToast(t('music.clear_success'), 'success');
     getLocalMusic();
   };
 
@@ -36,12 +38,12 @@ const LatelyMusic = () => {
   return (
     <View padding-12>
       <MusicList
-        List={localMusic}
-        HeightScale={0.92}
-        RightBut={
+        list={localMusic}
+        heightScale={0.92}
+        rightBut={
           <View paddingR-12>
             <Button
-              label="清空记录"
+              label={t('music.clear_label')}
               size="small"
               link
               linkColor={Colors.red40}
@@ -60,7 +62,7 @@ const LatelyMusic = () => {
         }}
         visible={delVisible}
         setVisible={setDelVisible}
-        description={'您确定清空最近播放记录吗？'}
+        description={t('music.clear_confirm')}
       />
     </View>
   );

@@ -82,7 +82,7 @@ const GroupInfo = ({navigation, route}) => {
       const key = keys[i];
       const element = groupInfo[key];
       if (element === null || element === '') {
-        showToast(t('group.input_empty'), 'error');
+        showToast(t('empty.input'), 'error');
         return false;
       }
     }

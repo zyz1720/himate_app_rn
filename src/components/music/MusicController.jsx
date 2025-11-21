@@ -600,7 +600,7 @@ const MusicCtrlProvider = React.memo(props => {
           setPlayList([]);
         }}
         Music={playingMusic}
-        List={playList}
+        list={playList}
         OnPressItem={item => {
           setPlayingMusic(item);
         }}
