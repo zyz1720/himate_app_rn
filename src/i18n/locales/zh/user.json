@@ -1,7 +1,4 @@
 {
-  "avatar_save": "已开始保存头像到相册",
-  "save_to": "已保存到 ",
-  "save_failed": "保存失败",
   "avatar": "头像",
   "user_name": "昵称：",
   "account": "账号：",
@@ -57,5 +54,11 @@
   "avatar_upload_failed": "上传头像失败",
   "no_modified_content": "没有修改任何内容",
   "qr_code_tip": "扫描二维码，加我为好友",
-  "add_friend": "去添加好友"
+  "add_friend": "去添加好友",
+  "account_safe": "账号安全",
+  "chat_msg": "聊天记录",
+  "cloud_data": "云端数据",
+  "version_update": "版本更新",
+  "ios_not_support": "IOS暂不支持",
+  "download_pkg_progress": "安装包下载中..."
 }

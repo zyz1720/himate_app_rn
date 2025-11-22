@@ -63,7 +63,7 @@ const VideoMsg = React.memo(props => {
         <View style={styles.videoControl}>
           <ActivityIndicator color={Colors.white} />
           <Text text90L white marginT-4>
-            {t('video.loading')}
+            {t('common.video_loading')}
           </Text>
         </View>
       ) : videoThumbnail ? (
@@ -77,7 +77,7 @@ const VideoMsg = React.memo(props => {
       ) : (
         <View style={styles.videoControl}>
           <Text text90L white>
-            {t('video.loading_failed')}
+            {t('common.video_loading_failed')}
           </Text>
         </View>
       )}

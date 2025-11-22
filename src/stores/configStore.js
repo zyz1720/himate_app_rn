@@ -1,5 +1,5 @@
 import {create} from 'zustand';
-import {getBaseConfig} from '@api/app_config';
+import {getAppConfig} from '@api/app_config';
 import {generateSecretKey} from '@utils/system/crypto_utils';
 import {isEmptyObject} from '@utils/common/object_utils';
 
@@ -14,7 +14,7 @@ export const useConfigStore = create(set => ({
   setEnvConfig: async () => {
     try {
       set({configLoading: true});
-      const config = await getBaseConfig();
+      const config = await getAppConfig();
       set(state => {
         const {MSG_SECRET} = config;
         state.envConfig = config;

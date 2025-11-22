@@ -71,7 +71,8 @@ const TabScreen = () => {
         name="Msg"
         options={({navigation}) => ({
           title: t('screen.Msg'),
-          headerRight: (
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerRight: () => (
             <TouchableOpacity
               paddingR-16
               onPress={() => navigation.navigate('SearchMsg')}>
@@ -86,7 +87,8 @@ const TabScreen = () => {
         options={({navigation}) => ({
           title: 'Mate',
           headerTitleAlign: 'left',
-          headerRight: (
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerRight: () => (
             <TouchableOpacity
               paddingR-12
               onPress={() => navigation.navigate('AddMate')}>

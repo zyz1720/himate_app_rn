@@ -26,8 +26,6 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Feather from 'react-native-vector-icons/Feather';
 
-let timer = null;
-
 const Login = ({navigation}) => {
   const {t} = useTranslation();
   const {showToast} = useToast();
@@ -42,7 +40,7 @@ const Login = ({navigation}) => {
   let time = 60;
   const addTimer = () => {
     setSendFlag(true);
-    timer = setInterval(() => {
+    const timer = setInterval(() => {
       time -= 1;
       setCodetext(time + 's');
       if (time === 0) {
@@ -112,7 +110,7 @@ const Login = ({navigation}) => {
   const [butDisabled, setButDisabled] = useState(false);
   const userLogin = async () => {
     if (!agreeFlag) {
-      showToast('请先阅读并同意协议！', 'error');
+      showToast(t('login.agree_terms'), 'error');
       return;
     }
     if (controlCode === 1 || controlCode === 2) {
@@ -210,6 +208,10 @@ const Login = ({navigation}) => {
 
   /* 邮箱校验 */
   const emailValidate = email => {
+    if (!email) {
+      showToast(t('login.enter_email'), 'error');
+      return false;
+    }
     if (validateEmail(email)) {
       return true;
     }
@@ -417,7 +419,7 @@ const Login = ({navigation}) => {
         visible={imgCodeVisible}
         setVisible={setImgCodeVisible}
         description={t('login.send_code')}
-        Body={
+        renderBody={
           <View>
             <View height={80}>
               <SvgXml width="100%" height="100%" xml={captchaImg} />

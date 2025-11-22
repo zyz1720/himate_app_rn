@@ -19,3 +19,19 @@ export const UserRoleEnum = {
   admin: 'admin',
   vip: 'vip',
 };
+
+export const MsgTypeEnum = {
+  text: 'text',
+  image: 'image',
+  video: 'video',
+  audio: 'audio',
+  other: 'other',
+};
+
+export const FileTypeEnum = {
+  image: 'image',
+  video: 'video',
+  audio: 'audio',
+  document: 'document',
+  other: 'other',
+};

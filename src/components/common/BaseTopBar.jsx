@@ -20,7 +20,7 @@ const BaseTopBar = props => {
             <View key={item.key}>
               <TouchableOpacity
                 style={[styles.barStyle]}
-                onPress={() => onChange(index)}>
+                onPress={() => onChange(item, index)}>
                 <Text
                   color={index === focusIndex ? Colors.primary : Colors.grey30}>
                   {item.title}

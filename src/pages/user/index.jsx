@@ -13,9 +13,13 @@ import {
 import {StyleSheet, ActivityIndicator, Platform} from 'react-native';
 import {useToast} from '@utils/hooks/useToast';
 import {downloadFile} from '@utils/system/file_utils';
-import {getAppPackageDetail} from '@api/app_package';
+import {getAppVersion} from '@api/app_package';
 import {name as appName, displayName} from '@root/app.json';
-import {isEmptyObject} from '@utils/common/base';
+import {isEmptyObject} from '@utils/common/object_utils';
+import {useConfigStore} from '@store/configStore';
+import {useUserStore} from '@store/userStore';
+import {compareVersions} from '@utils/common/string_utils';
+import {useTranslation} from 'react-i18next';
 import DeviceInfo from 'react-native-device-info';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -24,95 +28,36 @@ import ImgModal from '@components/common/ImgModal';
 import ListItem from '@components/common/ListItem';
 
 const User = ({navigation}) => {
+  const {t} = useTranslation();
   const {showToast} = useToast();
-  const userInfo = useSelector(state => state.userStore.userInfo);
-  const userId = useSelector(state => state.userStore.userId);
+  const {userInfo} = useUserStore();
+  const {envConfig} = useConfigStore();
 
-  // baseConfig
-  const {STATIC_URL} = useSelector(state => state.baseConfigStore.baseConfig);
-
-  // 预览头像
   const [avatarShow, setAvatarShow] = useState(false);
-  const isShowAvatar = () => {
-    if (userInfo?.user_avatar) {
-      setAvatarShow(true);
-    } else {
-      showToast('您还没有头像!', 'warning');
-    }
-  };
 
-  // 保存头像
-  const saveAvatar = async (url, name) => {
-    setAvatarShow(false);
-    showToast('已开始保存头像...', 'success');
-    const pathRes = await downloadFile(url, name, () => {}, true);
-    if (pathRes) {
-      showToast('图片已保存到' + pathRes, 'success');
-    } else {
-      showToast('保存失败', 'error');
-    }
-  };
-
-  /**
-   * 比较两个版本号的大小
-   * @param {string} v1 版本号1，格式为 x.y.z
-   * @param {string} v2 版本号2，格式为 x.y.z
-   * @returns {number} 返回比较结果：
-   *   -1: v1 < v2
-   *    0: v1 == v2
-   *    1: v1 > v2
-   */
-  const compareVersions = (v1, v2) => {
-    // 将版本号拆分为数字数组
-    const parts1 = v1?.split('.').map(Number);
-    const parts2 = v2?.split('.').map(Number);
-
-    // 确保两个版本号都有相同数量的部分
-    const maxLength = Math.max(parts1.length, parts2.length);
-
-    for (let i = 0; i < maxLength; i++) {
-      // 如果某一部分不存在，则视为0
-      const num1 = parts1[i] || 0;
-      const num2 = parts2[i] || 0;
-
-      if (num1 > num2) {
-        return 1;
-      }
-      if (num1 < num2) {
-        return -1;
-      }
-    }
-
-    // 所有部分都相等
-    return 0;
-  };
-
-  // 检查更新
   const versionName = DeviceInfo.getVersion();
-  const [showAppUpate, setShowAppUpate] = useState(false);
+
+  const [showAppUpdate, setShowAppUpdate] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
   const [newAppInfo, setNewAppInfo] = useState({});
   const [isNewVersion, setIsNewVersion] = useState(false);
 
   const checkUpdate = async () => {
-    setUpdateLoading(true);
     try {
-      const res = await getAppPackageDetail({app_name: appName});
+      setUpdateLoading(true);
+      const res = await getAppVersion();
       if (res.code === 200) {
         setNewAppInfo(res.data);
         setIsNewVersion(
           compareVersions(versionName, res.data.app_version) === -1,
         );
       } else {
-        showToast('检查更新失败', 'error');
-        setShowAppUpate(false);
+        showToast(t('common.check_update_failed'), 'error');
       }
-      setUpdateLoading(false);
     } catch (error) {
       console.error(error);
-      showToast('检查更新失败', 'error');
+    } finally {
       setUpdateLoading(false);
-      setShowAppUpate(false);
     }
   };
 
@@ -123,34 +68,30 @@ const User = ({navigation}) => {
     setShowProgress(true);
     const android = ReactNativeBlobUtil.android;
     const downloadRes = await downloadFile(
-      STATIC_URL + newAppInfo.app_fileName,
-      appName + '_' + newAppInfo.app_version + '.apk',
-      progress => {
-        if (progress) {
-          setDownloadProgress(progress);
-        }
+      envConfig.STATIC_URL + newAppInfo.file.file_key,
+      {
+        fileName: appName + '_' + newAppInfo.app_version + '.apk',
+        onProgress: progress => setDownloadProgress(progress),
       },
-      false,
-      false,
     );
     setDownloadProgress(0);
     setShowProgress(false);
     if (downloadRes) {
-      showToast('安装包下载成功', 'success');
+      showToast(t('common.download_apk_success'), 'success');
       android.actionViewIntent(
         downloadRes,
         'application/vnd.android.package-archive',
       );
     } else {
-      showToast('安装包下载失败', 'error');
+      showToast(t('common.download_apk_failed'), 'error');
     }
-    setShowAppUpate(false);
+    setShowAppUpdate(false);
   };
 
   return (
     <>
       {isEmptyObject(userInfo) ? (
-        <FullScreenLoading Message={displayName + ' 加载中...'} />
+        <FullScreenLoading Message={displayName + ' ' + t('common.loading')} />
       ) : (
         <View flexG top paddingH-16 paddingT-16>
           <Card
@@ -161,16 +102,14 @@ const User = ({navigation}) => {
             enableShadow={false}
             padding-16
             onPress={() => {
-              navigation.navigate('EditUser', {
-                userId: userId,
-              });
+              navigation.navigate('EditUser');
             }}>
             <TouchableOpacity
               onPress={() => {
-                isShowAvatar();
+                setAvatarShow(true);
               }}>
               <Image
-                source={{uri: STATIC_URL + userInfo?.user_avatar}}
+                source={{uri: envConfig.STATIC_URL + userInfo?.user_avatar}}
                 style={styles.image}
               />
             </TouchableOpacity>
@@ -180,7 +119,8 @@ const User = ({navigation}) => {
               </Text>
               <View width={166}>
                 <Text grey30 text80 numberOfLines={1}>
-                  账号：{userInfo?.self_account}
+                  {t('user.account')}
+                  {userInfo?.self_account}
                 </Text>
               </View>
               <View flexS row>
@@ -199,7 +139,7 @@ const User = ({navigation}) => {
                     />
                   ) : null}
                   <Text marginL-4 grey30 text90>
-                    {userInfo?.age}岁
+                    {userInfo?.age + t('user.age_num')}
                   </Text>
                 </View>
               </View>
@@ -215,20 +155,18 @@ const User = ({navigation}) => {
           </Card>
           <Card flexS centerV enableShadow={false} marginT-16>
             <ListItem
-              itemName={'账号安全'}
+              itemName={t('user.account_safe')}
               iconName={'shield'}
               iconColor={Colors.green30}
               isBottomLine={true}
               onConfirm={() => {
-                navigation.navigate('UserSafe', {
-                  userId: userId,
-                });
+                navigation.navigate('UserSafe');
               }}
             />
           </Card>
           <Card flexS centerV enableShadow={false} marginT-16>
             <ListItem
-              itemName={'系统设置'}
+              itemName={t('common.setting')}
               iconName={'cog'}
               iconColor={Colors.grey30}
               onConfirm={() => {
@@ -236,7 +174,7 @@ const User = ({navigation}) => {
               }}
             />
             <ListItem
-              itemName={'聊天记录'}
+              itemName={t('user.chat_msg')}
               iconName={'file-text'}
               iconSize={20}
               iconColor={Colors.blue40}
@@ -245,7 +183,7 @@ const User = ({navigation}) => {
               }}
             />
             <ListItem
-              itemName={'云端数据'}
+              itemName={t('user.cloud_data')}
               iconName={'database'}
               iconSize={20}
               iconColor={Colors.orange40}
@@ -254,60 +192,67 @@ const User = ({navigation}) => {
               }}
             />
             <ListItem
-              itemName={'版本更新'}
+              itemName={t('common.version_update')}
               iconName={'cloud-download'}
               iconSize={20}
               iconColor={Colors.violet40}
               rightText={versionName}
               onConfirm={() => {
                 if (Platform.OS === 'ios') {
-                  showToast('IOS暂不支持', 'warning');
+                  showToast(t('common.ios_not_support'), 'warning');
                   return;
                 }
-                setShowAppUpate(true);
+                setShowAppUpdate(true);
                 checkUpdate();
               }}
             />
             <ListItem
-              itemName={'关于' + displayName}
+              itemName={t('common.about') + displayName}
               iconName={'cube'}
               iconSize={20}
               iconColor={Colors.cyan30}
               onConfirm={() => {
                 navigation.navigate('WebView', {
-                  title: '关于' + displayName,
-                  url: STATIC_URL + 'default_assets/index.html',
+                  title: t('common.about') + displayName,
+                  url: envConfig.STATIC_URL + 'default_assets/index.html',
                 });
               }}
             />
           </Card>
           <Dialog
-            visible={showAppUpate}
-            onDismiss={() => setShowAppUpate(false)}>
+            visible={showAppUpdate}
+            onDismiss={() => setShowAppUpdate(false)}>
             <Card flexS padding-16>
               {updateLoading ? (
                 <View flexS paddingH-16>
                   <ActivityIndicator color={Colors.primary} size={'large'} />
                   <Text marginT-16 text70BO center>
-                    正在检查更新...
+                    {t('common.checking_update')}
                   </Text>
                 </View>
               ) : (
                 <View flexS>
                   <Text text70BO>
-                    {isNewVersion ? '发现新版本！' : '当前已是最新版本！'}
+                    {isNewVersion
+                      ? t('common.new_version')
+                      : t('common.latest_version')}
                     <Text text80BO green30>
                       {newAppInfo?.app_version}
                     </Text>
                   </Text>
                   <Text marginT-2 grey30>
-                    版本说明：{newAppInfo?.app_description}
+                    {t('common.version_description')}：
+                    {newAppInfo?.app_description}
                   </Text>
                   {showProgress ? null : (
                     <View flexS marginT-16>
                       <Button
                         size={'medium'}
-                        label={isNewVersion ? '立即更新' : '下载安装包'}
+                        label={
+                          isNewVersion
+                            ? t('common.immediate_update')
+                            : t('common.download_install_pkg')
+                        }
                         backgroundColor={Colors.primary}
                         onPress={downloadApp}
                       />
@@ -317,7 +262,9 @@ const User = ({navigation}) => {
               )}
               {showProgress ? (
                 <View marginT-16>
-                  <Text marginB-16>安装包下载中...{downloadProgress}%</Text>
+                  <Text marginB-16>
+                    {t('common.download_pkg_progress')}：{downloadProgress}%
+                  </Text>
                   <ProgressBar
                     progress={downloadProgress}
                     progressColor={Colors.primary}
@@ -327,15 +274,12 @@ const User = ({navigation}) => {
             </Card>
           </Dialog>
 
-          {/* 图片预览弹窗 */}
           <ImgModal
-            uri={STATIC_URL + userInfo?.user_avatar}
+            uris={[envConfig.STATIC_URL + userInfo?.user_avatar]}
             visible={avatarShow}
             onClose={() => {
               setAvatarShow(false);
             }}
-            allowSave={true}
-            onSave={url => saveAvatar(url, userInfo?.user_avatar)}
           />
         </View>
       )}

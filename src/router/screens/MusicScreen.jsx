@@ -42,7 +42,8 @@ function MusicScreen() {
           headerStyle: {backgroundColor: themeColor, height: 46},
           headerTitleAlign: 'center',
           headerTitleStyle: {fontSize: 16, color: Colors.white},
-          headerLeft: (
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerLeft: () => (
             <TouchableOpacity paddingH-26 onPress={() => navigation.goBack()}>
               <FontAwesome name="angle-left" color={Colors.white} size={26} />
             </TouchableOpacity>

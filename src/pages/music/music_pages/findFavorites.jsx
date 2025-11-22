@@ -41,7 +41,7 @@ const FindFavorites = ({navigation}) => {
         <View marginT-12>
           <FavoritesList
             list={list}
-            OnPress={item => {
+            onPress={item => {
               navigation.navigate('FavoritesDetail', {
                 favoritesId: item.id,
               });

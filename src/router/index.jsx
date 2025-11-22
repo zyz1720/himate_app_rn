@@ -20,7 +20,7 @@ const RootView = () => {
   const {isLogin, setUserInfo} = useUserStore();
   const {envConfig, configLoading, updateEnvConfig} = useConfigStore();
   const {isFastStatic, themeColor, language, isFullScreen} = useSettingStore();
-  const {errorMsg, clearErrorMsgStore} = useErrorMsgStore();
+  const {errorMsg, clearMsgStore} = useErrorMsgStore();
 
   /**
    * 监听isLogin变化，当用户登录状态变化时，更新用户信息
@@ -46,7 +46,7 @@ const RootView = () => {
     if (errorMsg) {
       showToast(errorMsg, 'error');
     }
-    return () => clearErrorMsgStore();
+    return () => clearMsgStore();
   }, [errorMsg]);
 
   return (

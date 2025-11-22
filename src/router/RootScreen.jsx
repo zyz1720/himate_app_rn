@@ -69,7 +69,8 @@ const RootScreen = () => {
         {/*  公共屏幕 */}
         <Stack.Group
           screenOptions={({navigation}) => ({
-            headerLeft: (
+            // eslint-disable-next-line react/no-unstable-nested-components
+            headerLeft: () => (
               <TouchableOpacity paddingH-26 onPress={() => navigation.goBack()}>
                 <FontAwesome
                   name="angle-left"

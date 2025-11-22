@@ -16,7 +16,7 @@ import {statusBarHeight, fullHeight} from '@style/index';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {useToast} from '@utils/hooks/useToast';
-import {isEmptyObject} from '@utils/common/base';
+import {isEmptyObject} from '@utils/common/object_utils';
 import {
   getDefaultFavorites,
   updateFavorites,
@@ -295,14 +295,13 @@ const MusicList = props => {
       const file = selectedFiles[i];
       setNowFileIndex(i + 1);
       const savePath = await downloadFile(
-        envConfig.STATIC_URL + file.file_name,
-        `${file.title} - ${file.artist.replace(/\//g, ' - ')}.${getFileExt(
-          file.file_name,
-        )}`,
-        progress => {
-          if (progress) {
-            setDownloadProgress(progress);
-          }
+        envConfig.STATIC_URL + file.file_key,
+        {
+          fileName: `${file.title} - ${file.artist.replace(
+            /\//g,
+            ' - ',
+          )}.${getFileExt(file.file_key)}`,
+          onProgress: num => setDownloadProgress(num),
         },
       );
       setDownloadProgress(0);
@@ -643,7 +642,9 @@ const MusicList = props => {
                   />
                   <View row centerV padding-6>
                     <Image
-                      source={{uri: envConfig.THUMBNAIL_URL + item.favorites_cover}}
+                      source={{
+                        uri: envConfig.THUMBNAIL_URL + item.favorites_cover,
+                      }}
                       style={styles.favoritesCover}
                     />
                     <View centerV marginL-12>

@@ -15,7 +15,6 @@ import PasswordEye from '@components/form/PasswordEye';
 
 let timer = {};
 const EditUser = ({route}) => {
-  const {userId} = route.params;
   const {t} = useTranslation();
   const {setUserInfo, logout, logoff} = useUserStore();
 
@@ -141,6 +140,9 @@ const EditUser = ({route}) => {
         newAccount: userEmail,
         code: code,
       });
+      if (res.code === 0) {
+        setUserInfo();
+      }
       showToast(res.message, res.code === 0 ? 'success' : 'error');
     } catch (error) {
       console.error(error);

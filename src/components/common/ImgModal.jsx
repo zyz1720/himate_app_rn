@@ -3,26 +3,31 @@ import {Modal, ActivityIndicator} from 'react-native';
 import {View, Text} from 'react-native-ui-lib';
 import {fullWidth} from '@style/index';
 import {useTranslation} from 'react-i18next';
+import {useToast} from '@utils/hooks/useToast';
+import {downloadFile} from '@utils/system/file_utils';
 import ImageViewer from 'react-native-image-zoom-viewer';
 
 const ImgModal = props => {
-  const {
-    visible = false,
-    onClose = () => {},
-    onSave = () => {},
-    allowSave = false,
-    uri = '',
-  } = props;
+  const {visible = false, onClose = () => {}, uris = []} = props;
   const {t} = useTranslation();
+  const {showToast} = useToast();
+
+  const onSave = async url => {
+    showToast(t('component.image_saving'), 'success');
+    const pathRes = await downloadFile(url, {isInCameraRoll: true});
+    if (pathRes) {
+      showToast(t('component.save_to') + pathRes, 'success');
+    } else {
+      showToast(t('component.save_failed'), 'error');
+    }
+  };
   return (
     <Modal visible={visible} animationType="fade" transparent={true}>
       <ImageViewer
-        imageUrls={[{url: uri}]}
+        imageUrls={uris.map(item => ({url: item}))}
         onClick={onClose}
         menuContext={{
-          saveToLocal: allowSave
-            ? t('imgModal.save_to_album')
-            : t('imgModal.exit_preview'),
+          saveToLocal: t('component.save_to_album'),
           cancel: t('common.cancel'),
         }}
         onSave={onSave}
@@ -30,15 +35,14 @@ const ImgModal = props => {
           <View flex center>
             <ActivityIndicator color="white" size="large" />
             <Text center grey70 text90 marginT-8>
-              {t('imgModal.img_loading')}
+              {t('component.img_loading')}
             </Text>
           </View>
         }
         renderFooter={() => (
           <View flex center row padding-16 width={fullWidth}>
             <Text center grey70 text90>
-              {t('imgModal.click_exit_preview')}
-              {allowSave ? t('imgModal.long_press_save') : ''}
+              {t('component.img_modal_tips')}
             </Text>
           </View>
         )}

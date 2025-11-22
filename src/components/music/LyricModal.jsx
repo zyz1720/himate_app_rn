@@ -18,11 +18,11 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {fullHeight, fullWidth, statusBarHeight} from '@style/index';
 import {isEmptyString} from '@utils/common/string_utils';
-import {formatMilliseconds} from '@utils/common/time_utils';
+import {formatMilliSeconds} from '@utils/common/time_utils';
 import Animated, {FadeInUp, FadeOutDown} from 'react-native-reanimated';
 import {getColors} from 'react-native-image-colors';
 import {getWhitenessScore} from '@utils/system/color_utils';
-import {KeepAwake} from 'expo-keep-awake';
+import {useKeepAwake} from 'expo-keep-awake';
 import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
@@ -90,7 +90,7 @@ const LyricModal = React.memo(props => {
     onForWard = () => {},
     onPressMenu = () => {},
   } = props;
-
+  useKeepAwake();
   const {t} = useTranslation();
 
   // 屏幕变化监听
@@ -138,12 +138,12 @@ const LyricModal = React.memo(props => {
 
   // 当前时间和总时长格式化
   const currentTimeFormatted = useMemo(
-    () => formatMilliseconds(curPosition),
+    () => formatMilliSeconds(curPosition),
     [curPosition],
   );
 
   const durationFormatted = useMemo(
-    () => formatMilliseconds(duration),
+    () => formatMilliSeconds(duration),
     [duration],
   );
 
@@ -173,7 +173,6 @@ const LyricModal = React.memo(props => {
       visible={visible}
       statusBarTranslucent
       onRequestClose={onClose}>
-      <KeepAwake />
       <View
         height={fullHeight + statusBarHeight}
         backgroundColor={Colors.black4}>

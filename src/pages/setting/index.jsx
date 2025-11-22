@@ -241,10 +241,10 @@ const Setting = ({navigation}) => {
         </Card>
       </Dialog>
       <BaseSheet
-        Title={t('setting.toastType_select')}
+        title={t('setting.toastType_select')}
         visible={showToastType}
-        SetVisible={setShowToastType}
-        Actions={[
+        setVisible={setShowToastType}
+        actions={[
           {
             label: t('setting.default'),
             color: toastType === 'system' ? Colors.primary : Colors.grey30,
@@ -275,10 +275,10 @@ const Setting = ({navigation}) => {
         ]}
       />
       <BaseSheet
-        Title={t('setting.defaultApp_select')}
+        title={t('setting.defaultApp_select')}
         visible={showDefaultApp}
-        SetVisible={setShowDefaultApp}
-        Actions={[
+        setVisible={setShowDefaultApp}
+        actions={[
           {
             label: t('setting.chatApp'),
             color: isMusicApp ? Colors.grey30 : Colors.primary,
@@ -300,10 +300,10 @@ const Setting = ({navigation}) => {
         ]}
       />
       <BaseSheet
-        Title={t('setting.messageSound')}
+        title={t('setting.messageSound')}
         visible={showAudio}
-        SetVisible={setShowAudio}
-        Actions={soundNames.map(item => {
+        setVisible={setShowAudio}
+        actions={soundNames.map(item => {
           return {
             label: item.name,
             color: ringtone === item.value ? Colors.primary : Colors.grey30,

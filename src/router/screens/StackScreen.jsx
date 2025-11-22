@@ -42,7 +42,8 @@ function StackScreen() {
           headerStyle: {backgroundColor: themeColor, height: 46},
           headerTitleAlign: 'center',
           headerTitleStyle: {fontSize: 16, color: Colors.white},
-          headerLeft: (
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerLeft: () => (
             <TouchableOpacity paddingH-26 onPress={() => navigation.goBack()}>
               <FontAwesome name="angle-left" color={Colors.white} size={26} />
             </TouchableOpacity>
@@ -119,7 +120,8 @@ function StackScreen() {
             component={Chat}
             options={({route, navigation}) => ({
               title: route.params.sessionName,
-              headerRight: (
+              // eslint-disable-next-line react/no-unstable-nested-components
+              headerRight: () => (
                 <TouchableOpacity
                   paddingR-16
                   onPress={() => {

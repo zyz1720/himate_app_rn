@@ -1,0 +1,11 @@
+{
+  "401": "Authentication failed, please log in!",
+  "403": "No permission for this operation",
+  "404": "The requested resource does not exist",
+  "429": "Too many requests, please try again later",
+  "500": "Internal server error",
+  "status": "System interface {{code}} error",
+  "network": "Network connection abnormal",
+  "timeout": "Network request timeout",
+  "default": "Unknown system error"
+}

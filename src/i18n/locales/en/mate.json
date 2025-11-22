@@ -1,0 +1,23 @@
+{
+  "new_mate": "New Friends",
+  "my_groups": "My Groups",
+  "add_success": "Friend request sent, please wait for verification",
+  "search_placeholder": "Please enter account/email to search",
+  "camera_error": "No camera found!",
+  "add_mate": "Add Friend",
+  "remark_placeholder": "Please enter friend remark",
+  "message_placeholder": "Please enter verification message",
+  "scan_qrcode": "Scan QR Code",
+  "scan_qrcode_tip": "Please aim at the QR code to identify",
+  "my_qrcode": "My QR Code",
+  "edit_remarks": "Edit Remarks",
+  "send_message": "Send Message",
+  "delete_mate": "Delete Friend",
+  "delete_mate_confirm": "Are you sure you want to delete this friend?",
+  "agreed": "Agreed",
+  "refused": "Refused",
+  "apply": "Friend Request",
+  "remarks": "Friend Remarks",
+  "refuse_tips": "Are you sure you want to refuse this friend request?",
+  "delete_tips": "Are you sure you want to delete this friend request record?"
+}

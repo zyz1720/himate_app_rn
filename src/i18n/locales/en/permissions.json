@@ -1,0 +1,21 @@
+{
+    "authorized": "Authorized",
+    "unauthorized": "Unauthorized",
+    "camera": "Camera",
+    "camera_please": "Please grant camera permission to the app",
+    "camera_desc": "After authorization, the app can access the camera, use the camera to take photos/videos",
+    "microphone": "Microphone",
+    "microphone_please": "Please grant microphone permission to the app",
+    "microphone_desc": "After authorization, the app can access the microphone, use the microphone to record",
+    "folder": "Files and Media",
+    "folder_please": "Please grant files and media permission to the app",
+    "folder_desc": "After authorization, the app can save photos, videos, and other files to local storage",
+    "notify": "Notifications",
+    "notify_please": "Please grant notification permission to the app",
+    "notify_desc": "After authorization, the app can send notifications to the system notification bar",
+    "other_permissions": "Other Permissions",
+    "go_settings": "Go to Settings",
+    "settings_error": "Failed to open settings, please manually enable permissions",
+    "settings_desc": "If authorization is not successful, please manually enable it in app permission management",
+    "photo": "Photo Gallery"
+}

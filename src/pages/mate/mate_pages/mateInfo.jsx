@@ -13,7 +13,6 @@ import {
 import {useToast} from '@utils/hooks/useToast';
 import {getUserDetail} from '@api/user';
 import {addMate, editMate, deleteMate, getIsMate} from '@api/mate';
-import {downloadFile} from '@utils/system/file_utils';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -120,16 +119,6 @@ const MateInfo = ({navigation, route}) => {
   /*   保存头像 */
   const [avatarUri, setAvatarUri] = useState('');
   const [avatarVisible, setAvatarVisible] = useState(false);
-  const saveAvatar = async (url, name) => {
-    setAvatarVisible(false);
-    showToast(t('user.avatar_save'), 'success');
-    const pathRes = await downloadFile(url, name, () => {}, true);
-    if (pathRes) {
-      showToast(t('user.save_to') + pathRes, 'success');
-    } else {
-      showToast(t('user.save_failed'), 'error');
-    }
-  };
 
   useEffect(() => {
     if (userId) {
@@ -301,13 +290,11 @@ const MateInfo = ({navigation, route}) => {
 
       {/* 图片预览弹窗 */}
       <ImgModal
-        uri={avatarUri}
+        uris={[avatarUri]}
         visible={avatarVisible}
         onClose={() => {
           setAvatarVisible(false);
         }}
-        allowSave={true}
-        onSave={url => saveAvatar(url, otherUserInfo.user_avatar)}
       />
     </View>
   );

@@ -153,7 +153,7 @@ const FavoritesDetail = ({navigation, route}) => {
         visible={detailModalVisible}
         onClose={() => setDetailModalVisible(false)}
         BackgroundImg={envConfig.THUMBNAIL_URL + favoritesInfo?.favorites_cover}
-        Title={favoritesInfo?.favorites_name}
+        title={favoritesInfo?.favorites_name}
         Remark={favoritesInfo?.favorites_remark}
         CreateAvatar={envConfig.STATIC_URL + favoritesInfo?.user.user_avatar}
         CreateName={favoritesInfo?.user.user_name}

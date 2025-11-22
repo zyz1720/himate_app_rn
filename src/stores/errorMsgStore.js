@@ -2,18 +2,16 @@ import {create} from 'zustand';
 
 const defaultState = {
   errorMsg: null,
-  errorMsgList: [],
 };
 
-export const useErrorMsgStore = create(set => ({
+export const useErrorMsgStore = create((set, get) => ({
   ...defaultState,
-  setErrorMsg: errorMsg =>
-    set(state => {
-      if (!state.errorMsgList.includes(errorMsg) && errorMsg) {
-        state.errorMsgList.push(errorMsg);
-        state.errorMsg = errorMsg;
-      }
-      return state;
-    }),
-  clearErrorMsgStore: () => set(defaultState),
+  setErrorMsg: errorMsg => {
+    if (errorMsg !== get().errorMsg) {
+      set({errorMsg});
+    } else {
+      set({errorMsg: null});
+    }
+  },
+  clearMsgStore: () => set(defaultState),
 }));

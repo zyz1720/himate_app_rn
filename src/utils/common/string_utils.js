@@ -73,3 +73,37 @@ export const createRandomLetters = count => {
   }
   return result;
 };
+
+/**
+ * 比较两个版本号的大小
+ * @param {string} v1 版本号1，格式为 x.y.z
+ * @param {string} v2 版本号2，格式为 x.y.z
+ * @returns {number} 返回比较结果：
+ *   -1: v1 < v2
+ *    0: v1 == v2
+ *    1: v1 > v2
+ */
+export const compareVersions = (v1, v2) => {
+  // 将版本号拆分为数字数组
+  const parts1 = v1?.split('.').map(Number);
+  const parts2 = v2?.split('.').map(Number);
+
+  // 确保两个版本号都有相同数量的部分
+  const maxLength = Math.max(parts1.length, parts2.length);
+
+  for (let i = 0; i < maxLength; i++) {
+    // 如果某一部分不存在，则视为0
+    const num1 = parts1[i] || 0;
+    const num2 = parts2[i] || 0;
+
+    if (num1 > num2) {
+      return 1;
+    }
+    if (num1 < num2) {
+      return -1;
+    }
+  }
+
+  // 所有部分都相等
+  return 0;
+};

@@ -5,9 +5,9 @@ import {useErrorMsgStore} from '@store/errorMsgStore.js';
 import {API_PREFIX} from '@env';
 import i18n from 'i18next';
 
-const {envConfig, access_token, token_type} = useConfigStore.getState();
+const {envConfig} = useConfigStore.getState();
 const {setErrorMsg} = useErrorMsgStore.getState();
-const {logout} = useUserStore.getState();
+const {logout, access_token, token_type} = useUserStore.getState();
 
 // 创建axios实例
 console.log('BASE_URL ', envConfig?.BASE_URL);
@@ -42,21 +42,25 @@ instance.interceptors.response.use(
   function (error) {
     console.error(error);
 
-    let {message} = error?.response?.data || {};
-    const status = error?.response?.status || 0;
-    if (!message) {
-      if (message === 'Network Error') {
-        message = i18n.t('httpError.network');
-      } else if (message.includes('timeout')) {
-        message = i18n.t('httpError.timeout');
-      } else if (message.includes('Request failed with status code')) {
-        const errCode = message.substr(message.length - 3);
-        message = i18n.t('httpError.status', {code: errCode});
-      }
+    const resMessage = error.response?.data?.message;
+    let {message, status} = error;
+
+    if (message === 'Network Error') {
+      message = i18n.t('httpError.network');
+    } else if (message.includes('timeout')) {
+      message = i18n.t('httpError.timeout');
+    } else if (message.includes('Request failed with status code')) {
+      const errCode = message.substr(message.length - 3);
+      message = i18n.t('httpError.status', {code: errCode});
     }
+
     if (status === 401) {
       logout();
     }
+    if (resMessage) {
+      message = resMessage;
+    }
+
     setErrorMsg(message);
     return Promise.reject(error);
   },

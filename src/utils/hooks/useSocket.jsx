@@ -22,14 +22,14 @@ const SocketProvider = props => {
       },
     });
     /*  监听连接 */
-    Socket?.on('connect', () => {
+    Socket.on('connect', () => {
       setSocket(Socket);
       clearInterval(timer);
       setIsConnected(true);
       console.log('socket已连接', Socket.id);
     });
     /* 断线重连 */
-    Socket?.on('connect_error', res => {
+    Socket.on('connect_error', res => {
       setIsConnected(false);
       setSocket({});
       console.log('Socket error', res);

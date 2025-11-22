@@ -15,7 +15,21 @@ import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 
-/* 获取文件名 */
+export const formatFileSize = size => {
+  if (size === 0) {
+    return '0B';
+  }
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(size) / Math.log(k));
+  return parseFloat((size / Math.pow(k, i)).toFixed(2)) + sizes[i];
+};
+
+/**
+ * 获取文件名
+ * @param {string} url 文件url
+ * @returns {string} 文件名
+ */
 export const getFileName = url => {
   // 使用最后一个'/'作为分隔符来分割字符串
   try {
@@ -29,7 +43,11 @@ export const getFileName = url => {
   }
 };
 
-/* 获取文件扩展名 */
+/**
+ * 获取文件扩展名
+ * @param {string} url 文件url
+ * @returns {string} 文件扩展名
+ */
 export const getFileExt = url => {
   const lastIndex = url?.lastIndexOf('.');
   let ext = '';
@@ -39,7 +57,11 @@ export const getFileExt = url => {
   return ext;
 };
 
-/* 获取文件图标颜色 */
+/**
+ * 获取文件图标颜色
+ * @param {string} ext 文件扩展名
+ * @returns {string} 文件图标颜色
+ */
 export const getFileColor = ext => {
   let color = Colors.yellow40;
   if (textExtNames.includes(ext)) {
@@ -197,19 +219,20 @@ export const uploadFile = async (fileData, callback = () => {}, form = {}) => {
 /**
  * 下载文件
  * @param {string} fileUrl 文件URL
- * @param {string} fileName 文件名
- * @param {function} callback 回调函数
- * @param {boolean} isInCameraRoll 是否保存到相册
- * @param {boolean} isSystemDownload 是否使用系统下载
+ * @param {object} options 选项
+ * @param {string} options.fileName 文件名
+ * @param {boolean} options.isInCameraRoll 是否保存到相册
+ * @param {boolean} options.isSystemDownload 是否使用系统下载
+ * @param {function} options.callback 回调函数
  * @returns {string} 下载路径
  */
-export const downloadFile = async (
-  fileUrl,
-  fileName,
-  callback = () => {},
-  isInCameraRoll = false,
-  isSystemDownload = true,
-) => {
+export const downloadFile = async (fileUrl, options = {}) => {
+  const {
+    fileName = getFileName(fileUrl),
+    isInCameraRoll = false,
+    isSystemDownload = true,
+    onProgress = () => {},
+  } = options;
   // 处理下载路径
   const dirs = ReactNativeBlobUtil.fs.dirs;
   let originPath = dirs.LegacyDownloadDir;
@@ -261,11 +284,10 @@ export const downloadFile = async (
       .fetch('GET', fileUrl)
       .progress((received, total) => {
         const progress = Math.round((received / total) * 100);
-        callback(progress);
+        onProgress(progress);
       })
       .then(resp => {
         resolve(resp.path());
-        // console.log('下载成功:', resp.path());
       })
       .catch(error => {
         resolve(null);
