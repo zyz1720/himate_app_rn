@@ -163,16 +163,16 @@ const Music = ({navigation}) => {
   /* 获取最近播放数据 */
   const getLocalMusicInfo = () => {
     const playHistory = realm
-      .objects('MusicInfo')
-      .sorted('updateAt', true)
+      .objects('music_info')
+      .sorted('updated_at', true)
       .toJSON();
     if (playHistory.length > 0) {
       const latelyMusic = playHistory[0];
-      const endDate = dayjs(Number(latelyMusic.updateAt));
+      const endDate = dayjs(Number(latelyMusic.updated_at));
       const diffInDays = dayjs().diff(endDate, 'day');
       setLatelyDay(diffInDays);
     }
-    const localMusic = realm.objects('LocalMusic').toJSON();
+    const localMusic = realm.objects('local_music').toJSON();
     setItemData(prev => {
       prev[1].num = playHistory.length;
       prev[2].num = localMusic.length;
@@ -520,7 +520,7 @@ const Music = ({navigation}) => {
                   <View centerV marginL-12>
                     <Text>{item.favorites_name}</Text>
                     <Text marginT-4 text90L grey40>
-                      {t('common.num_songs', {num: item.musicCount})}
+                      {t('music.num_songs', {num: item.musicCount})}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -543,13 +543,13 @@ const Music = ({navigation}) => {
         }}
         visible={showAddDialog}
         setVisible={setShowAddDialog}
-        description={t('common.create_favorites')}
+        description={t('music.create_favorites')}
         renderBody={
           <View>
             <TextField
               text70
               placeholderTextColor={Colors.grey40}
-              placeholder={t('common.input_favorites_name')}
+              placeholder={t('music.input_favorites_name')}
               floatingPlaceholder
               value={favoritesName}
               maxLength={10}
@@ -567,16 +567,16 @@ const Music = ({navigation}) => {
         }}
         visible={showImportDialog}
         setVisible={setShowImportDialog}
-        description={t('common.import_favorites')}
+        description={t('music.import_favorites')}
         renderBody={
           <View>
             <Text marginT-2 text90L blue40>
-              {t('common.import_favorites_tips')}
+              {t('music.import_favorites_tips')}
             </Text>
             <TextField
               text70
               placeholderTextColor={Colors.grey40}
-              placeholder={t('common.input_favorites_url')}
+              placeholder={t('music.input_favorites_url')}
               floatingPlaceholder
               value={importUrl}
               onChangeText={value => {
@@ -594,7 +594,7 @@ const Music = ({navigation}) => {
         }}
         visible={delVisible}
         setVisible={setDelVisible}
-        description={t('common.delete_select', {name: delName})}
+        description={t('music.delete_select', {name: delName})}
       />
       <Dialog
         visible={showAlarmDialog}
@@ -605,7 +605,7 @@ const Music = ({navigation}) => {
         <Card flexS padding-16>
           <View row centerV>
             <Text text70BL marginR-12>
-              {t('common.alarm_close')}
+              {t('music.alarm_close')}
             </Text>
             <Switch
               onColor={Colors.primary}
@@ -624,7 +624,7 @@ const Music = ({navigation}) => {
           </View>
           <View marginT-8>
             <Text text90L grey30 marginV-6>
-              {t('common.alarm_close_tips', {time: alarmTime})}
+              {t('music.alarm_close_tips', {time: alarmTime})}
             </Text>
             <Slider
               thumbTintColor={Colors.primary}
@@ -660,7 +660,7 @@ const Music = ({navigation}) => {
         <Card flexS padding-16>
           <View row centerV>
             <Text text70BL marginR-12>
-              {t('common.random_play')}
+              {t('music.random_play')}
             </Text>
             <Switch
               onColor={Colors.primary}
@@ -669,11 +669,11 @@ const Music = ({navigation}) => {
               onValueChange={value => {
                 if (value) {
                   setIsRandomPlay(value);
-                  showToast(t('common.random_play_on'), 'success');
+                  showToast(t('music.random_play_on'), 'success');
                 } else {
                   setRandomNum(1, allMusicNum);
                   setIsRandomPlay(value);
-                  showToast(t('common.random_play_off'), 'success');
+                  showToast(t('music.random_play_off'), 'success');
                 }
                 setRandomSwitch(value);
               }}
@@ -681,7 +681,7 @@ const Music = ({navigation}) => {
           </View>
           <View marginT-8>
             <Text text90L grey30 marginV-4>
-              {t('common.random_play_range', {
+              {t('music.random_play_range', {
                 min: randomNum?.min,
                 max: randomNum?.max,
               })}

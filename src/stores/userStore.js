@@ -1,6 +1,7 @@
 import {create} from 'zustand';
 import {persist, createJSONStorage} from 'zustand/middleware';
 import {getUserInfo, userLogout} from '@api/user';
+import {userRefreshToken} from '@api/login';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const defaultState = {
@@ -13,7 +14,7 @@ const defaultState = {
 
 export const useUserStore = create()(
   persist(
-    set => ({
+    (set, get) => ({
       ...defaultState,
       login: data => {
         const {access_token, refresh_token, token_type} = data || {};
@@ -38,6 +39,19 @@ export const useUserStore = create()(
         getUserInfo().then(res => {
           res.code === 0 && set({userInfo: res.data || {}});
         });
+      },
+      refreshToken: () => {
+        userRefreshToken({refresh_token: get().refresh_token})
+          .then(res => {
+            if (res.code === 0) {
+              get().login(res.data);
+              return;
+            }
+            get().logout();
+          })
+          .catch(() => {
+            get().logout();
+          });
       },
     }),
     {

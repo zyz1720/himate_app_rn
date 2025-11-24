@@ -7,7 +7,7 @@ import i18n from 'i18next';
 
 const {envConfig} = useConfigStore.getState();
 const {setErrorMsg} = useErrorMsgStore.getState();
-const {logout, access_token, token_type} = useUserStore.getState();
+const {refreshToken, access_token, token_type} = useUserStore.getState();
 
 // 创建axios实例
 console.log('BASE_URL ', envConfig?.BASE_URL);
@@ -55,7 +55,7 @@ instance.interceptors.response.use(
     }
 
     if (status === 401) {
-      logout();
+      refreshToken();
     }
     if (resMessage) {
       message = resMessage;

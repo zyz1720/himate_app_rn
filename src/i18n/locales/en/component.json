@@ -5,5 +5,6 @@
   "exit_preview": "Exit preview",
   "image_saving": "Image saving...",
   "save_to": "Saved to ",
-  "save_failed": "Save failed"
+  "save_failed": "Save failed",
+  "choose_img": "Choose Image"
 }

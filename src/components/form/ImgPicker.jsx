@@ -7,12 +7,27 @@ import {getFileFromImageCropPicker} from '@utils/system/file_utils';
 import BaseSheet from '@components/common/BaseSheet';
 import ImagePicker from 'react-native-image-crop-picker';
 
-const AvatarPicker = props => {
-  const {visible, setVisible, onSelected, onError, isCleanCache} = props;
+const ImgPicker = props => {
+  const {
+    visible,
+    setVisible,
+    onSelected,
+    onError = () => {},
+    isCleanCache,
+    isAvatar = false,
+  } = props;
   const {showToast} = useToast();
   const {t} = useTranslation();
   const {accessCamera, accessFolder, setAccessCamera, setAccessFolder} =
     usePermissionStore();
+
+  const avatarProps = isAvatar
+    ? {
+        width: 300,
+        height: 300,
+        cropperCircleOverlay: true,
+      }
+    : {};
 
   useEffect(() => {
     if (isCleanCache) {
@@ -28,7 +43,7 @@ const AvatarPicker = props => {
 
   return (
     <BaseSheet
-      title={t('group.choose_avatar')}
+      title={t('component.choose_img')}
       visible={visible}
       setVisible={setVisible}
       actions={[
@@ -42,12 +57,10 @@ const AvatarPicker = props => {
               return;
             }
             ImagePicker.openCamera({
-              width: 300,
-              height: 300,
+              ...avatarProps,
               cropping: true,
-              mediaType: 'photo',
-              cropperCircleOverlay: true,
               cropperActiveWidgetColor: Colors.primary,
+              mediaType: 'photo',
             })
               .then(image => {
                 const fileInfo = getFileFromImageCropPicker(image);
@@ -71,14 +84,13 @@ const AvatarPicker = props => {
               return;
             }
             ImagePicker.openPicker({
-              width: 300,
-              height: 300,
+              ...avatarProps,
               cropping: true,
-              mediaType: 'photo',
-              cropperCircleOverlay: true,
               cropperActiveWidgetColor: Colors.primary,
+              mediaType: 'photo',
             })
               .then(image => {
+                console.log(image);
                 const fileInfo = getFileFromImageCropPicker(image);
                 onSelected(fileInfo);
               })
@@ -94,4 +106,4 @@ const AvatarPicker = props => {
     />
   );
 };
-export default AvatarPicker;
+export default ImgPicker;

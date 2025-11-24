@@ -120,7 +120,7 @@ const NewMate = ({navigation}) => {
     },
     {
       key: 'refused',
-      title: t('group.refused'),
+      title: t('mate.refused'),
       refreshFunc: refreshDataRefused,
       screen: (
         <FlatList

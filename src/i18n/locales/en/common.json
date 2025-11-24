@@ -39,5 +39,7 @@
   "group_files": "Group Avatars",
   "temporary_files": "Temporary Files",
   "msg_files": "Chat Messages",
-  "upload_files": "Upload Files"
+  "upload_files": "Upload Files",
+  "log_out": "Log Out",
+  "version_update": "Version Update"
 }

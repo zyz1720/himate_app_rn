@@ -39,5 +39,7 @@
   "group_files": "群组头像",
   "temporary_files": "临时文件",
   "msg_files": "聊天消息",
-  "upload_files": "上传文件"
+  "upload_files": "上传文件",
+  "log_out": "退出登录",
+  "version_update": "版本更新"
 }

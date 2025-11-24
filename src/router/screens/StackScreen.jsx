@@ -4,7 +4,7 @@ import {Colors, TouchableOpacity} from 'react-native-ui-lib';
 import {useSettingStore} from '@store/settingStore';
 import {useTranslation} from 'react-i18next';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import TabScreen from './TabScreen';
+import TabScreen from './tabScreen';
 import EditUser from '@pages/user/user_pages/editUser';
 import AccountSafe from '@pages/user/user_pages/accountSafe';
 import BaseQRCode from '@pages/user/user_pages/qrCode';

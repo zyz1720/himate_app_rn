@@ -10,7 +10,7 @@ import {useSettingStore} from '@store/settingStore';
 import {useErrorMsgStore} from '@store/errorMsgStore';
 import {useTranslation} from 'react-i18next';
 import FullScreenLoading from '@components/common/FullScreenLoading';
-import RootScreen from './RootScreen';
+import RootScreen from './rootScreen';
 import 'react-native-get-random-values';
 
 const RootView = () => {

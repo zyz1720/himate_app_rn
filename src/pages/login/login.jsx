@@ -245,6 +245,9 @@ const Login = ({navigation}) => {
   const [hideFlag, setHideFlag] = useState(true);
   const [agreeFlag, setAgreeFlag] = useState(false);
 
+  const renderLoading = () =>
+    butDisabled ? <ActivityIndicator color={Colors.white} /> : null;
+
   return (
     <View flexG paddingH-25 paddingT-120 backgroundColor={Colors.white}>
       <View center>
@@ -382,9 +385,7 @@ const Login = ({navigation}) => {
           backgroundColor={Colors.primary}
           disabledBackgroundColor={Colors.primary}
           iconOnRight={true}
-          iconSource={
-            butDisabled ? <ActivityIndicator color={Colors.white} /> : null
-          }
+          iconSource={renderLoading}
           onPress={() => {
             controlCode === 2 ? userRegFunc() : userLogin();
           }}

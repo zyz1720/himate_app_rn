@@ -1,6 +1,6 @@
 import {useState, useCallback, useRef} from 'react';
 
-const useInfiniteScroll = fetchData => {
+export const useInfiniteScroll = fetchData => {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -79,5 +79,3 @@ const useInfiniteScroll = fetchData => {
     refreshData: onRefresh,
   };
 };
-
-export default useInfiniteScroll;

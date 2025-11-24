@@ -16,8 +16,9 @@ const BaseQRCode = ({navigation}) => {
       <Card flexS centerV enableShadow={false} marginT-32 paddingV-32 center>
         <Avatar
           source={{
-            uri: userInfo?.user_avatar,
+            uri: envConfig.STATIC_URL + userInfo?.user_avatar,
           }}
+          imageProps={{errorSource: require('@assets/images/empty.jpg')}}
           size={80}
         />
         <Text text60 marginT-12>

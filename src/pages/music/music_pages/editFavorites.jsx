@@ -17,7 +17,7 @@ import {useTranslation} from 'react-i18next';
 import {uploadFile} from '@utils/system/file_utils';
 import FullScreenLoading from '@components/common/FullScreenLoading';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import AvatarPicker from '@components/form/AvatarPicker';
+import ImgPicker from '@components/form/ImgPicker';
 
 const EditFavorites = ({route}) => {
   const {favoritesId} = route.params || {};
@@ -212,7 +212,8 @@ const EditFavorites = ({route}) => {
           />
         )}
       </View>
-      <AvatarPicker
+      <ImgPicker
+        isAvatar={true}
         visible={showPicker}
         setVisible={setShowPicker}
         isCleanCache={isCleanCache}

@@ -17,6 +17,8 @@ export const themeColors = {
   white4: 'rgba(255,255,255,0.4)',
   black4: 'rgba(0,0,0,0.4)',
   black3: 'rgba(0,0,0,0.3)',
+  black2: 'rgba(0,0,0,0.2)',
+  black1: 'rgba(0,0,0,0.1)',
   background: '#f0f0f2',
   lyricColor: Colors.white,
 };

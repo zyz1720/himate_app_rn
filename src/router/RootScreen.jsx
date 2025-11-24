@@ -14,7 +14,7 @@ import {displayName} from '@root/app.json';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import BootSplash from 'react-native-bootsplash';
 import Login from '@pages/login/login';
-import DrawerScreen from './screens/DrawerScreen';
+import DrawerScreen from './screens/drawerScreen';
 import BaseWebView from '@pages/common/baseWebView';
 
 const Stack = createStackNavigator();

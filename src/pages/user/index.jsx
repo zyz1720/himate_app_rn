@@ -10,7 +10,12 @@ import {
   Button,
   ProgressBar,
 } from 'react-native-ui-lib';
-import {StyleSheet, ActivityIndicator, Platform} from 'react-native';
+import {
+  StyleSheet,
+  ActivityIndicator,
+  Platform,
+  ImageBackground,
+} from 'react-native';
 import {useToast} from '@utils/hooks/useToast';
 import {downloadFile} from '@utils/system/file_utils';
 import {getAppVersion} from '@api/app_package';
@@ -88,71 +93,73 @@ const User = ({navigation}) => {
     setShowAppUpdate(false);
   };
 
+  const [bgSource, setBgSource] = useState({
+    uri: envConfig.STATIC_URL + userInfo?.user_bg_img,
+  });
+
   return (
     <>
       {isEmptyObject(userInfo) ? (
         <FullScreenLoading Message={displayName + ' ' + t('common.loading')} />
       ) : (
         <View flexG top paddingH-16 paddingT-16>
-          <Card
-            flexS
-            left
-            row
-            centerV
-            enableShadow={false}
-            padding-16
-            onPress={() => {
-              navigation.navigate('EditUser');
-            }}>
-            <TouchableOpacity
-              onPress={() => {
-                setAvatarShow(true);
-              }}>
-              <Image
-                source={{uri: envConfig.STATIC_URL + userInfo?.user_avatar}}
-                style={styles.image}
-              />
-            </TouchableOpacity>
-            <View marginL-16 flexG>
-              <Text grey20 text70BO numberOfLines={1}>
-                {userInfo?.user_name}
-              </Text>
-              <View width={166}>
-                <Text grey30 text80 numberOfLines={1}>
-                  {t('user.account')}
-                  {userInfo?.self_account}
-                </Text>
-              </View>
-              <View flexS row>
-                <View flexS row centerV padding-4 marginT-4 style={styles.tag}>
-                  {userInfo?.sex === 'woman' ? (
-                    <FontAwesome
-                      name="venus"
-                      color={Colors.magenta}
-                      size={12}
-                    />
-                  ) : userInfo?.sex === 'man' ? (
-                    <FontAwesome
-                      name="mars"
-                      color={Colors.geekBlue}
-                      size={12}
-                    />
-                  ) : null}
-                  <Text marginL-4 grey30 text90>
-                    {userInfo?.age + t('user.age_num')}
+          <ImageBackground
+            style={styles.userBgImage}
+            source={bgSource}
+            onError={() => setBgSource(require('@assets/images/user_bg.jpg'))}
+            resizeMode="cover">
+            <View style={styles.overlay}>
+              <View
+                flexS
+                left
+                row
+                centerV
+                enableShadow={false}
+                padding-16
+                marginT-80>
+                <TouchableOpacity
+                  onPress={() => {
+                    setAvatarShow(true);
+                  }}>
+                  <Image
+                    source={{uri: envConfig.STATIC_URL + userInfo?.user_avatar}}
+                    style={styles.image}
+                    errorSource={require('@assets/images/empty.jpg')}
+                  />
+                </TouchableOpacity>
+                <View marginL-16 flexG>
+                  <Text white text70BO numberOfLines={1}>
+                    {userInfo?.user_name}
                   </Text>
+                  <View width={166}>
+                    <Text white text80 numberOfLines={1}>
+                      {t('user.account')}
+                      {userInfo?.self_account}
+                    </Text>
+                  </View>
                 </View>
+                <TouchableOpacity
+                  paddingV-16
+                  paddingL-16
+                  onPress={() => {
+                    navigation.navigate('QrCode');
+                  }}>
+                  <FontAwesome name="qrcode" color={Colors.white} size={32} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  padding-18
+                  onPress={() => {
+                    navigation.navigate('EditUser');
+                  }}>
+                  <FontAwesome
+                    name="angle-right"
+                    color={Colors.grey50}
+                    size={26}
+                  />
+                </TouchableOpacity>
               </View>
             </View>
-            <TouchableOpacity
-              padding-16
-              onPress={() => {
-                navigation.navigate('QrCode');
-              }}>
-              <FontAwesome name="qrcode" color={Colors.grey40} size={32} />
-            </TouchableOpacity>
-            <FontAwesome name="angle-right" color={Colors.grey50} size={26} />
-          </Card>
+          </ImageBackground>
           <Card flexS centerV enableShadow={false} marginT-16>
             <ListItem
               itemName={t('user.account_safe')}
@@ -286,17 +293,27 @@ const User = ({navigation}) => {
     </>
   );
 };
+
 const styles = StyleSheet.create({
   image: {
     width: 70,
     height: 70,
     borderRadius: 35,
-    borderColor: Colors.grey70,
+    borderColor: Colors.white,
     borderWidth: 1,
   },
   tag: {
     backgroundColor: Colors.grey70,
     borderRadius: 6,
+  },
+  userBgImage: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: Colors.white,
+  },
+  overlay: {
+    backgroundColor: Colors.black2,
   },
 });
 export default User;

@@ -542,7 +542,7 @@ const DataManager = ({navigation}) => {
       <BaseTopBar
         routes={routes}
         focusedIndex={focusedIndex}
-        onChange={({key}, index) => {
+        onChange={(index, {key}) => {
           if (index < 4) {
             refreshFileList(key);
           } else {

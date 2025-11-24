@@ -122,7 +122,7 @@ export const addOrUpdateLocalUser = (realm, users) => {
   for (let i = 0; i < userList.length; i++) {
     const element = userList[i];
     const user = realm
-      .objects('UsersInfo')
+      .objects('users_info')
       .filtered(
         'userId == $0 && session_id == $1',
         element.userId,
@@ -137,7 +137,7 @@ export const addOrUpdateLocalUser = (realm, users) => {
       });
     } else {
       realm.write(() => {
-        realm.create('UsersInfo', element);
+        realm.create('users_info', element);
       });
     }
   }
@@ -145,7 +145,7 @@ export const addOrUpdateLocalUser = (realm, users) => {
 
 /* 查询本地用户信息 */
 export const getLocalUser = realm => {
-  const localUsers = realm.objects('UsersInfo').toJSON();
+  const localUsers = realm.objects('users_info').toJSON();
   // console.log('本地用户信息', localUsers);
   return localUsers;
 };

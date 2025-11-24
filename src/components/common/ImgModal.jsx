@@ -21,6 +21,16 @@ const ImgModal = props => {
       showToast(t('component.save_failed'), 'error');
     }
   };
+
+  const loadingRender = () => (
+    <View flex center>
+      <ActivityIndicator color="white" size="large" />
+      <Text center grey70 text90 marginT-8>
+        {t('component.img_loading')}
+      </Text>
+    </View>
+  );
+
   return (
     <Modal visible={visible} animationType="fade" transparent={true}>
       <ImageViewer
@@ -31,14 +41,7 @@ const ImgModal = props => {
           cancel: t('common.cancel'),
         }}
         onSave={onSave}
-        loadingRender={
-          <View flex center>
-            <ActivityIndicator color="white" size="large" />
-            <Text center grey70 text90 marginT-8>
-              {t('component.img_loading')}
-            </Text>
-          </View>
-        }
+        loadingRender={loadingRender}
         renderFooter={() => (
           <View flex center row padding-16 width={fullWidth}>
             <Text center grey70 text90>

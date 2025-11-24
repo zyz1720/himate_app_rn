@@ -10,6 +10,7 @@ import {
   Button,
   RadioGroup,
   DateTimePicker,
+  TouchableOpacity,
   RadioButton,
 } from 'react-native-ui-lib';
 import {keepChangedFields} from '@utils/common/object_utils';
@@ -21,7 +22,7 @@ import {useUserStore} from '@store/userStore';
 import {uploadFile} from '@utils/system/file_utils';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FullScreenLoading from '@components/common/FullScreenLoading';
-import AvatarPicker from '@components/form/AvatarPicker';
+import ImgPicker from '@components/form/ImgPicker';
 
 const EditUser = () => {
   const {t} = useTranslation();
@@ -31,6 +32,17 @@ const EditUser = () => {
   const {showToast} = useToast();
   const [userInfo, setUserInfo] = useState({});
   const [originalUserInfo, setOriginalUserInfo] = useState({});
+
+  // 刷新页面
+  const [refreshing, setRefreshing] = useState(false);
+
+  const [showPicker, setShowPicker] = useState(false);
+  const [avatarUri, setAvatarUri] = useState(null);
+  const [avatarFile, setAvatarFile] = useState(null);
+
+  const [showBgPicker, setShowBgPicker] = useState(false);
+  const [bgImgUri, setBgImgUri] = useState(null);
+  const [bgImgFile, setBgImgFile] = useState(null);
 
   const genderEnum = [
     {
@@ -56,7 +68,14 @@ const EditUser = () => {
     try {
       const res = await getUserInfo();
       if (res.code === 0) {
-        const {user_avatar, user_name, sex, self_account, birthday} = res.data;
+        const {
+          user_avatar,
+          user_bg_img,
+          user_name,
+          sex,
+          self_account,
+          birthday,
+        } = res.data;
         setUserInfo({
           user_avatar,
           user_name,
@@ -66,6 +85,7 @@ const EditUser = () => {
         });
         setOriginalUserInfo(res.data);
         setAvatarUri(envConfig.STATIC_URL + user_avatar);
+        setBgImgUri(envConfig.STATIC_URL + user_bg_img);
       }
     } catch (error) {
       console.error(error);
@@ -158,13 +178,6 @@ const EditUser = () => {
     }
   };
 
-  // 刷新页面
-  const [refreshing, setRefreshing] = useState(false);
-
-  const [showPicker, setShowPicker] = useState(false);
-  const [avatarUri, setAvatarUri] = useState(null);
-  const [avatarFile, setAvatarFile] = useState(null);
-
   useEffect(() => {
     dataInit();
   }, []);
@@ -180,23 +193,46 @@ const EditUser = () => {
           />
         }>
         <View flexG paddingH-16 paddingT-16>
-          <Card
-            flexS
-            left
-            row
-            center
-            enableShadow={false}
-            padding-16
-            onPress={() => setShowPicker(true)}>
-            <View flex>
-              <Text grey40 text65>
+          <Card flexS enableShadow={false} padding-16>
+            <View flexS spread row>
+              <Text grey40 text80>
                 {t('user.avatar')}
               </Text>
+              <View flexS row centerV>
+                <TouchableOpacity onPress={() => setShowPicker(true)}>
+                  <Image
+                    source={{uri: avatarUri}}
+                    style={styles.image}
+                    errorSource={require('@assets/images/empty.jpg')}
+                  />
+                </TouchableOpacity>
+                <FontAwesome
+                  name="angle-right"
+                  color={Colors.grey50}
+                  size={26}
+                />
+              </View>
             </View>
-            <Image source={{uri: avatarUri}} style={styles.image} />
-            <FontAwesome name="angle-right" color={Colors.grey50} size={26} />
-          </Card>
-          <Card flexS enableShadow={false} marginT-16 padding-16>
+            <View flexG spread row marginT-16>
+              <Text grey40 text80>
+                {t('user.user_bg')}
+              </Text>
+              <View width={100} flexS left row centerV>
+                {/* <TouchableOpacity onPress={() => setShowBgPicker(true)}>
+                  <Image
+                    style={styles.userBg}
+                    resizeMode="contain"
+                    source={{uri: bgImgUri}}
+                    errorSource={require('@assets/images/user_bg.jpg')}
+                  />
+                </TouchableOpacity> */}
+                <FontAwesome
+                  name="angle-right"
+                  color={Colors.grey50}
+                  size={26}
+                />
+              </View>
+            </View>
             <View flexG row spread centerV style={styles.inputLine}>
               <TextField
                 label={t('user.user_name')}
@@ -287,14 +323,25 @@ const EditUser = () => {
           )}
         </View>
       </ScrollView>
-      <AvatarPicker
+      <ImgPicker
+        isAvatar={true}
         visible={showPicker}
         setVisible={setShowPicker}
         isCleanCache={isCleanCache}
         onSelected={fileInfo => {
           setAvatarUri(fileInfo.uri);
           setAvatarFile(fileInfo);
-          updateNeedSave(true);
+          updateNeedSave();
+        }}
+      />
+      <ImgPicker
+        visible={showBgPicker}
+        setVisible={setShowBgPicker}
+        isCleanCache={isCleanCache}
+        onSelected={fileInfo => {
+          setBgImgUri(fileInfo.uri);
+          setBgImgFile(fileInfo);
+          updateNeedSave();
         }}
       />
       {submitting ? (
@@ -303,8 +350,14 @@ const EditUser = () => {
     </>
   );
 };
+
 const styles = StyleSheet.create({
-  image: {width: 64, height: 64, borderRadius: 8, marginRight: 12},
+  image: {width: 64, height: 64, borderRadius: 4, marginRight: 12},
+  userBg: {
+    height: 64,
+    borderRadius: 4,
+    marginRight: 12,
+  },
   input: {
     width: 200,
   },

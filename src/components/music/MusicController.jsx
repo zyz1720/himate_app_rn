@@ -266,7 +266,7 @@ const MusicCtrlProvider = React.memo(props => {
       }
     }
     const musicList = realm
-      .objects('MusicInfo')
+      .objects('music_info')
       .filtered('id == $0', localMusic.id);
     if (musicList.length > 0) {
       realm.write(() => {
@@ -278,7 +278,7 @@ const MusicCtrlProvider = React.memo(props => {
       localMusic.created_at = Date.now().toString();
       localMusic.updated_at = Date.now().toString();
       realm.write(() => {
-        realm.create('MusicInfo', localMusic);
+        realm.create('music_info', localMusic);
       });
     }
   };

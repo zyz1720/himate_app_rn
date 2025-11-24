@@ -25,7 +25,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FullScreenLoading from '@components/common/FullScreenLoading';
 import BaseDialog from '@components/common/BaseDialog';
 import ListItem from '@components/common/ListItem';
-import AvatarPicker from '@components/form/AvatarPicker';
+import ImgPicker from '@components/form/ImgPicker';
 
 const GroupInfo = ({navigation, route}) => {
   const {groupId, sessionId} = route.params || {};
@@ -525,10 +525,11 @@ const GroupInfo = ({navigation, route}) => {
           )}
         </View>
       </ScrollView>
-      <AvatarPicker
+      <ImgPicker
         visible={showPicker}
         setVisible={setShowPicker}
         isCleanCache={isCleanCache}
+        isAvatar={true}
         onSelected={fileInfo => {
           setAvatarUri(fileInfo.uri);
           setAvatarFile(fileInfo);

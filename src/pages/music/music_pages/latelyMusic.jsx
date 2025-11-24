@@ -14,14 +14,14 @@ const LatelyMusic = () => {
 
   // 获取最近播放的音乐记录
   const getLocalMusic = async () => {
-    const music = realm.objects('MusicInfo').sorted('updateAt', true).toJSON();
+    const music = realm.objects('music_info').sorted('updated_at', true).toJSON();
     setLocalMusic(music);
   };
 
   /* 删除本地音乐记录 */
   const [delVisible, setDelVisible] = useState(false);
   const delLocalMusic = () => {
-    const toDelete = realm.objects('MusicInfo').filtered('id == $0', 303);
+    const toDelete = realm.objects('music_info').filtered('id == $0', 303);
     realm.write(() => {
       realm.delete(toDelete);
     });
