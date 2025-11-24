@@ -6,5 +6,5 @@ export const userLoginAccount = data => instance.post('login/password', data);
 // 验证码登录
 export const userLoginCode = data => instance.post('login/code', data);
 
-// 验证码登录
+// 刷新token
 export const userRefreshToken = data => instance.post('login/refresh', data);

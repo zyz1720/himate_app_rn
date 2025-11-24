@@ -10,8 +10,7 @@ export const getGroupList = params => instance.get('app/group', {params});
 export const editGroup = (id, data) => instance.put(`app/group/${id}`, data);
 
 // 群组详情
-export const getGroupDetail = params =>
-  instance.get('app/group/detail', {params});
+export const getGroupDetail = id => instance.get(`app/group/detail/${id}`);
 
 // 解散群组
 export const deleteGroup = id => instance.delete(`app/group/${id}`);

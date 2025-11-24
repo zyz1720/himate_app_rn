@@ -24,6 +24,25 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FullScreenLoading from '@components/common/FullScreenLoading';
 import ImgPicker from '@components/form/ImgPicker';
 
+const styles = StyleSheet.create({
+  image: {width: 64, height: 64, borderRadius: 8, marginRight: 12},
+  userBg: {
+    height: 64,
+    width: 112,
+    resizeMode: 'cover',
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  input: {
+    width: 200,
+  },
+  inputLine: {
+    borderBottomColor: Colors.grey80,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+  },
+});
+
 const EditUser = () => {
   const {t} = useTranslation();
 
@@ -78,6 +97,7 @@ const EditUser = () => {
         } = res.data;
         setUserInfo({
           user_avatar,
+          user_bg_img,
           user_name,
           sex,
           self_account,
@@ -107,48 +127,59 @@ const EditUser = () => {
     setIsNeedSave(true);
   };
 
-  // 处理数据
+  // 上传图片
   const [isCleanCache, setIsCleanCache] = useState(false);
-  const handleData = async () => {
-    const keys = Object.keys(userInfo);
-
-    for (let i = 0; i < keys.length; i++) {
-      const key = keys[i];
-      const element = userInfo[key];
-      if (element === null || element === '') {
-        showToast(t('empty.input'), 'error');
+  const uploadImg = async fileInfo => {
+    try {
+      const res = await uploadFile(fileInfo.file, {
+        form: {
+          file_type: fileInfo.type,
+          use_type: 'user',
+        },
+      });
+      const upRes = JSON.parse(res.text());
+      if (upRes.code === 0) {
+        return upRes.data.file_key;
+      } else {
+        showToast(upRes.message, 'error');
         return false;
       }
+    } catch (error) {
+      console.error(error);
+      return false;
+    } finally {
+      setIsCleanCache(true);
+    }
+  };
+
+  // 处理数据
+  const handleData = async () => {
+    let updatedUserInfo = {...userInfo};
+    if (avatarFile) {
+      const avatarKey = await uploadImg(avatarFile);
+      if (!avatarKey) {
+        return false;
+      }
+      updatedUserInfo = {...updatedUserInfo, user_avatar: avatarKey};
+    }
+    if (bgImgFile) {
+      const bgKey = await uploadImg(bgImgFile);
+      if (!bgKey) {
+        return false;
+      }
+      updatedUserInfo = {...updatedUserInfo, user_bg_img: bgKey};
+    }
+
+    const keys = Object.keys(updatedUserInfo);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      const element = updatedUserInfo[key];
       if (key === 'self_account' && element.length < 6) {
         showToast(t('user.account_min_length'), 'error');
         return false;
       }
     }
-
-    if (avatarFile) {
-      try {
-        const res = await uploadFile(avatarFile, () => {}, {
-          file_type: 'image',
-          use_type: 'user',
-        });
-        const upRes = JSON.parse(res.text());
-        if (upRes.code === 0) {
-          const useAvatar = upRes.data.file_name;
-          setUserInfo({...userInfo, user_avatar: useAvatar});
-          return true;
-        } else {
-          showToast(t('user.avatar_upload_failed'), 'error');
-          return false;
-        }
-      } catch (error) {
-        console.error(error);
-        showToast(t('user.avatar_upload_failed'), 'error');
-        return false;
-      } finally {
-        setIsCleanCache(true);
-      }
-    }
-    return true;
+    return updatedUserInfo;
   };
 
   // 提交修改
@@ -156,11 +187,14 @@ const EditUser = () => {
   const submitData = async () => {
     try {
       setSubmitting(true);
-      const valid = await handleData();
-      if (!valid) {
+      const updatedUserInfo = await handleData();
+      if (!updatedUserInfo) {
         return;
       }
-      const changedFields = keepChangedFields(originalUserInfo, userInfo);
+      const changedFields = keepChangedFields(
+        originalUserInfo,
+        updatedUserInfo,
+      );
       if (!changedFields) {
         showToast(t('user.no_modified_content'), 'warning');
         return;
@@ -194,7 +228,7 @@ const EditUser = () => {
         }>
         <View flexG paddingH-16 paddingT-16>
           <Card flexS enableShadow={false} padding-16>
-            <View flexS spread row>
+            <View flexS spread row style={styles.inputLine}>
               <Text grey40 text80>
                 {t('user.avatar')}
               </Text>
@@ -213,19 +247,18 @@ const EditUser = () => {
                 />
               </View>
             </View>
-            <View flexG spread row marginT-16>
+            <View flexG spread row marginT-16 style={styles.inputLine}>
               <Text grey40 text80>
                 {t('user.user_bg')}
               </Text>
-              <View width={100} flexS left row centerV>
-                {/* <TouchableOpacity onPress={() => setShowBgPicker(true)}>
+              <View flexS row centerV>
+                <TouchableOpacity onPress={() => setShowBgPicker(true)}>
                   <Image
                     style={styles.userBg}
-                    resizeMode="contain"
                     source={{uri: bgImgUri}}
                     errorSource={require('@assets/images/user_bg.jpg')}
                   />
-                </TouchableOpacity> */}
+                </TouchableOpacity>
                 <FontAwesome
                   name="angle-right"
                   color={Colors.grey50}
@@ -233,7 +266,7 @@ const EditUser = () => {
                 />
               </View>
             </View>
-            <View flexG row spread centerV style={styles.inputLine}>
+            <View marginT-16 style={styles.inputLine}>
               <TextField
                 label={t('user.user_name')}
                 labelColor={Colors.grey40}
@@ -253,7 +286,7 @@ const EditUser = () => {
                 }}
               />
             </View>
-            <View flexG row spread centerV marginT-16 style={styles.inputLine}>
+            <View marginT-16 style={styles.inputLine}>
               <TextField
                 label={t('user.account')}
                 labelColor={Colors.grey40}
@@ -273,7 +306,7 @@ const EditUser = () => {
                 }}
               />
             </View>
-            <View flexG row spread centerV marginT-16 style={styles.inputLine}>
+            <View marginT-16 style={styles.inputLine}>
               <DateTimePicker
                 label={t('user.birthday')}
                 labelColor={Colors.grey40}
@@ -287,7 +320,7 @@ const EditUser = () => {
                 }}
               />
             </View>
-            <View flexG row spread centerV marginT-16>
+            <View marginT-16>
               <Text grey40>{t('user.gender')}</Text>
               <RadioGroup
                 gap={16}
@@ -351,20 +384,4 @@ const EditUser = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  image: {width: 64, height: 64, borderRadius: 4, marginRight: 12},
-  userBg: {
-    height: 64,
-    borderRadius: 4,
-    marginRight: 12,
-  },
-  input: {
-    width: 200,
-  },
-  inputLine: {
-    borderBottomColor: Colors.grey80,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-  },
-});
 export default EditUser;

@@ -1,6 +1,5 @@
 import notifee, {AndroidImportance} from '@notifee/react-native';
 import {showMediaType} from './chat_utils';
-import {getStorage} from './localStorage';
 import {name as appName} from '@root/app.json';
 import {useSettingStore} from '@store/settingStore';
 import {useConfigStore} from '@store/configStore';

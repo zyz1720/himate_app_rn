@@ -55,7 +55,7 @@ const LocalMusic = () => {
             audioFilesInDir.push({
               id: uuid(),
               title: file.split('.').shift(),
-              file_name: filePath,
+              file_key: filePath,
             });
           } else if (isDir && !file.startsWith('.')) {
             // 递归扫描子目录

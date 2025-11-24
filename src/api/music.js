@@ -1,6 +1,6 @@
 import instance from '@utils/request';
 
-// 音乐列表
+// 搜索音乐
 export const getMusic = params => instance.get('app/music', {params});
 
 // 音乐详情
@@ -9,7 +9,7 @@ export const getMusicDetail = id => instance.get(`app/music/detail/${id}`);
 // 收藏音乐
 export const likeMusic = data => instance.get('app/music/default', data);
 
-// 获取收藏夹音乐列表
+// 获取默认收藏的音乐
 export const getMusicFromDefaultFavorites = params =>
   instance.get('app/music/favorites/default', {params});
 

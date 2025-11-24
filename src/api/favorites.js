@@ -4,7 +4,7 @@ import instance from '@utils/request';
 export const addFavorites = data => instance.post('app/favorites', data);
 
 // 获取歌单列表
-export const getFavorites = params => instance.get('/app/favorites', {params});
+export const getFavorites = params => instance.get('app/favorites', {params});
 
 // 获取自己的所有歌单
 export const getOneselfFavorites = params =>

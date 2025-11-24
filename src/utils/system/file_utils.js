@@ -84,11 +84,10 @@ export const getFileColor = ext => {
 
 /**
  * 获取文件来自react-native-image-crop-picker
- * @param {string} doName 文件名
  * @param {object} fileInfo 文件信息
  * @returns {object} 文件信息
  */
-export const getFileFromImageCropPicker = (doName, fileInfo) => {
+export const getFileFromImageCropPicker = fileInfo => {
   const baseType = fileInfo.mime;
 
   let type = 'image';
@@ -105,9 +104,7 @@ export const getFileFromImageCropPicker = (doName, fileInfo) => {
 
   const file = {
     name: 'file',
-    filename: `${doName}_${type}_${Math.random()
-      .toString(16)
-      .substring(2)}.${ext}`,
+    filename: fileInfo.filename,
     data: ReactNativeBlobUtil.wrap(fileInfo.path),
   };
 
@@ -187,19 +184,37 @@ export const getFileFromAudioRecorderPlayer = (doName, filePath) => {
 };
 
 /**
+ * 格式化表单数据
+ * @param {object} form 表单数据
+ * @returns {object} 格式化后的表单数据
+ */
+const formatFormData = form => {
+  const formData = [];
+  Object.keys(form).forEach(key => {
+    formData.push({name: key, data: form[key]});
+  });
+  return formData;
+};
+
+/**
  * 上传文件
  * @param {object} fileData 文件数据
- * @param {function} callback 回调函数
- * @param {object} form 参数
+ * @param {object} options 选项
+ * @param {function} options.onProgress 进度回调函数
+ * @param {object} options.form 表单数据
  * @returns {object} 文件信息
  */
-export const uploadFile = async (fileData, callback = () => {}, form = {}) => {
+export const uploadFile = async (
+  fileData,
+  options = {
+    onProgress: () => {},
+    form: {},
+  },
+) => {
+  const {onProgress = () => {}, form} = options;
   const {access_token, token_type} = useUserStore.getState();
   const {envConfig} = useConfigStore.getState();
 
-  const {userId, fileType, useType} = form;
-
-  // 构建URL
   const url = `${envConfig.BASE_URL}api/upload/file`;
 
   return ReactNativeBlobUtil.fetch(
@@ -209,10 +224,10 @@ export const uploadFile = async (fileData, callback = () => {}, form = {}) => {
       Authorization: token_type + ' ' + access_token,
       'Content-Type': 'multipart/form-data',
     },
-    [fileData],
+    [...formatFormData(form), fileData],
   ).uploadProgress((written, total) => {
     const progress = Math.round((written / total) * 100);
-    callback(progress);
+    onProgress(progress);
   });
 };
 

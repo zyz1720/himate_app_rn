@@ -32,6 +32,29 @@ import FullScreenLoading from '@components/common/FullScreenLoading';
 import ImgModal from '@components/common/ImgModal';
 import ListItem from '@components/common/ListItem';
 
+const styles = StyleSheet.create({
+  image: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    borderColor: Colors.white,
+    borderWidth: 0.2,
+  },
+  tag: {
+    backgroundColor: Colors.grey70,
+    borderRadius: 6,
+  },
+  userBgImage: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: Colors.white,
+  },
+  overlay: {
+    backgroundColor: Colors.black2,
+  },
+});
+
 const User = ({navigation}) => {
   const {t} = useTranslation();
   const {showToast} = useToast();
@@ -56,9 +79,9 @@ const User = ({navigation}) => {
         setIsNewVersion(
           compareVersions(versionName, res.data.app_version) === -1,
         );
-      } else {
-        showToast(t('common.check_update_failed'), 'error');
+        return;
       }
+      showToast(res.message, 'error');
     } catch (error) {
       console.error(error);
     } finally {
@@ -294,26 +317,4 @@ const User = ({navigation}) => {
   );
 };
 
-const styles = StyleSheet.create({
-  image: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    borderColor: Colors.white,
-    borderWidth: 1,
-  },
-  tag: {
-    backgroundColor: Colors.grey70,
-    borderRadius: 6,
-  },
-  userBgImage: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: Colors.white,
-  },
-  overlay: {
-    backgroundColor: Colors.black2,
-  },
-});
 export default User;
