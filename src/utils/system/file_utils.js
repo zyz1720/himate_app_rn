@@ -120,14 +120,9 @@ export const getFileFromImageCropPicker = fileInfo => {
  * 获取文件来自react-native-document-picker
  * @param {string} doName 文件名
  * @param {object} fileInfo 文件信息
- * @param {boolean} useOriginalName 是否使用原始文件名
  * @returns {object} 文件信息
  */
-export const getFileFromDocumentPicker = (
-  doName,
-  fileInfo,
-  useOriginalName = false,
-) => {
+export const getFileFromDocumentPicker = fileInfo => {
   const baseType = fileInfo.type;
   const originalName = fileInfo.name;
   const ext = getFileExt(originalName);
@@ -143,9 +138,7 @@ export const getFileFromDocumentPicker = (
 
   const file = {
     name: 'file',
-    filename: useOriginalName
-      ? originalName
-      : `${doName}_${type}_${Math.random().toString(16).substring(2)}.${ext}`,
+    filename: originalName,
     data: ReactNativeBlobUtil.wrap(fileInfo.uri),
   };
   return {

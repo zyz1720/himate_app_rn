@@ -7,6 +7,7 @@ import {
   SOCKET_URL,
   STATIC_URL,
   FAST_STATIC_URL,
+  THUMBNAIL_URL,
 } from '@env';
 
 // 默认配置对象
@@ -16,6 +17,7 @@ export const defaultConfig = {
   SOCKET_URL,
   STATIC_URL,
   FAST_STATIC_URL,
+  THUMBNAIL_URL,
 };
 
 /**

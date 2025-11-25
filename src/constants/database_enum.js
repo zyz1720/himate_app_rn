@@ -25,6 +25,7 @@ export const MsgTypeEnum = {
   image: 'image',
   video: 'video',
   audio: 'audio',
+  file: 'file',
   other: 'other',
 };
 
@@ -34,4 +35,14 @@ export const FileTypeEnum = {
   audio: 'audio',
   document: 'document',
   other: 'other',
+};
+
+export const FileUseTypeEnum = {
+  user: 'user',
+  chat: 'chat',
+  group: 'group',
+  system: 'system',
+  music: 'music',
+  upload: 'upload',
+  unknown: 'unknown',
 };

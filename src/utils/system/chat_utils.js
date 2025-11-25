@@ -1,6 +1,7 @@
 import {deepClone} from '@utils/common/object_utils';
 import {useConfigStore} from '@store/configStore';
 import {useSettingStore} from '@store/settingStore';
+import {getLocalUser} from '@utils/realm/useUsersInfo';
 import {getTrueSecretKey, decryptAES} from './crypto_utils';
 
 /* 解密消息 */
@@ -143,9 +144,19 @@ export const addOrUpdateLocalUser = (realm, users) => {
   }
 };
 
-/* 查询本地用户信息 */
-export const getLocalUser = realm => {
-  const localUsers = realm.objects('users_info').toJSON();
-  // console.log('本地用户信息', localUsers);
-  return localUsers;
+
+/**
+ * 匹配消息发送者名称
+ * @param {Object} msgInfo 消息信息
+ * @returns {string} 发送者名称
+ */
+export const matchMsgInfo = msgInfo => {
+  const localUsers = getLocalUser();
+  const data = localUsers.find(
+    item => item.session_primary_id === msgInfo.session_primary_id,
+  );
+  if (data) {
+    return data.session_name;
+  }
+  return null;
 };

@@ -6,5 +6,6 @@
   "image_saving": "Image saving...",
   "save_to": "Saved to ",
   "save_failed": "Save failed",
-  "choose_img": "Choose Image"
+  "choose_img": "Choose Image",
+  "batch_save_tips": "Total {{total}} files, {{type}} file {{index}}..."
 }

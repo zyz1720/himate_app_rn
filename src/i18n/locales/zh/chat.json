@@ -1,6 +1,15 @@
 {
-    "reminder":"[有人@你]",
-    "reminder_restored":"恢复提醒",
-    "read":"已读",
-    "mute":"勿扰"
+    "reminder": "[有人@你]",
+    "reminder_restored": "恢复提醒",
+    "read": "已读",
+    "mute": "勿扰",
+    "send_to": "发送给 {{name}}",
+    "chat_type_private": "私聊",
+    "chat_type_group": "群聊",
+    "msg_type_text": "文本",
+    "msg_type_image": "图片",
+    "msg_type_video": "视频",
+    "msg_type_audio": "音频",
+    "msg_type_file": "文件",
+    "msg_type_other": "其他"
 }

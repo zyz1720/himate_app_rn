@@ -1,6 +1,15 @@
 {
-    "reminder":"[Someone mentioned you]",
-    "reminder_restored":"Restore reminder",
-    "read":"Read",
-    "mute":"Do not disturb"
+    "reminder": "[Someone mentioned you]",
+    "reminder_restored": "Restore reminder",
+    "read": "Read",
+    "mute": "Do not disturb",
+    "send_to": "Send to {{name}}",
+    "chat_type_private": "Private Chat",
+    "chat_type_group": "Group Chat",
+    "msg_type_text": "Text",
+    "msg_type_image": "Image",
+    "msg_type_video": "Video",
+    "msg_type_audio": "Audio",
+    "msg_type_file": "File",
+    "msg_type_other": "Other"
 }

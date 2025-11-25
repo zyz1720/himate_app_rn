@@ -30,6 +30,7 @@ export class UsersInfo extends Realm.Object {
       userId: {type: 'int', indexed: true},
       remarks: 'string',
       avatar: 'string',
+      session_primary_id: {type: 'int', indexed: true},
       session_id: {type: 'string', indexed: true},
       session_name: 'string',
       session_avatar: 'string',

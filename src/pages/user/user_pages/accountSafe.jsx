@@ -21,9 +21,10 @@ const EditUser = ({route}) => {
   const {showToast} = useToast();
   const [userAccount, setUserAccount] = useState({});
   const [userEmail, setUserEmail] = useState(null);
-  const [code, setCode] = useState(null);
   const [oldPassword, setOldPassword] = useState(null);
   const [newPassword, setNewPassword] = useState(null);
+  const [code, setCode] = useState(null);
+  const [codeUseType, setCodeUseType] = useState(null);
 
   // 初始化数据
   const dataInit = async () => {
@@ -123,7 +124,7 @@ const EditUser = ({route}) => {
     }
   };
 
-  // 提交修改
+  // 提交账号修改
   const [uploading, setUploading] = useState(false);
   const submitEmail = async () => {
     if (userEmail === null || userEmail === '') {
@@ -157,13 +158,10 @@ const EditUser = ({route}) => {
       showToast(t('login.please_old_password'), 'error');
       return false;
     }
-    if (_password.length < 6) {
-      showToast(t('user.password_too_short'), 'error');
-      return false;
-    }
     return true;
   };
 
+  // 提交密码修改
   const submitPassword = async () => {
     if (!passwordValidate(oldPassword)) {
       return;
@@ -176,6 +174,9 @@ const EditUser = ({route}) => {
         code: code,
       });
       showToast(res.message, res.code === 0 ? 'success' : 'error');
+      if (res.code === 0) {
+        
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -280,6 +281,7 @@ const EditUser = ({route}) => {
                     onPress={() => {
                       setImgCodeVisible(true);
                       getImgCode();
+                      setCodeUseType('email');
                     }}
                   />
                 </View>
@@ -314,6 +316,7 @@ const EditUser = ({route}) => {
                   backgroundColor={Colors.primary}
                   onPress={() => {
                     setShowPassDialog(true);
+                    setCodeUseType('password');
                   }}
                 />
               ) : null}
@@ -342,7 +345,12 @@ const EditUser = ({route}) => {
       </ScrollView>
       <BaseDialog
         onConfirm={() => {
-          submitEmail();
+          if (codeUseType === 'email') {
+            submitEmail();
+          }
+          if (codeUseType === 'password') {
+            submitPassword();
+          }
         }}
         onCancel={() => {
           setUploading(false);
@@ -374,7 +382,8 @@ const EditUser = ({route}) => {
       />
       <BaseDialog
         onConfirm={() => {
-          submitPassword();
+          setImgCodeVisible(true);
+          getImgCode();
         }}
         onCancel={() => {
           setUploading(false);
@@ -425,7 +434,7 @@ const EditUser = ({route}) => {
         visible={imgCodeVisible}
         setVisible={setImgCodeVisible}
         description={t('login.send_code')}
-        Body={
+        renderBody={
           <View>
             <View height={80}>
               <SvgXml width="100%" height="100%" xml={captchaImg} />

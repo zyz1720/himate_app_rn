@@ -74,9 +74,11 @@ const User = ({navigation}) => {
         );
         return;
       }
+      setShowAppUpdate(false);
       showToast(res.message, 'error');
     } catch (error) {
       console.error(error);
+      setShowAppUpdate(false);
     } finally {
       setUpdateLoading(false);
     }
@@ -124,7 +126,7 @@ const User = ({navigation}) => {
             source={bgSource}
             onError={() => setBgSource(require('@assets/images/user_bg.jpg'))}
             resizeMode="cover">
-            <View style={{backgroundColor: Colors.black2}}>
+            <View backgroundColor={Colors.black1}>
               <View
                 flexS
                 left

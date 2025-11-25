@@ -20,6 +20,7 @@ import {getUserInfo, editUserInfo} from '@api/user';
 import {useConfigStore} from '@store/configStore';
 import {useUserStore} from '@store/userStore';
 import {uploadFile} from '@utils/system/file_utils';
+import {FileUseTypeEnum} from '@const/database_enum';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FullScreenLoading from '@components/common/FullScreenLoading';
 import ImgPicker from '@components/form/ImgPicker';
@@ -134,7 +135,7 @@ const EditUser = () => {
       const res = await uploadFile(fileInfo.file, {
         form: {
           file_type: fileInfo.type,
-          use_type: 'user',
+          use_type: FileUseTypeEnum.user,
         },
       });
       const upRes = JSON.parse(res.text());
@@ -203,6 +204,7 @@ const EditUser = () => {
       if (res.code === 0) {
         dataInit();
         reSetUserInfo();
+        setIsNeedSave(false);
       }
       showToast(res.message, res.code === 0 ? 'success' : 'error');
     } catch (error) {
