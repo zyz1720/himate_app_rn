@@ -12,7 +12,7 @@ const defaultState = {
   isLogin: false, // 是否登录
 };
 
-export const useUserStore = create()(
+export const useUserStore = create(
   persist(
     (set, get) => ({
       ...defaultState,
@@ -20,9 +20,9 @@ export const useUserStore = create()(
         const {access_token, refresh_token, token_type} = data || {};
         if (access_token && refresh_token && token_type) {
           set({
-            access_token,
-            refresh_token,
-            token_type,
+            access_token: access_token.trim(),
+            refresh_token: refresh_token.trim(),
+            token_type: token_type.trim(),
             isLogin: true,
           });
         }
@@ -40,7 +40,7 @@ export const useUserStore = create()(
           res.code === 0 && set({userInfo: res.data || {}});
         });
       },
-      refreshToken: () => {
+      setRefreshToken: () => {
         userRefreshToken({refresh_token: get().refresh_token})
           .then(res => {
             if (res.code === 0) {
@@ -60,3 +60,9 @@ export const useUserStore = create()(
     },
   ),
 );
+
+AsyncStorage.getItem('user-storage').then(res => {
+  if (res) {
+    console.log('user-storage ', res);
+  }
+});

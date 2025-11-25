@@ -75,3 +75,50 @@ export const keepChangedFields = (original, current) => {
   }
   return changedFields;
 };
+
+/**
+ * 深合并对象
+ * @param {object} target 目标对象
+ * @param {object} source 源对象
+ * @returns {object} 深合并后的对象
+ */
+export const deepMerge = (target, source) => {
+  const merge = (t, s) => {
+    // 创建新对象避免修改原始状态
+    const merged = {...t};
+
+    Object.keys(s).forEach(key => {
+      const tVal = t[key];
+      const sVal = s[key];
+
+      // 跳过不可序列化的值
+      if (typeof sVal === 'function' || sVal instanceof Symbol) {
+        return;
+      }
+
+      // 处理数组类型
+      if (Array.isArray(sVal)) {
+        merged[key] = sVal.map((item, index) => {
+          // 仅合并可序列化的元素
+          return typeof item === 'object' && !Array.isArray(item)
+            ? deepMerge(tVal?.[index] || {}, item)
+            : item;
+        });
+        return;
+      }
+
+      // 处理对象类型
+      if (sVal && typeof sVal === 'object') {
+        merged[key] = deepMerge(tVal || {}, sVal);
+        return;
+      }
+
+      // 直接赋值可序列化的基本类型
+      merged[key] = sVal;
+    });
+
+    return merged;
+  };
+
+  return merge(target, source);
+};

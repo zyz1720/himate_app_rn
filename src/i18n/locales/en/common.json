@@ -22,6 +22,7 @@
   "search_keyword": "Please enter search keywords",
   "load_error": "Failed to load, please try again later",
   "check_update_failed": "Failed to check for updates",
+  "download_pkg_progress": "Download Progress",
   "download_apk_success": "Application downloaded successfully",
   "download_apk_failed": "Failed to download application",
   "setting": "System Settings",

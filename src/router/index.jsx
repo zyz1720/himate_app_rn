@@ -11,6 +11,7 @@ import {useErrorMsgStore} from '@store/errorMsgStore';
 import {useTranslation} from 'react-i18next';
 import FullScreenLoading from '@components/common/FullScreenLoading';
 import RootScreen from './rootScreen';
+import i18n from 'i18next';
 import 'react-native-get-random-values';
 
 const RootView = () => {
@@ -48,6 +49,13 @@ const RootView = () => {
     }
     return () => clearMsgStore();
   }, [errorMsg]);
+
+  // 语言切换
+  useEffect(() => {
+    if (language) {
+      i18n.changeLanguage(language);
+    }
+  }, [language]);
 
   return (
     <>

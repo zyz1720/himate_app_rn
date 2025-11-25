@@ -37,6 +37,8 @@ const Setting = ({navigation}) => {
     isFastStatic,
     isEncryptMsg,
     ringtone,
+    language,
+    isFollowSystemLanguage,
     setThemeColor,
     setToastType,
     setIsPlaySound,
@@ -46,6 +48,8 @@ const Setting = ({navigation}) => {
     setIsFastStatic,
     setIsMusicApp,
     setRingtone,
+    setLanguage,
+    setIsFollowSystemLanguage,
   } = useSettingStore();
   const {userInfo} = useUserStore();
   const {envConfig, updateEnvConfig} = useConfigStore();
@@ -61,8 +65,11 @@ const Setting = ({navigation}) => {
   // 获取颜色
   const [showDialog, setShowDialog] = useState(false);
 
-  /* 消息提示类型 */
+  // 消息提示类型
   const [showToastType, setShowToastType] = useState(false);
+
+  // 首选语言
+  const [showLanguage, setShowLanguage] = useState(false);
 
   // 音效选择
   const [showAudio, setShowAudio] = useState(false);
@@ -103,6 +110,14 @@ const Setting = ({navigation}) => {
             iconColor={Colors.blue30}
             onConfirm={() => {
               setShowToastType(true);
+            }}
+          />
+          <ListItem
+            itemName={t('setting.language')}
+            iconName={'language'}
+            iconColor={Colors.blue30}
+            onConfirm={() => {
+              setShowLanguage(true);
             }}
           />
           <ListItem
@@ -315,6 +330,48 @@ const Setting = ({navigation}) => {
             },
           };
         })}
+      />
+      <BaseSheet
+        title={t('setting.language')}
+        visible={showLanguage}
+        setVisible={setShowLanguage}
+        actions={[
+          {
+            label: t('setting.follow_system'),
+            color: isFollowSystemLanguage ? Colors.primary : Colors.grey30,
+            onPress: () => {
+              setIsFollowSystemLanguage(true);
+              showToast(t('setting.setSuccess'), 'success', true);
+              setShowLanguage(false);
+            },
+          },
+          {
+            label: t('setting.zh'),
+            color:
+              !isFollowSystemLanguage && language === 'zh'
+                ? Colors.primary
+                : Colors.grey30,
+            onPress: () => {
+              setLanguage('zh');
+              setIsFollowSystemLanguage(false);
+              showToast(t('setting.setSuccess'), 'success', true);
+              setShowLanguage(false);
+            },
+          },
+          {
+            label: t('setting.en'),
+            color:
+              !isFollowSystemLanguage && language === 'en'
+                ? Colors.primary
+                : Colors.grey30,
+            onPress: () => {
+              setLanguage('en');
+              setIsFollowSystemLanguage(false);
+              showToast(t('setting.setSuccess'), 'success', true);
+              setShowLanguage(false);
+            },
+          },
+        ]}
       />
       <Dialog
         visible={showFileLocation}

@@ -230,13 +230,13 @@ const EditUser = ({route}) => {
         }>
         <View flexG paddingH-16 paddingT-16>
           <View marginB-16 flexG center>
-            <Text>
+            <Text center>
               <FontAwesome
                 name="exclamation-circle"
                 color={Colors.yellow40}
                 size={14}
               />
-              <Text text90L grey30 marginL-4>
+              <Text text90L grey30>
                 {t('user.change_email')}
               </Text>
             </Text>

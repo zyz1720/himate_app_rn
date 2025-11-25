@@ -204,14 +204,8 @@ const formatFormData = form => {
  * @param {object} options.form 表单数据
  * @returns {object} 文件信息
  */
-export const uploadFile = async (
-  fileData,
-  options = {
-    onProgress: () => {},
-    form: {},
-  },
-) => {
-  const {onProgress = () => {}, form} = options;
+export const uploadFile = async (fileData, options = {}) => {
+  const {onProgress = () => {}, form = {}} = options;
   const {access_token, token_type} = useUserStore.getState();
   const {envConfig} = useConfigStore.getState();
 

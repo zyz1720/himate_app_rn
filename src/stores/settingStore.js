@@ -2,11 +2,16 @@ import {create} from 'zustand';
 import {persist, createJSONStorage} from 'zustand/middleware';
 import {Colors} from 'react-native-ui-lib';
 import {themeColors} from '@style/index';
+import {getLocales} from 'react-native-localize';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const locales = getLocales();
+const systemLanguage = locales[0].languageCode;
 
 const defaultState = {
   themeColor: themeColors.primary, // 主题色
   language: 'zh', // 语言
+  isFollowSystemLanguage: true, // 是否跟随系统语言
   toastType: 'system', // 通知类型
   isPlaySound: true, // 是否播放铃声
   isFullScreen: false, // 是否全屏
@@ -17,7 +22,7 @@ const defaultState = {
   ringtone: 'default_1.mp3', // 铃声
 };
 
-export const useSettingStore = create()(
+export const useSettingStore = create(
   persist(
     (set, get) => ({
       ...defaultState,
@@ -55,16 +60,34 @@ export const useSettingStore = create()(
       setLanguage: lang => {
         set({language: lang || 'zh'});
       },
+      setIsFollowSystemLanguage: flag => {
+        set({isFollowSystemLanguage: flag ?? true});
+        if (flag) {
+          set({language: systemLanguage === 'zh' ? 'zh' : 'en'});
+        }
+      },
       initThemeColors: () => {
         Colors.loadColors({...themeColors, primary: get().themeColor});
+      },
+      initLanguage: async () => {
+        if (get().isFollowSystemLanguage) {
+          set({language: systemLanguage === 'zh' ? 'zh' : 'en'});
+        }
       },
     }),
     {
       name: 'setting-storage',
       storage: createJSONStorage(() => AsyncStorage),
+      onRehydrateStorage: async state => {
+        if (state) {
+          console.log(state);
+        }
+      },
     },
   ),
 );
 
-const {initThemeColors} = useSettingStore.getState();
+const {initThemeColors, initLanguage} = useSettingStore.getState();
+
 initThemeColors();
+initLanguage();

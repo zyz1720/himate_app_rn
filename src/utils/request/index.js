@@ -5,21 +5,22 @@ import {useErrorMsgStore} from '@store/errorMsgStore.js';
 import {API_PREFIX} from '@env';
 import i18n from 'i18next';
 
-const {envConfig} = useConfigStore.getState();
-const {setErrorMsg} = useErrorMsgStore.getState();
-const {refreshToken, access_token, token_type} = useUserStore.getState();
-
 // 创建axios实例
-console.log('BASE_URL ', envConfig?.BASE_URL);
-
-const instance = axios.create({
-  baseURL: envConfig?.BASE_URL + API_PREFIX,
-  timeout: 30000,
-});
+const instance = axios.create();
 
 // 添加请求拦截器
 instance.interceptors.request.use(
   function (requestConfig) {
+    const {envConfig} = useConfigStore.getState();
+    const {access_token, token_type} = useUserStore.getState();
+
+    console.log('BASE_URL ', envConfig?.BASE_URL);
+
+    if (envConfig?.BASE_URL) {
+      requestConfig.baseURL = envConfig.BASE_URL + API_PREFIX;
+      requestConfig.timeout = 30000;
+    }
+
     if (access_token && token_type) {
       requestConfig.headers.Authorization = token_type + ' ' + access_token;
     }
@@ -42,6 +43,9 @@ instance.interceptors.response.use(
   function (error) {
     console.error(error);
 
+    const {setRefreshToken} = useUserStore.getState();
+    const {setErrorMsg} = useErrorMsgStore.getState();
+
     const resMessage = error.response?.data?.message;
     let {message, status} = error;
 
@@ -55,7 +59,7 @@ instance.interceptors.response.use(
     }
 
     if (status === 401) {
-      refreshToken();
+      setRefreshToken();
     }
     if (resMessage) {
       message = resMessage;

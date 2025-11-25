@@ -15,7 +15,7 @@ const defaultState = {
   switchCount: 0, // 切换次数
 };
 
-export const useMusicStore = create()(
+export const useMusicStore = create(
   persist(
     set => ({
       ...defaultState,

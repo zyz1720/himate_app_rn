@@ -22,6 +22,7 @@
   "search_keyword": "请输入搜索关键字",
   "load_error": "加载失败，请稍后重试",
   "check_update_failed": "检查更新失败",
+  "download_pkg_progress": "下载进度",
   "download_apk_success": "下载应用成功",
   "download_apk_failed": "下载应用失败",
   "setting": "系统设置",

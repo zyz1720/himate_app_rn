@@ -7,7 +7,7 @@ const defaultState = {
   notRemindSessionIds: [], // 不用提醒的会话id列表
 };
 
-export const useChatMsgStore = create()(
+export const useChatMsgStore = create(
   persist(
     (set, get) => ({
       ...defaultState,

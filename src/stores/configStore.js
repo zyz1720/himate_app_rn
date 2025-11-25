@@ -6,7 +6,7 @@ import {isEmptyObject} from '@utils/common/object_utils';
 const defaultState = {
   envConfig: {}, // 环境配置
   msgSecretKey: null, // 消息加密密钥
-  configLoading: false, // 加载状态
+  configLoading: true, // 加载状态
 };
 
 export const useConfigStore = create(set => ({

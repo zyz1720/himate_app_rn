@@ -55,7 +55,7 @@ const ListItem = props => {
             {rightText ? (
               <Text
                 marginR-12
-                numberOfLines={1}
+                numberOfLines={2}
                 style={styles.maxWidth160}
                 text80
                 grey40>

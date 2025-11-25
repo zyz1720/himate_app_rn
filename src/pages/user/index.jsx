@@ -40,18 +40,11 @@ const styles = StyleSheet.create({
     borderColor: Colors.white,
     borderWidth: 0.2,
   },
-  tag: {
-    backgroundColor: Colors.grey70,
-    borderRadius: 6,
-  },
   userBgImage: {
     borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: Colors.white,
-  },
-  overlay: {
-    backgroundColor: Colors.black2,
   },
 });
 
@@ -74,7 +67,7 @@ const User = ({navigation}) => {
     try {
       setUpdateLoading(true);
       const res = await getAppVersion();
-      if (res.code === 200) {
+      if (res.code === 0) {
         setNewAppInfo(res.data);
         setIsNewVersion(
           compareVersions(versionName, res.data.app_version) === -1,
@@ -131,7 +124,7 @@ const User = ({navigation}) => {
             source={bgSource}
             onError={() => setBgSource(require('@assets/images/user_bg.jpg'))}
             resizeMode="cover">
-            <View style={styles.overlay}>
+            <View style={{backgroundColor: Colors.black2}}>
               <View
                 flexS
                 left

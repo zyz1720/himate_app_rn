@@ -97,16 +97,14 @@ const ChatMsg = ({route}) => {
   return (
     <>
       <View flexG paddingH-16 paddingT-18>
-        <View marginB-16 flexS center>
-          <Text text90L grey30>
-            <FontAwesome
-              name="exclamation-circle"
-              color={Colors.red30}
-              size={14}
-            />
-            &nbsp;{t('user.chat_secret_warning')}
-          </Text>
-        </View>
+        <Text text90L marginB-16 grey30 center>
+          <FontAwesome
+            name="exclamation-circle"
+            color={Colors.red30}
+            size={14}
+          />
+          &nbsp;{t('user.chat_secret_warning')}
+        </Text>
         <Card enableShadow={false}>
           <View>
             <ListItem

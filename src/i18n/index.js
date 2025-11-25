@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import {initReactI18next} from 'react-i18next';
 import {importLocales} from '@utils/system/i18n_utils';
+import {useSettingStore} from '@store/settingStore';
 
 // 导入并合并语言文件
 const en = importLocales('en');
@@ -17,7 +18,7 @@ const resources = {
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: 'zh',
+  lng: useSettingStore.getState().language,
   fallbackLng: 'zh',
   interpolation: {
     escapeValue: false,
