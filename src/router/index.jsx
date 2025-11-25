@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StatusBar} from 'react-native';
 import {Colors} from 'react-native-ui-lib';
 import {useToast} from '@utils/hooks/useToast';
@@ -22,6 +22,17 @@ const RootView = () => {
   const {envConfig, configLoading, updateEnvConfig} = useConfigStore();
   const {isFastStatic, themeColor, language, isFullScreen} = useSettingStore();
   const {errorMsg, clearMsgStore} = useErrorMsgStore();
+
+  // 在应用启动时
+  const [isInitialized, setIsInitialized] = useState(false);
+  const initializeApp = async () => {
+    await useSettingStore.persist.rehydrate();
+    await useUserStore.persist.rehydrate();
+    const {initThemeColors, initLanguage} = useSettingStore.getState();
+    initThemeColors();
+    initLanguage();
+    setIsInitialized(true);
+  };
 
   /**
    * 监听isLogin变化，当用户登录状态变化时，更新用户信息
@@ -57,6 +68,11 @@ const RootView = () => {
     }
   }, [language]);
 
+  // 初始化应用
+  useEffect(() => {
+    initializeApp();
+  }, []);
+
   return (
     <>
       <StatusBar
@@ -77,7 +93,7 @@ const RootView = () => {
         translucent={false} // 将状态栏填充的高度隐藏
         hidden={false}
       />
-      {configLoading ? (
+      {configLoading || !isInitialized ? (
         <FullScreenLoading Message={displayName + t('common.init_loading')} />
       ) : (
         <RootScreen />

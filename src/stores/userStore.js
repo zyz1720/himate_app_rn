@@ -60,9 +60,3 @@ export const useUserStore = create(
     },
   ),
 );
-
-AsyncStorage.getItem('user-storage').then(res => {
-  if (res) {
-    console.log('user-storage ', res);
-  }
-});

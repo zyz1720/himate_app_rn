@@ -78,16 +78,6 @@ export const useSettingStore = create(
     {
       name: 'setting-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      onRehydrateStorage: async state => {
-        if (state) {
-          console.log(state);
-        }
-      },
     },
   ),
 );
-
-const {initThemeColors, initLanguage} = useSettingStore.getState();
-
-initThemeColors();
-initLanguage();
