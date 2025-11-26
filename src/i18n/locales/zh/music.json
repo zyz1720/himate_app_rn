@@ -63,5 +63,6 @@
   "alarm_close_tips": "将在{{time}}分钟后停止播放",
   "random_play_on": "已开启随机播放",
   "random_play_off": "已关闭随机播放",
-  "random_play_range": "将在曲库的第{{min}}-{{max}}首歌曲之间随机播放"
+  "random_play_range": "将在曲库的第{{min}}-{{max}}首歌曲之间随机播放",
+  "add_to_favorites": "添加到歌单"
 }

@@ -1,5 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, Modal, Vibration, FlatList} from 'react-native';
+import {
+  StyleSheet,
+  Modal,
+  Vibration,
+  FlatList,
+  RefreshControl,
+} from 'react-native';
 import {
   View,
   Text,
@@ -39,7 +45,9 @@ const MusicList = props => {
     isOneself = false,
     isLocal = false,
     rightBut = null,
-    heightScale = 0.92,
+    heightScale = 1,
+    loading = false,
+    onRefresh = () => {},
   } = props;
   const {t} = useTranslation();
   const {showToast} = useToast();
@@ -171,7 +179,7 @@ const MusicList = props => {
       },
     },
     {
-      title: '添加到歌单',
+      title: t('music.add_to_favorites'),
       icon: 'pluscircleo',
       iconColor: Colors.grey30,
       onPress: () => {
@@ -180,7 +188,7 @@ const MusicList = props => {
       },
     },
     {
-      title: '下载',
+      title: t('common.download'),
       icon: 'download',
       iconColor: Colors.grey30,
       onPress: () => {
@@ -479,13 +487,19 @@ const MusicList = props => {
       </View>
       <View height={fullHeight * heightScale}>
         <FlatList
+          refreshControl={
+            <RefreshControl
+              refreshing={loading}
+              colors={[Colors.primary]}
+              onRefresh={onRefresh}
+            />
+          }
           data={list}
-          keyExtractor={(item, index) => item + index}
-          onEndReached={() => {
-            onEndReached();
-          }}
+          keyExtractor={(_, index) => index.toString()}
+          onEndReached={onEndReached}
           onEndReachedThreshold={0.8}
           renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View marginT-16 center>
               <Text text90L grey40>
@@ -495,7 +509,7 @@ const MusicList = props => {
           }
           ListFooterComponent={
             list.length > 6 ? (
-              <View marginB-100 padding-12 center>
+              <View marginB-280 padding-12 center>
                 <Text text90L grey40>
                   {t('common.footer')}
                 </Text>

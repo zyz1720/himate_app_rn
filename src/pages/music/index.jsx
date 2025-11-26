@@ -32,17 +32,17 @@ import {useMusicStore} from '@store/musicStore';
 import {useUserStore} from '@store/userStore';
 import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
 import {useTranslation} from 'react-i18next';
+import {getPlayHistory} from '@utils/realm/useMusicInfo';
+import {getLocalMusic} from '@utils/realm/useLocalMusic';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import BaseDialog from '@components/common/BaseDialog';
-import {useRealm} from '@realm/react';
 import dayjs from 'dayjs';
 
 const Music = ({navigation}) => {
   const {showToast} = useToast();
   const {t} = useTranslation();
-  const realm = useRealm();
 
   const {userInfo} = useUserStore();
   const {isClosed, randomNum, setRandomNum, setCloseTime, setIsRandomPlay} =
@@ -52,16 +52,9 @@ const Music = ({navigation}) => {
   const {list, total, onEndReached, refreshData} =
     useInfiniteScroll(getOneselfFavorites);
 
-  useEffect(() => {
-    getDefaultFavoritesCount();
-    getAllFavoritesCount();
-    getAllMusicCount();
-    if (realm) {
-      getLocalMusicInfo();
-    }
-  }, []);
-
   const [showAddDialog, setShowAddDialog] = useState(false);
+
+  const scales = ['00:00', '00:30', '01:00', '01:30', '02:00'];
 
   // 宫格列表数据
   const [itemData, setItemData] = useState([
@@ -162,17 +155,14 @@ const Music = ({navigation}) => {
 
   /* 获取最近播放数据 */
   const getLocalMusicInfo = () => {
-    const playHistory = realm
-      .objects('music_info')
-      .sorted('updated_at', true)
-      .toJSON();
+    const playHistory = getPlayHistory();
     if (playHistory.length > 0) {
       const latelyMusic = playHistory[0];
       const endDate = dayjs(Number(latelyMusic.updated_at));
       const diffInDays = dayjs().diff(endDate, 'day');
       setLatelyDay(diffInDays);
     }
-    const localMusic = realm.objects('local_music').toJSON();
+    const localMusic = getLocalMusic();
     setItemData(prev => {
       prev[1].num = playHistory.length;
       prev[2].num = localMusic.length;
@@ -184,12 +174,6 @@ const Music = ({navigation}) => {
   const [showAlarmDialog, setShowAlarmDialog] = useState(false);
   const [alarmSwitch, setAlarmSwitch] = useState(false);
   const [alarmTime, setAlarmTime] = useState(0);
-
-  useEffect(() => {
-    if (isClosed) {
-      setAlarmSwitch(false);
-    }
-  }, [isClosed]);
 
   /* 随机播放 */
   const [showRandomDialog, setShowRandomDialog] = useState(false);
@@ -246,7 +230,19 @@ const Music = ({navigation}) => {
     }
   };
 
-  const scales = ['00:00', '00:30', '01:00', '01:30', '02:00'];
+  useEffect(() => {
+    getDefaultFavoritesCount();
+    getAllFavoritesCount();
+    getAllMusicCount();
+    getLocalMusicInfo();
+    refreshData();
+  }, []);
+
+  useEffect(() => {
+    if (isClosed) {
+      setAlarmSwitch(false);
+    }
+  }, [isClosed]);
 
   return (
     <View top padding-16 height={fullHeight}>
@@ -269,6 +265,7 @@ const Music = ({navigation}) => {
           <View>
             <Image
               source={{uri: envConfig.STATIC_URL + userInfo?.user_avatar}}
+              errorSource={require('@assets/images/empty.jpg')}
               style={styles.image}
             />
           </View>
@@ -277,13 +274,6 @@ const Music = ({navigation}) => {
               <Text grey20 text70BO>
                 {userInfo?.user_name}
               </Text>
-              <View flexS row center marginL-6>
-                {userInfo?.sex === 'woman' ? (
-                  <FontAwesome name="venus" color={Colors.magenta} size={12} />
-                ) : userInfo?.sex === 'man' ? (
-                  <FontAwesome name="mars" color={Colors.blue50} size={12} />
-                ) : null}
-              </View>
             </View>
             <Text grey20 text100L marginT-6>
               {latelyDay > 0 ? (
@@ -342,8 +332,8 @@ const Music = ({navigation}) => {
           data={itemData}
           containerWidth={fullWidth - 32}
           numColumns={2}
-          keyExtractor={(item, index) => item.title + index}
-          renderItem={({item, index}) => (
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({item}) => (
             <Card flexS centerV enableShadow={true} padding-12>
               <TouchableOpacity
                 onPress={() => {
@@ -513,14 +503,15 @@ const Music = ({navigation}) => {
                   }}>
                   <Image
                     source={{
-                      uri: envConfig.THUMBNAIL_URL + item.favorites_cover,
+                      uri: envConfig.THUMBNAIL_URL + item?.favorites_cover,
                     }}
+                    errorSource={require('@assets/images/favorites_cover.jpg')}
                     style={styles.favoritesCover}
                   />
                   <View centerV marginL-12>
                     <Text>{item.favorites_name}</Text>
                     <Text marginT-4 text90L grey40>
-                      {t('music.num_songs', {num: item.musicCount})}
+                      {t('music.num_songs', {num: item.musicCount || 0})}
                     </Text>
                   </View>
                 </TouchableOpacity>

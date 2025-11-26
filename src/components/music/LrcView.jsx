@@ -358,6 +358,7 @@ const LrcView = React.memo(props => {
           {music?.music_name ? (
             <Image
               source={{uri: cover}}
+              errorSource={require('@assets/images/music_cover.jpg')}
               style={[styles.image, {borderColor: Colors.lyricColor}]}
             />
           ) : null}

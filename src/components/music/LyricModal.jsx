@@ -14,8 +14,6 @@ import {
   Slider,
   Carousel,
 } from 'react-native-ui-lib';
-import AntDesign from 'react-native-vector-icons/AntDesign';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import {fullHeight, fullWidth, statusBarHeight} from '@style/index';
 import {isEmptyString} from '@utils/common/string_utils';
 import {formatMilliSeconds} from '@utils/common/time_utils';
@@ -26,6 +24,8 @@ import {useKeepAwake} from 'expo-keep-awake';
 import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import LrcView from './LrcView';
 
 const styles = StyleSheet.create({
@@ -147,6 +147,12 @@ const LyricModal = React.memo(props => {
     [duration],
   );
 
+  const [bgSource, setBgSource] = useState({
+    uri:
+      envConfig.THUMBNAIL_URL +
+      (musicExtra?.music_cover || userInfo?.user_avatar || ''),
+  });
+
   // 歌词动画组件
   const lyricAnimation = useMemo(() => {
     if (isEmptyString(nowLyric)) {
@@ -179,11 +185,8 @@ const LyricModal = React.memo(props => {
         <ImageBackground
           blurRadius={50}
           style={styles.backImage}
-          source={{
-            uri:
-              envConfig.STATIC_URL +
-              (musicExtra?.music_cover || userInfo?.user_avatar),
-          }}
+          source={bgSource}
+          onError={() => setBgSource(require('@assets/images/user_bg.jpg'))}
           resizeMode="cover">
           <TouchableOpacity paddingT-48 paddingL-22 onPress={onClose}>
             <Ionicons name="chevron-down" color={Colors.lyricColor} size={24} />
@@ -195,9 +198,10 @@ const LyricModal = React.memo(props => {
                 <View flexS center marginT-8>
                   <Image
                     source={{
-                      uri: envConfig.STATIC_URL + musicExtra?.music_cover,
+                      uri:
+                        envConfig.STATIC_URL + (musicExtra?.music_cover || ''),
                     }}
-                    errorSource={{uri: '@assets/images/empty.jpg'}}
+                    errorSource={require('@assets/images/music_cover.jpg')}
                     style={[styles.HbigImage, {borderColor: Colors.lyricColor}]}
                   />
                 </View>
@@ -339,8 +343,10 @@ const LyricModal = React.memo(props => {
                 <View flexS center marginT-40>
                   <Image
                     source={{
-                      uri: envConfig.STATIC_URL + musicExtra?.music_cover,
+                      uri:
+                        envConfig.STATIC_URL + (musicExtra?.music_cover || ''),
                     }}
+                    errorSource={require('@assets/images/music_cover.jpg')}
                     style={[styles.bigImage, {borderColor: Colors.lyricColor}]}
                   />
                 </View>

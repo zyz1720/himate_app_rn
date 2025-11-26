@@ -27,18 +27,29 @@ export const formatFileSize = size => {
 
 /**
  * 获取文件名
- * @param {string} url 文件url
+ * @param {string} url 文件路径或URL
  * @returns {string} 文件名
  */
 export const getFileName = url => {
-  // 使用最后一个'/'作为分隔符来分割字符串
   try {
-    const parts = url?.split('/');
-    // parts数组的最后一个元素是文件名
-    const fileName = parts[parts.length - 1];
-    return fileName;
+    if (!url || typeof url !== 'string') {
+      return '';
+    }
+    let cleanPath = url.split('?')[0].split('#')[0];
+
+    const slashIndex = cleanPath.lastIndexOf('/');
+    const backslashIndex = cleanPath.lastIndexOf('\\');
+
+    const lastSeparatorIndex = Math.max(slashIndex, backslashIndex);
+    if (
+      lastSeparatorIndex !== -1 &&
+      lastSeparatorIndex < cleanPath.length - 1
+    ) {
+      return cleanPath.substring(lastSeparatorIndex + 1);
+    }
+    return cleanPath;
   } catch (error) {
-    console.error(error);
+    console.error('获取文件名失败:', error);
     return '';
   }
 };
@@ -261,6 +272,7 @@ export const downloadFile = async (fileUrl, options = {}) => {
       return false;
     }
   }
+
   const downloadDest = `${path}/${fileName}`;
 
   // 处理下载配置
@@ -276,7 +288,7 @@ export const downloadFile = async (fileUrl, options = {}) => {
       mime: 'application/octet-stream',
       path: downloadDest,
       title: fileName,
-      description: displayName + '文件下载',
+      description: displayName + ' file Download',
     };
   }
 

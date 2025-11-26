@@ -421,7 +421,6 @@ const DataManager = ({navigation}) => {
       showsVerticalScrollIndicator={false}
       keyExtractor={(_, index) => index.toString()}
       onEndReached={onEndReachedFile}
-      ItemSeparatorComponent={<View height={0.5} bg-grey60 />}
       onEndReachedThreshold={0.8}
       ListEmptyComponent={
         <View marginT-16 center>
@@ -449,7 +448,6 @@ const DataManager = ({navigation}) => {
       onEndReached={onEndReachedMsg}
       onEndReachedThreshold={0.8}
       showsVerticalScrollIndicator={false}
-      ItemSeparatorComponent={<View height={0.5} bg-grey60 />}
       ListEmptyComponent={
         <View marginT-16 center>
           <Text text90L grey40>

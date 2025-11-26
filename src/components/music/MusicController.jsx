@@ -473,6 +473,10 @@ const MusicCtrlProvider = React.memo(props => {
     };
   }, []);
 
+  const [bgSource, setBgSource] = useState({
+    uri: envConfig.THUMBNAIL_URL + (userInfo?.user_bg_img || ''),
+  });
+
   return (
     <MusicCtrlContext.Provider value={{}}>
       {children}
@@ -481,7 +485,8 @@ const MusicCtrlProvider = React.memo(props => {
           <ImageBackground
             blurRadius={40}
             style={styles.ctrlBackImage}
-            source={{uri: envConfig.STATIC_URL + userInfo?.user_avatar}}
+            source={bgSource}
+            onError={() => setBgSource(require('@assets/images/user_bg.jpg'))}
             resizeMode="cover">
             <GestureHandlerRootView>
               <View row centerV spread>
@@ -504,9 +509,10 @@ const MusicCtrlProvider = React.memo(props => {
                         <Image
                           source={{
                             uri:
-                              envConfig.STATIC_URL +
+                              envConfig.THUMBNAIL_URL +
                               playingMusic?.musicExtra?.music_cover,
                           }}
+                          errorSource={require('@assets/images/music_cover.jpg')}
                           style={styles.image}
                         />
                       )}

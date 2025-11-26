@@ -24,7 +24,8 @@ export const updateFavorites = (id, data) =>
 
 // 删除歌单
 export const deleteFavorites = data =>
-  instance.delete('app/favorites/batch', data);
+  instance.delete('app/favorites/batch', {data});
 
 // 第三方歌单导入
-export const importFavorites = url => instance.get(`music-api/sync/${url}`);
+export const importFavorites = target =>
+  instance.get('music-api/sync', {params: {target}});

@@ -117,7 +117,7 @@ const NewMate = ({navigation}) => {
         />
         <View marginL-10>
           <Text text80BL>{item.user.user_name}</Text>
-          <View width={200}>
+          <View width={190}>
             <Text text90L marginT-5 grey30>
               {item.validate_msg}
             </Text>
