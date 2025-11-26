@@ -7,7 +7,7 @@ export const addMate = data => instance.post('app/mate', data);
 export const deleteMate = id => instance.delete(`app/mate/${id}`);
 
 // 好友列表
-export const getMateList = () => instance.get('app/mate');
+export const getMateList = params => instance.get('app/mate', {params});
 
 // 是否是好友
 export const getIsMate = userId => instance.get(`app/mate/relation/${userId}`);

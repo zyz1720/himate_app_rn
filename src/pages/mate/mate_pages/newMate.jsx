@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {FlatList} from 'react-native';
+import {FlatList, RefreshControl} from 'react-native';
 import {
   View,
   Text,
@@ -30,11 +30,13 @@ const NewMate = ({navigation}) => {
 
   /* 申请好友列表 */
   const {
+    loading: applyLoading,
     list: applyList,
     onEndReached: onEndReachedApply,
     refreshData: refreshDataApply,
   } = useInfiniteScroll(getApplyList);
   const {
+    loading: refusedLoading,
     list: refusedList,
     onEndReached: onEndReachedRefused,
     refreshData: refreshDataRefused,
@@ -46,6 +48,7 @@ const NewMate = ({navigation}) => {
 
   const [focusedIndex, setFocusedIndex] = useState(0);
 
+  // 同意好友申请
   const agreeApply = () => {
     agreeMateApply(mateId, {remarks: remark})
       .then(res => {
@@ -61,6 +64,7 @@ const NewMate = ({navigation}) => {
       });
   };
 
+  // 拒绝好友申请
   const refuseApply = () => {
     refuseMateApply(mateId)
       .then(res => {
@@ -84,7 +88,6 @@ const NewMate = ({navigation}) => {
       const delRes = await deleteMate(mateId);
       if (delRes.success) {
         setDeleteVisible(false);
-        refreshDataApply();
         refreshDataRefused();
       }
       showToast(delRes.message, delRes.success ? 'success' : 'error');
@@ -95,50 +98,6 @@ const NewMate = ({navigation}) => {
 
   /* 拒绝好友申请 */
   const [refusedVisible, setRefusedVisible] = useState(false);
-
-  /* 顶部导航栏 */
-  const routes = [
-    {
-      key: 'apply',
-      title: t('mate.apply'),
-      refreshFunc: refreshDataApply,
-      screen: (
-        <FlatList
-          data={applyList}
-          renderItem={renderApplyItem}
-          keyExtractor={(item, index) => item?.id + index}
-          onEndReached={onEndReachedApply}
-          ListEmptyComponent={
-            <View marginT-16 center>
-              <Text text90L grey40>
-                {t('empty.mate_apply')}
-              </Text>
-            </View>
-          }
-        />
-      ),
-    },
-    {
-      key: 'refused',
-      title: t('mate.refused'),
-      refreshFunc: refreshDataRefused,
-      screen: (
-        <FlatList
-          data={refusedList}
-          renderItem={renderRefuseItem}
-          keyExtractor={(item, index) => item?.id + index}
-          onEndReached={onEndReachedRefused}
-          ListEmptyComponent={
-            <View marginT-16 center>
-              <Text text90L grey40>
-                {t('empty.mate_refused')}
-              </Text>
-            </View>
-          }
-        />
-      ),
-    },
-  ];
 
   const renderApplyItem = ({item}) => (
     <View padding-10 flexS backgroundColor={Colors.white} spread row centerV>
@@ -158,14 +117,14 @@ const NewMate = ({navigation}) => {
         />
         <View marginL-10>
           <Text text80BL>{item.user.user_name}</Text>
-          <View width={210}>
+          <View width={200}>
             <Text text90L marginT-5 grey30>
               {item.validate_msg}
             </Text>
           </View>
         </View>
       </TouchableOpacity>
-      <View marginL-10 flexS row>
+      <View marginL-10 flexG row>
         <Button
           label={t('common.agree')}
           borderRadius={6}
@@ -221,7 +180,7 @@ const NewMate = ({navigation}) => {
           </View>
         </View>
       </TouchableOpacity>
-      <View flexS row>
+      <View flexG row>
         <View center>
           <Text grey30 text90L>
             {t('mate.refused')}
@@ -245,11 +204,81 @@ const NewMate = ({navigation}) => {
     </View>
   );
 
+  /* 顶部导航栏 */
+  const routes = [
+    {
+      key: 'apply',
+      title: t('mate.apply'),
+      refreshFunc: refreshDataApply,
+      screen: (
+        <FlatList
+          refreshControl={
+            <RefreshControl
+              colors={[Colors.primary]}
+              refreshing={applyLoading}
+              onRefresh={refreshDataApply}
+            />
+          }
+          data={applyList}
+          renderItem={renderApplyItem}
+          keyExtractor={(_, index) => index.toString()}
+          onEndReached={onEndReachedApply}
+          onEndReachedThreshold={0.8}
+          showsVerticalScrollIndicator={false}
+          ItemSeparatorComponent={<View height={0.5} bg-grey60 />}
+          ListFooterComponent={<View marginB-200 />}
+          ListEmptyComponent={
+            <View marginT-16 center>
+              <Text text90L grey40>
+                {t('empty.mate_apply')}
+              </Text>
+            </View>
+          }
+        />
+      ),
+    },
+    {
+      key: 'refused',
+      title: t('mate.refused'),
+      refreshFunc: refreshDataRefused,
+      screen: (
+        <FlatList
+          refreshControl={
+            <RefreshControl
+              colors={[Colors.primary]}
+              refreshing={refusedLoading}
+              onRefresh={refreshDataRefused}
+            />
+          }
+          data={refusedList}
+          renderItem={renderRefuseItem}
+          keyExtractor={(_, index) => index.toString()}
+          onEndReached={onEndReachedRefused}
+          onEndReachedThreshold={0.8}
+          showsVerticalScrollIndicator={false}
+          ItemSeparatorComponent={<View height={0.5} bg-grey60 />}
+          ListFooterComponent={<View marginB-200 />}
+          ListEmptyComponent={
+            <View marginT-16 center>
+              <Text text90L grey40>
+                {t('empty.mate_refused')}
+              </Text>
+            </View>
+          }
+        />
+      ),
+    },
+  ];
+
+  useEffect(() => {
+    refreshDataApply();
+  }, []);
+
   return (
     <View>
       <BaseTopBar
         routes={routes}
-        focusIndex={focusedIndex}
+        initialIndex={focusedIndex}
         onChange={index => {
           setFocusedIndex(index);
           routes[index].refreshFunc();

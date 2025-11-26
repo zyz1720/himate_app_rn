@@ -57,5 +57,6 @@
   "delete_file_success": "成功删除{{count}}个云端文件",
   "delete_msg_success": "成功删除{{count}}条聊天记录",
   "delete_tips": "您确定要删除选中项吗？",
-  "video_load_failed": "视频加载失败"
+  "video_load_failed": "视频加载失败",
+  "scan_qrcode_failed": "未识别到二维码"
 }

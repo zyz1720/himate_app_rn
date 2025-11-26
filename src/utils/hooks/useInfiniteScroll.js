@@ -1,4 +1,4 @@
-import {useState, useCallback, useRef} from 'react';
+import {useState, useCallback, useRef, useEffect} from 'react';
 
 export const useInfiniteScroll = fetchData => {
   const [list, setList] = useState([]);
@@ -7,7 +7,15 @@ export const useInfiniteScroll = fetchData => {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
   const paramsRef = useRef({});
+
+  // 当列表数据变化时，检查是否是首次加载完成
+  useEffect(() => {
+    if (list.length > 0 && isFirstLoad) {
+      setIsFirstLoad(false);
+    }
+  }, [list, isFirstLoad]);
 
   const loadData = useCallback(
     async (pageNum = 1, isLoadMore = false, params = {}) => {
@@ -30,6 +38,8 @@ export const useInfiniteScroll = fetchData => {
           pageSize: 20,
         });
         if (result.code === 0) {
+          console.log('加载数据成功:', result.data.list);
+
           const newList = result.data.list || [];
           setTotal(result.data.total || 0);
           if (pageNum === 1) {
@@ -56,16 +66,17 @@ export const useInfiniteScroll = fetchData => {
     (params = {}) => {
       setPage(1);
       setHasMore(true);
+      setIsFirstLoad(true);
       loadData(1, false, params);
     },
     [loadData],
   );
 
   const onEndReached = useCallback(() => {
-    if (!loading && !loadingMore && hasMore) {
+    if (!loading && !loadingMore && hasMore && !isFirstLoad) {
       loadData(page + 1, true);
     }
-  }, [loading, loadingMore, hasMore, page, loadData]);
+  }, [loading, loadingMore, hasMore, page, loadData, isFirstLoad]);
 
   return {
     total,

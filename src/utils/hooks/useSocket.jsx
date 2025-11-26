@@ -42,7 +42,7 @@ const SocketProvider = props => {
   useEffect(() => {
     if (access_token && token_type && envConfig?.SOCKET_URL) {
       const token = token_type + ' ' + access_token;
-      socketInit(envConfig?.SOCKET_URL, token);
+      // socketInit(envConfig?.SOCKET_URL, token);
     }
   }, [access_token, token_type, envConfig?.SOCKET_URL]);
 

@@ -78,13 +78,13 @@ const AddMate = ({navigation}) => {
         refreshData({keyword: codes[0].value});
         setModalVisible(false);
       } else {
-        showToast('未识别到二维码', 'error');
+        showToast(t('common.scan_qrcode_failed'), 'error');
       }
     },
   });
 
   const renderItem = ({item}) => (
-    <Card marginT-16 padding-16 paddingB-16>
+    <Card marginT-16 padding-12 paddingB-16>
       <View flexS backgroundColor={Colors.white} spread row centerV>
         <TouchableOpacity
           flexS
@@ -96,14 +96,18 @@ const AddMate = ({navigation}) => {
             });
           }}>
           <Avatar
+            size={60}
             source={{
               uri: envConfig.STATIC_URL + item.user_avatar,
             }}
           />
           <View marginL-10>
             <Text text80BL>{item.user_name}</Text>
-            <Text text90L marginT-5 grey30>
-              {item.self_account}
+            <Text text90L marginT-2 grey30>
+              {t('user.account')}: {item.self_account}
+            </Text>
+            <Text text90L marginT-2 grey30>
+              {t('user.email')}: {item.account}
             </Text>
           </View>
         </TouchableOpacity>
@@ -132,7 +136,8 @@ const AddMate = ({navigation}) => {
       <Card padding-12 flexS enableShadow={false} row spread>
         <TextField
           placeholder={t('mate.search_placeholder')}
-          text70L
+          text80L
+          showClearButton
           onChangeText={value => {
             setKeyword(value);
           }}
@@ -163,6 +168,10 @@ const AddMate = ({navigation}) => {
             size={Button.sizes.small}
             backgroundColor={Colors.primary}
             onPress={() => {
+              if (!keyword) {
+                showToast(t('common.search_keyword'), 'warning');
+                return;
+              }
               refreshData({keyword});
             }}
           />
@@ -171,8 +180,11 @@ const AddMate = ({navigation}) => {
       <FlatList
         data={list}
         renderItem={renderItem}
-        keyExtractor={(item, index) => item?.id + index}
+        onEndReachedThreshold={0.8}
+        showsVerticalScrollIndicator={false}
+        keyExtractor={(_, index) => index.toString()}
         onEndReached={onEndReached}
+        ListFooterComponent={<View marginB-200 />}
       />
 
       <BaseDialog
@@ -181,11 +193,12 @@ const AddMate = ({navigation}) => {
         setVisible={setIsVisible}
         description={t('mate.add_mate')}
         renderBody={
-          <>
+          <View paddingR-16>
             <TextField
               marginT-8
               placeholder={t('mate.remark_placeholder')}
               floatingPlaceholder
+              showClearButton
               text70L
               onChangeText={value => {
                 setRemark(value);
@@ -197,6 +210,7 @@ const AddMate = ({navigation}) => {
               marginT-8
               placeholder={t('mate.message_placeholder')}
               floatingPlaceholder
+              showClearButton
               text70L
               onChangeText={value => {
                 setMessage(value);
@@ -205,7 +219,7 @@ const AddMate = ({navigation}) => {
               showCharCounter={true}
               multiline={true}
             />
-          </>
+          </View>
         }
       />
       {/* 扫描二维码弹窗 */}

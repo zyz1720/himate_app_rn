@@ -12,10 +12,11 @@ const Mate = ({navigation}) => {
   const {t} = useTranslation();
 
   /*   好友列表 */
-  const {list, onEndReached} = useInfiniteScroll(getMateList);
+  const {list, loading, onRefresh, refreshData, onEndReached} =
+    useInfiniteScroll(getMateList);
   /* 申请好友数量 */
   const [applyCount, setApplyCount] = useState(null);
-  const getApplyListFunc = _userId => {
+  const getApplyListFunc = () => {
     getApplyList()
       .then(res => {
         if (res.code === 0) {
@@ -30,13 +31,14 @@ const Mate = ({navigation}) => {
   useEffect(() => {
     if (isFocused) {
       getApplyListFunc();
+      refreshData();
     }
   }, [isFocused]);
 
   return (
     <View>
       <View>
-        <View flexG paddingV-4 backgroundColor={Colors.white}>
+        <View flexS paddingV-4 backgroundColor={Colors.white}>
           <ListItem
             itemName={t('mate.new_mate')}
             iconName={'user'}
@@ -60,12 +62,13 @@ const Mate = ({navigation}) => {
           </View>
         </View>
         <MateList
+          loading={loading}
+          onRefresh={onRefresh}
           originalList={list}
-          height={'84%'}
           onEndReached={onEndReached}
           onConfirm={item => {
             navigation.navigate('MateInfo', {
-              userId: item.userId,
+              userId: item.theOther.id,
             });
           }}
         />

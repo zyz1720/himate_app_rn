@@ -126,7 +126,7 @@ const User = ({navigation}) => {
             source={bgSource}
             onError={() => setBgSource(require('@assets/images/user_bg.jpg'))}
             resizeMode="cover">
-            <View backgroundColor={Colors.black1}>
+            <View backgroundColor={Colors.black2}>
               <View
                 flexS
                 left
@@ -270,9 +270,8 @@ const User = ({navigation}) => {
                     {newAppInfo?.app_description}
                   </Text>
                   {showProgress ? null : (
-                    <View flexS marginT-16>
+                    <View flexS marginT-12>
                       <Button
-                        size={'medium'}
                         label={
                           isNewVersion
                             ? t('common.immediate_update')

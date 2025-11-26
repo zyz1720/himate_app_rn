@@ -1,18 +1,18 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, ImageBackground} from 'react-native';
 import {
   View,
   Card,
   Text,
   Colors,
   TextField,
-  Avatar,
+  Image,
   Button,
   TouchableOpacity,
 } from 'react-native-ui-lib';
 import {useToast} from '@utils/hooks/useToast';
 import {getUserDetail} from '@api/user';
-import {addMate, editMate, deleteMate, getIsMate} from '@api/mate';
+import {addMate, editMateRemarks, deleteMate, getIsMate} from '@api/mate';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -27,13 +27,17 @@ const MateInfo = ({navigation, route}) => {
   const {envConfig} = useConfigStore();
 
   const [isMate, setIsMate] = useState(false);
-  /* 获取用户信息 */
   const [otherUserInfo, setOtherUserInfo] = useState({});
+  const [bgSource, setBgSource] = useState({uri: ''});
+  /* 获取用户信息 */
   const getOtherUserInfo = async () => {
     try {
       const res = await getUserDetail(userId);
       if (res.code === 0) {
         setOtherUserInfo(res.data);
+        setBgSource({
+          uri: envConfig.STATIC_URL + res.data?.user_bg_img,
+        });
       }
     } catch (error) {
       console.error(error);
@@ -46,6 +50,7 @@ const MateInfo = ({navigation, route}) => {
   const getMateStatusFnc = async () => {
     try {
       const mateRes = await getIsMate(userId);
+
       if (mateRes.code === 0) {
         const mate = mateRes.data;
         setIsMate(true);
@@ -92,9 +97,12 @@ const MateInfo = ({navigation, route}) => {
   const [newRemark, setNewRemark] = useState('');
   const editFriendRemark = async () => {
     try {
-      const editRes = await editMate(mateInfo.id, {
+      const editRes = await editMateRemarks(mateInfo.id, {
         remarks: newRemark,
       });
+      if (editRes.code === 0) {
+        setMateRemarks(newRemark);
+      }
       showToast(editRes.message, editRes.code === 0 ? 'success' : 'error');
     } catch (error) {
       console.error(error);
@@ -129,51 +137,78 @@ const MateInfo = ({navigation, route}) => {
 
   return (
     <View padding-16>
-      <Card padding-16 enableShadow={false} flexS>
-        <View flexS row>
-          <TouchableOpacity
-            onPress={() => {
-              setAvatarUri(envConfig.STATIC_URL + otherUserInfo.user_avatar);
-              setAvatarVisible(true);
-            }}>
-            <Avatar
-              size={80}
-              source={{
-                uri: envConfig.STATIC_URL + otherUserInfo.user_avatar,
-              }}
-            />
-          </TouchableOpacity>
-          <View paddingH-16>
-            {isMate ? (
-              <Text text60 marginB-4>
-                {mateRemarks}
-              </Text>
-            ) : null}
-            <Text text80 marginB-4 grey30>
-              {t('user.user_name') + otherUserInfo.user_name}
-            </Text>
-            <Text text80 marginB-4 grey30>
-              {t('user.account') + otherUserInfo.self_account}
-            </Text>
-            <Text text80 marginB-4 grey30>
-              {t('user.email') + otherUserInfo.account}
-            </Text>
-            <View flexS row>
-              <View />
-              <View flexS row centerV padding-4 style={styles.tag}>
-                {otherUserInfo?.sex === 'woman' ? (
-                  <FontAwesome name="venus" color={Colors.magenta} size={12} />
-                ) : otherUserInfo?.sex === 'man' ? (
-                  <FontAwesome name="mars" color={Colors.geekBlue} size={12} />
-                ) : null}
-                <Text marginL-4 grey30 text90>
-                  {otherUserInfo?.age + t('user.age_num')}
+      <ImageBackground
+        key={otherUserInfo?.id}
+        style={styles.userBgImage}
+        source={bgSource}
+        onError={() => setBgSource(require('@assets/images/user_bg.jpg'))}
+        resizeMode="cover">
+        <View backgroundColor={Colors.black2}>
+          <View
+            flexS
+            left
+            row
+            centerV
+            enableShadow={false}
+            padding-16
+            marginT-80>
+            <TouchableOpacity
+              onPress={() => {
+                setAvatarVisible(true);
+                setAvatarUri(otherUserInfo?.user_avatar);
+              }}>
+              <Image
+                source={{
+                  uri: envConfig.STATIC_URL + otherUserInfo?.user_avatar,
+                }}
+                style={styles.image}
+                errorSource={require('@assets/images/empty.jpg')}
+              />
+            </TouchableOpacity>
+            <View marginL-16 flexG>
+              {isMate ? (
+                <Text text60 white marginB-4>
+                  {mateRemarks}
                 </Text>
+              ) : null}
+              <Text white text70BO numberOfLines={1}>
+                {t('user.user_name')}: {otherUserInfo?.user_name}
+              </Text>
+              <View width={166}>
+                <Text white text80 numberOfLines={1}>
+                  {t('user.account')}: {otherUserInfo?.self_account}
+                </Text>
+              </View>
+              <View flexS row marginT-4>
+                <View
+                  flexS
+                  row
+                  centerV
+                  padding-4
+                  br20
+                  backgroundColor={Colors.white4}>
+                  {otherUserInfo?.sex === 'woman' ? (
+                    <FontAwesome
+                      name="venus"
+                      color={Colors.magenta}
+                      size={12}
+                    />
+                  ) : otherUserInfo?.sex === 'man' ? (
+                    <FontAwesome
+                      name="mars"
+                      color={Colors.geekBlue}
+                      size={12}
+                    />
+                  ) : null}
+                  <Text marginL-4 white text90>
+                    {otherUserInfo?.age + t('user.age_num')}
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
         </View>
-      </Card>
+      </ImageBackground>
       {isMate ? (
         <>
           <Card enableShadow={false} marginT-16>
@@ -232,11 +267,12 @@ const MateInfo = ({navigation, route}) => {
         setVisible={setAddVisible}
         description={t('mate.add_mate')}
         renderBody={
-          <>
+          <View paddingR-16>
             <TextField
               marginT-8
               placeholder={t('mate.remark_placeholder')}
               floatingPlaceholder
+              showClearButton
               text70L
               onChangeText={value => {
                 setAddRemark(value);
@@ -245,10 +281,12 @@ const MateInfo = ({navigation, route}) => {
               showCharCounter={true}
             />
             <TextField
+              paddingR-8
               marginT-8
               placeholder={t('mate.message_placeholder')}
               text70L
               floatingPlaceholder
+              showClearButton
               onChangeText={value => {
                 setValMessage(value);
               }}
@@ -256,7 +294,7 @@ const MateInfo = ({navigation, route}) => {
               showCharCounter={true}
               multiline={true}
             />
-          </>
+          </View>
         }
       />
 
@@ -271,6 +309,7 @@ const MateInfo = ({navigation, route}) => {
             placeholder={t('mate.remark_placeholder')}
             text70L
             floatingPlaceholder
+            showClearButton
             onChangeText={value => {
               setNewRemark(value);
             }}
@@ -300,9 +339,18 @@ const MateInfo = ({navigation, route}) => {
   );
 };
 const styles = StyleSheet.create({
-  tag: {
-    backgroundColor: Colors.grey70,
-    borderRadius: 6,
+  image: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    borderColor: Colors.white,
+    borderWidth: 0.2,
+  },
+  userBgImage: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: Colors.white,
   },
 });
 export default MateInfo;
