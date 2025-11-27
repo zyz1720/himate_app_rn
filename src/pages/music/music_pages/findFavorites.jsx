@@ -1,18 +1,21 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Card, Colors, Button, TextField} from 'react-native-ui-lib';
 import {StyleSheet} from 'react-native';
 import {getFavorites} from '@api/favorites';
 import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
 import {useTranslation} from 'react-i18next';
 import FavoritesList from '@components/music/FavoritesList';
-import FullScreenLoading from '@components/common/FullScreenLoading';
 
 const FindFavorites = ({navigation}) => {
   const {t} = useTranslation();
-  const {list, onEndReached, loading, refreshData} =
+  const {list, onEndReached, loading, refreshData, onRefresh} =
     useInfiniteScroll(getFavorites);
 
   const [keyword, setKeyword] = useState('');
+
+  useEffect(() => {
+    refreshData();
+  }, []);
 
   return (
     <>
@@ -30,7 +33,7 @@ const FindFavorites = ({navigation}) => {
             }}
           />
           <Button
-            label={'搜索'}
+            label={t('common.search')}
             link
             linkColor={Colors.primary}
             onPress={() => {
@@ -41,6 +44,8 @@ const FindFavorites = ({navigation}) => {
         <View marginT-12>
           <FavoritesList
             list={list}
+            loading={loading}
+            onRefresh={onRefresh}
             onPress={item => {
               navigation.navigate('FavoritesDetail', {
                 favoritesId: item.id,
@@ -50,7 +55,6 @@ const FindFavorites = ({navigation}) => {
           />
         </View>
       </View>
-      {loading ? <FullScreenLoading /> : null}
     </>
   );
 };

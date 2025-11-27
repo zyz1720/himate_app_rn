@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, RefreshControl} from 'react-native';
 import {
   View,
   Text,
@@ -15,7 +15,13 @@ import {fullHeight, fullWidth} from '@style/index';
 import {useTranslation} from 'react-i18next';
 
 const FavoritesList = props => {
-  const {list = [], onEndReached = () => {}, onPress = () => {}} = props;
+  const {
+    list = [],
+    onEndReached = () => {},
+    loading = false,
+    onRefresh = () => {},
+    onPress = () => {},
+  } = props;
 
   const {t} = useTranslation();
 
@@ -24,14 +30,19 @@ const FavoritesList = props => {
   return (
     <View height={fullHeight * 0.9}>
       <GridList
+        refreshControl={
+          <RefreshControl
+            refreshing={loading}
+            colors={[Colors.primary]}
+            onRefresh={onRefresh}
+          />
+        }
         data={list}
         numColumns={2}
         containerWidth={fullWidth - 24}
-        keyExtractor={(item, index) => item + index}
-        onEndReachedThreshold={0.6}
-        onEndReached={() => {
-          onEndReached();
-        }}
+        keyExtractor={(_, index) => index.toString()}
+        onEndReachedThreshold={0.8}
+        onEndReached={onEndReached}
         renderItem={({item}) => (
           <Card flexS centerV enableShadow={true} padding-12>
             <TouchableOpacity
@@ -41,6 +52,7 @@ const FavoritesList = props => {
               <View row>
                 <Image
                   source={{uri: envConfig.THUMBNAIL_URL + item.favorites_cover}}
+                  errorSource={require('@assets/images/favorites_cover.jpg')}
                   style={styles.image}
                 />
                 <View bottom>
@@ -65,13 +77,13 @@ const FavoritesList = props => {
               <View marginT-6 row bottom spread>
                 <View row centerV>
                   <Text text90L grey30 style={styles.userName}>
-                    {item.creator_name}
+                    {item.user?.user_name || ''}
                   </Text>
                   <View marginL-6>
                     <Avatar
                       size={26}
                       source={{
-                        uri: envConfig.STATIC_URL + item.creator_avatar,
+                        uri: envConfig.STATIC_URL + item?.user?.user_avatar,
                       }}
                     />
                   </View>
@@ -89,7 +101,7 @@ const FavoritesList = props => {
         }
         ListFooterComponent={
           list.length > 8 ? (
-            <View marginB-80 padding-12 center>
+            <View marginB-120 padding-12 center>
               <Text text90L grey40>
                 {t('common.footer')}
               </Text>

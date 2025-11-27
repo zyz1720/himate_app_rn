@@ -29,6 +29,7 @@ import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
 import {useMusicStore} from '@store/musicStore';
 import {useTranslation} from 'react-i18next';
+import {renderMusicTitle} from '@utils/system/lyric_utils';
 import LyricModal from './LyricModal';
 import ToBePlayedModal from './ToBePlayedModal';
 
@@ -377,8 +378,8 @@ const MusicCtrlProvider = React.memo(props => {
     if (!playingMusic?.file_key) {
       return;
     }
-    const isStoped = await restMusicStatus();
-    if (!isStoped) {
+    const isStopped = await restMusicStatus();
+    if (!isStopped) {
       return;
     }
     setIsLoading(true);
@@ -421,11 +422,8 @@ const MusicCtrlProvider = React.memo(props => {
   // 加载音乐名
   const renderMarquee = useCallback(
     music => {
-      const {title, artists} = music;
-      let musicText =
-        (title || t('music.empty_title')) +
-        ' - ' +
-        (artists?.join('/') || t('music.empty_artist'));
+      const {id} = music;
+      let musicText = renderMusicTitle(music);
       if (isLoading) {
         musicText = t('music.loading');
       }
@@ -434,7 +432,7 @@ const MusicCtrlProvider = React.memo(props => {
       return (
         <View>
           <Marquee
-            key={title + isLoading}
+            key={id + isLoading}
             speed={speed}
             spacing={spacing}
             style={styles.marquee}>
@@ -452,7 +450,7 @@ const MusicCtrlProvider = React.memo(props => {
     // try {
     //   const res = await editDefaultFavorites({
     //     handleType: isFavorite ? 'remove' : 'add',
-    //     creator_uid: userId,
+    //     favorites_uid: userId,
     //     musicIds: [id],
     //   });
     //   if (res.success) {
@@ -467,15 +465,16 @@ const MusicCtrlProvider = React.memo(props => {
   };
 
   useEffect(() => {
+    setBgSource({
+      uri: envConfig.THUMBNAIL_URL + userInfo?.user_bg_img || '',
+    });
     return () => {
       audioPlayer.removePlayBackListener(subscription);
       restMusicStatus();
     };
   }, []);
 
-  const [bgSource, setBgSource] = useState({
-    uri: envConfig.THUMBNAIL_URL + (userInfo?.user_bg_img || ''),
-  });
+  const [bgSource, setBgSource] = useState({});
 
   return (
     <MusicCtrlContext.Provider value={{}}>

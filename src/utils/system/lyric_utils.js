@@ -1,5 +1,32 @@
 import {isEmptyString} from '@utils/common/string_utils';
 import {mergeArraysByIndex} from '@utils/common/array_utils';
+import i18n from 'i18next';
+
+/**
+ * 渲染艺术家文本函数
+ * @param {Array} artists 艺术家数组
+ * @returns {string} 渲染后的艺术家文本
+ */
+export const renderArtists = item => {
+  let _artists = Array.isArray(item?.artists)
+    ? item.artists.join('/')
+    : i18n.t('music.empty_artist');
+  return _artists + ' - ' + (item?.album || i18n.t('music.empty_album'));
+};
+
+/**
+ * 渲染音乐文本函数
+ * @param {Object} music 音乐对象
+ * @returns {string} 渲染后的音乐文本
+ */
+export const renderMusicTitle = music => {
+  const {title, artists} = music;
+  const _title = title || i18n.t('music.empty_title');
+  const _artists = Array.isArray(artists)
+    ? artists.join('/')
+    : i18n.t('music.empty_artist');
+  return _title + ' - ' + _artists;
+};
 
 /**
  * 解析普通歌词函数

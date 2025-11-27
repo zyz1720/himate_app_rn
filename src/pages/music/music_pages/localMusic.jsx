@@ -9,12 +9,16 @@ import {
 } from 'react-native-ui-lib';
 import {FlatList, StyleSheet, Platform, Modal} from 'react-native';
 import {useToast} from '@utils/hooks/useToast';
-import {useRealm} from '@realm/react';
 import {v4 as uuid} from 'uuid';
 import {fullHeight, statusBarHeight} from '@style/index';
 import {audioExtNames} from '@const/file_ext_names';
 import {usePermissionStore} from '@store/permissionStore';
 import {useTranslation} from 'react-i18next';
+import {
+  getLocalMusic,
+  saveLocalMusic,
+  clearLocalMusic,
+} from '@utils/realm/useLocalMusic';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -24,7 +28,6 @@ import MusicList from '@components/music/MusicList';
 
 const LocalMusic = () => {
   const {showToast} = useToast();
-  const realm = useRealm();
   const {t} = useTranslation();
 
   const {accessFolder, setAccessFolder} = usePermissionStore();
@@ -83,7 +86,7 @@ const LocalMusic = () => {
       updateAudioFiles(audioFileList);
     } catch (error) {
       console.error('扫描音乐时发生错误:', error);
-      showToast('扫描过程中发生错误', 'error', true);
+      showToast(t('music:scan_error'), 'error', true);
     } finally {
       setLoading(false);
       setSelectedDirs([]);
@@ -100,11 +103,7 @@ const LocalMusic = () => {
 
       if (uniqueNewFiles.length > 0) {
         try {
-          realm.write(() => {
-            uniqueNewFiles.forEach(file => {
-              realm.create('local_music', file);
-            });
-          });
+          saveLocalMusic(uniqueNewFiles);
         } catch (err) {
           console.error('保存到数据库时出错:', err);
         }
@@ -112,8 +111,10 @@ const LocalMusic = () => {
 
       showToast(
         uniqueNewFiles.length
-          ? `已扫描到${uniqueNewFiles.length}首新音乐`
-          : '没有找到新音乐',
+          ? t('music:scan_complete_tips', {
+              total: uniqueNewFiles.length,
+            })
+          : t('music:no_new_music'),
         uniqueNewFiles.length ? 'success' : 'warning',
         true,
       );
@@ -148,7 +149,7 @@ const LocalMusic = () => {
 
         setDirList(dirList);
       } catch (error) {
-        showToast('没有权限访问该目录', 'error', true);
+        showToast(t('music:scan_no_permission'), 'error', true);
         console.error(error);
       }
     };
@@ -172,35 +173,29 @@ const LocalMusic = () => {
   const [dirList, setDirList] = useState([]);
   const [selectedDirs, setSelectedDirs] = useState([]);
 
-  // 获取最近播放的音乐记录
-  const getLocalMusic = async () => {
-    const music = realm.objects('local_music').toJSON();
+  // 获取本地音乐
+  const getLocalMusicFunc = async () => {
+    const music = getLocalMusic();
     setAudioFiles(music);
   };
 
   /* 删除本地音乐记录 */
   const [delVisible, setDelVisible] = useState(false);
   const delLocalMusic = () => {
-    const toDelete = realm.objects('local_music');
-    realm.write(() => {
-      realm.delete(toDelete);
-    });
-    showToast('清空成功', 'success');
-    getLocalMusic();
+    clearLocalMusic();
+    showToast(t('music:clear_local_success'), 'success');
+    getLocalMusicFunc();
   };
 
   useEffect(() => {
-    if (realm) {
-      getLocalMusic();
-    }
-  }, [realm]);
+    getLocalMusicFunc();
+  }, []);
 
   return (
     <View padding-12>
       <MusicList
         list={audioFiles}
         isLocal={true}
-        heightScale={0.92}
         rightBut={
           <View row centerV>
             <View paddingR-12>

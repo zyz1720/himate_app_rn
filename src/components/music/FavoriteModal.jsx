@@ -1,5 +1,11 @@
 import React from 'react';
-import {StyleSheet, ScrollView, Modal, ImageBackground} from 'react-native';
+import {
+  StyleSheet,
+  ScrollView,
+  Modal,
+  useState,
+  ImageBackground,
+} from 'react-native';
 import {
   View,
   Text,
@@ -31,7 +37,7 @@ const styles = StyleSheet.create({
   image: {
     width: 180,
     height: 180,
-    borderRadius: 8,
+    borderRadius: 12,
   },
 });
 
@@ -45,6 +51,10 @@ const FavoriteModal = React.memo(props => {
     userAvatar = '',
     userName = '',
   } = props;
+
+  const [bgSource, setBgSource] = useState({
+    uri: backgroundImg,
+  });
 
   return (
     <Modal
@@ -60,14 +70,19 @@ const FavoriteModal = React.memo(props => {
         <ImageBackground
           blurRadius={50}
           style={styles.listBackImage}
-          source={{uri: backgroundImg}}
+          source={bgSource}
+          onError={() => setBgSource(require('@assets/images/user_bg.jpg'))}
           resizeMode="cover">
           <TouchableOpacity paddingT-48 paddingL-22 onPress={onClose}>
             <AntDesign name="close" color={Colors.white} size={24} />
           </TouchableOpacity>
           <ScrollView>
             <View flexS center marginT-20>
-              <Image source={{uri: backgroundImg}} style={styles.image} />
+              <Image
+                source={{uri: backgroundImg}}
+                errorSource={require('@assets/images/favorites_cover.jpg')}
+                style={styles.image}
+              />
             </View>
             <View row center marginT-20>
               <Avatar

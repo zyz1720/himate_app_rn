@@ -8,7 +8,7 @@ import FullScreenLoading from '@components/common/FullScreenLoading';
 
 const MyFavorites = () => {
   const [favoritesId, setFavoritesId] = useState(null);
-  const {list, loading, onEndReached, refreshData} = useInfiniteScroll(
+  const {list, loading, onEndReached, onRefresh} = useInfiniteScroll(
     getMusicFromDefaultFavorites,
   );
 
@@ -24,6 +24,7 @@ const MyFavorites = () => {
   };
 
   useEffect(() => {
+    onRefresh();
     getDefaultFavoritesId();
   }, []);
 
@@ -35,9 +36,7 @@ const MyFavorites = () => {
         favoriteId={favoritesId}
         isOneself={true}
         onEndReached={onEndReached}
-        refreshList={() => {
-          refreshData();
-        }}
+        onRefresh={onRefresh}
       />
       {loading ? <FullScreenLoading /> : null}
     </View>

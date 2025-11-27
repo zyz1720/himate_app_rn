@@ -15,6 +15,7 @@ import {getFavoritesDetail, updateFavorites} from '@api/favorites';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
 import {uploadFile} from '@utils/system/file_utils';
+import {FileUseTypeEnum} from '@const/database_enum';
 import FullScreenLoading from '@components/common/FullScreenLoading';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import ImgPicker from '@components/form/ImgPicker';
@@ -35,11 +36,7 @@ const EditFavorites = ({route}) => {
   const getFavorites = async () => {
     try {
       setLoading(true);
-      const res = await getFavoritesDetail({
-        id: favoritesId,
-        current: 1,
-        pageSize: 0,
-      });
+      const res = await getFavoritesDetail(favoritesId);
       if (res.code === 0) {
         setFavoritesForm(res.data);
         const {favorites_cover, is_public} = res.data;
@@ -64,31 +61,24 @@ const EditFavorites = ({route}) => {
   // 处理数据
   const [isCleanCache, setIsCleanCache] = useState(false);
   const handleData = async () => {
-    favoritesForm.is_public = isPublic ? 'yes' : 'no';
-
-    const keys = Object.keys(favoritesForm);
-    for (let i = 0; i < keys.length; i++) {
-      const key = keys[i];
-      const element = favoritesForm[key];
-      if (element === null || element === '') {
-        showToast(t('empty.input'), 'error');
-        return false;
-      }
-    }
+    const newForm = {...favoritesForm};
+    newForm.is_public = isPublic ? 'yes' : 'no';
 
     if (coverFile) {
       try {
-        const res = await uploadFile(coverFile, () => {}, {
-          file_type: 'image',
-          use_type: 'music',
+        const res = await uploadFile(coverFile.file, {
+          form: {
+            file_type: coverFile.type,
+            use_type: FileUseTypeEnum.music,
+          },
         });
         const uploadRes = JSON.parse(res.text());
         if (uploadRes.code === 0) {
           const cover = uploadRes.data.file_key;
-          setFavoritesForm({...favoritesForm, favorites_cover: cover});
-          return true;
+          newForm.favorites_cover = cover;
+        } else {
+          showToast(uploadRes.message, 'error');
         }
-        showToast(uploadRes.message, 'error');
       } catch (error) {
         console.error(error);
         return false;
@@ -96,19 +86,21 @@ const EditFavorites = ({route}) => {
         setIsCleanCache(true);
       }
     }
-    return true;
+
+    return newForm;
   };
 
   // 提交编辑
   const submitForm = async () => {
     try {
       setLoading(true);
-      const valid = await handleData();
-      if (!valid) {
+      const newForm = await handleData();
+      if (!newForm) {
         return;
       }
-      const res = await updateFavorites(favoritesId, favoritesForm);
+      const res = await updateFavorites(favoritesId, newForm);
       showToast(res.message, res.code === 0 ? 'success' : 'error');
+      setAllowSave(false);
     } catch (error) {
       console.error(error);
     } finally {
@@ -138,7 +130,11 @@ const EditFavorites = ({route}) => {
             </Text>
           </View>
           <View marginR-12>
-            <Image source={{uri: coverUri}} style={styles.image} />
+            <Image
+              source={{uri: coverUri}}
+              style={styles.image}
+              errorSource={require('@assets/images/favorites_cover.jpg')}
+            />
           </View>
           <FontAwesome name="angle-right" color={Colors.grey50} size={26} />
         </Card>
@@ -213,7 +209,6 @@ const EditFavorites = ({route}) => {
         )}
       </View>
       <ImgPicker
-        isAvatar={true}
         visible={showPicker}
         setVisible={setShowPicker}
         isCleanCache={isCleanCache}

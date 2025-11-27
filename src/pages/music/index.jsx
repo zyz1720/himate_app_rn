@@ -122,12 +122,11 @@ const Music = ({navigation}) => {
 
   /* 删除歌单 */
   const [delVisible, setDelVisible] = useState(false);
-  const [delIds, setDelIds] = useState([]);
   const [delName, setDelName] = useState('');
   const delFavorites = async () => {
     try {
       const delRes = await deleteFavorites({
-        ids: delIds,
+        ids: selectedIds,
       });
       if (delRes.code === 0) {
         refreshData();
@@ -141,13 +140,13 @@ const Music = ({navigation}) => {
 
   /* 多选 */
   const [isMultiSelect, setIsMultiSelect] = useState(false);
-  const [selectedItems, setSelectedItems] = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [isAllSelect, setIsAllSelect] = useState(false);
 
   const resetMultiSelect = () => {
     setIsMultiSelect(false);
     setIsAllSelect(false);
-    setSelectedItems([]);
+    setSelectedIds([]);
   };
 
   // 最近播放
@@ -375,8 +374,8 @@ const Music = ({navigation}) => {
                   link
                   color={Colors.red30}
                   onPress={() => {
-                    if (selectedItems.length) {
-                      delFavorites(selectedItems);
+                    if (selectedIds.length) {
+                      setDelVisible(true);
                       return;
                     }
                     showToast(t('common.delete_select'), 'error');
@@ -395,9 +394,9 @@ const Music = ({navigation}) => {
                   onPress={() => {
                     setIsAllSelect(prev => {
                       if (!prev) {
-                        setSelectedItems(list.map(item => item.id));
+                        setSelectedIds(list.map(item => item.id));
                       } else {
-                        setSelectedItems([]);
+                        setSelectedIds([]);
                       }
                       return !prev;
                     });
@@ -445,8 +444,9 @@ const Music = ({navigation}) => {
         </View>
         <FlatList
           data={list}
-          keyExtractor={(item, index) => item?.id + index}
+          keyExtractor={(_, index) => index.toString()}
           onEndReached={onEndReached}
+          showsVerticalScrollIndicator={false}
           renderItem={({item}) => (
             <View marginT-8 row centerV>
               {isMultiSelect ? (
@@ -455,15 +455,15 @@ const Music = ({navigation}) => {
                   color={Colors.primary}
                   size={20}
                   borderRadius={10}
-                  value={selectedItems.includes(item.id)}
+                  value={selectedIds.includes(item.id)}
                   onValueChange={value => {
                     if (value) {
-                      setSelectedItems(prevItem => {
+                      setSelectedIds(prevItem => {
                         const newItem = [...prevItem, item.id];
                         return newItem;
                       });
                     } else {
-                      setSelectedItems(prevItem => {
+                      setSelectedIds(prevItem => {
                         const newItem = prevItem.filter(id => id !== item.id);
                         return newItem;
                       });
@@ -483,7 +483,7 @@ const Music = ({navigation}) => {
                         return;
                       }
                       setDelName(item.favorites_name);
-                      setDelIds([item.id]);
+                      setSelectedIds([item.id]);
                       setDelVisible(true);
                     },
                   },
@@ -521,7 +521,7 @@ const Music = ({navigation}) => {
           ListEmptyComponent={
             <View marginT-16 center>
               <Text text90L grey40>
-                还没有任何歌单，快去新建一个吧~
+                {t('empty.my_favorites')}
               </Text>
             </View>
           }
@@ -585,7 +585,7 @@ const Music = ({navigation}) => {
         }}
         visible={delVisible}
         setVisible={setDelVisible}
-        description={t('music.delete_select', {name: delName})}
+        description={t('music.delete_batch_confirm', {num: selectedIds.length})}
       />
       <Dialog
         visible={showAlarmDialog}

@@ -55,6 +55,7 @@ const FavoritesDetail = ({navigation, route}) => {
   useEffect(() => {
     if (favoritesId) {
       getFavoritesInfo();
+      refreshData();
     }
   }, [favoritesId]);
 
@@ -75,6 +76,7 @@ const FavoritesDetail = ({navigation, route}) => {
                     uri:
                       envConfig.THUMBNAIL_URL + favoritesInfo.favorites_cover,
                   }}
+                  errorSource={require('@assets/images/favorites_cover.jpg')}
                   style={styles.image}
                 />
               </TouchableOpacity>
@@ -91,11 +93,11 @@ const FavoritesDetail = ({navigation, route}) => {
                       size={26}
                       source={{
                         uri:
-                          envConfig.STATIC_URL + favoritesInfo.creator_avatar,
+                          envConfig.STATIC_URL + favoritesInfo.user.user_avatar,
                       }}
                     />
                     <Text text90 marginL-4 grey20>
-                      {favoritesInfo.creator_name}
+                      {favoritesInfo.user.user_name}
                     </Text>
                   </View>
                   <Text marginT-10 text90L grey40>
@@ -105,7 +107,7 @@ const FavoritesDetail = ({navigation, route}) => {
                 </View>
               </TouchableOpacity>
             </View>
-            {favoritesInfo?.creator_uid === userInfo?.id ? (
+            {favoritesInfo.favorites_uid === userInfo.id ? (
               <TouchableOpacity
                 onPress={() => {
                   navigation.navigate('EditFavorites', {
@@ -132,7 +134,7 @@ const FavoritesDetail = ({navigation, route}) => {
               {t('music.favorites_remarks')}
             </Text>
             <Text grey40 text90L marginT-4 numberOfLines={1}>
-              {favoritesInfo.favorites_remark || t('empty.introduction')}
+              {favoritesInfo.favorites_remarks || t('empty.introduction')}
             </Text>
           </TouchableOpacity>
         </>
@@ -140,23 +142,20 @@ const FavoritesDetail = ({navigation, route}) => {
       <View paddingH-12 marginT-12>
         <MusicList
           list={list}
-          heightScale={0.68}
           favoriteId={favoritesId}
-          refreshList={() => {
-            refreshData();
-          }}
+          refreshList={refreshData}
           onEndReached={onEndReached}
-          isOneself={favoritesInfo?.creator_uid === userInfo?.id}
+          isOneself={favoritesInfo?.favorites_uid === userInfo?.id}
         />
       </View>
       <FavoriteModal
         visible={detailModalVisible}
         onClose={() => setDetailModalVisible(false)}
-        BackgroundImg={envConfig.THUMBNAIL_URL + favoritesInfo?.favorites_cover}
+        backgroundImg={envConfig.STATIC_URL + favoritesInfo?.favorites_cover}
         title={favoritesInfo?.favorites_name}
-        Remark={favoritesInfo?.favorites_remark}
-        CreateAvatar={envConfig.STATIC_URL + favoritesInfo?.user.user_avatar}
-        CreateName={favoritesInfo?.user.user_name}
+        remarks={favoritesInfo?.favorites_remarks}
+        userAvatar={envConfig.STATIC_URL + favoritesInfo?.user?.user_avatar}
+        userName={favoritesInfo?.user?.user_name}
       />
       {loading ? <FullScreenLoading /> : null}
     </>

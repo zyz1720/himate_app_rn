@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {
   StyleSheet,
   Modal,
@@ -23,25 +23,28 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {useToast} from '@utils/hooks/useToast';
 import {isEmptyObject} from '@utils/common/object_utils';
+import {getOneselfFavorites} from '@api/favorites';
 import {
-  getDefaultFavorites,
-  updateFavorites,
-  getFavoritesDetail,
-  getOneselfFavorites,
-} from '@api/favorites';
+  getMusicIsLiked,
+  appendMusicToFavorites,
+  removeMusicToFavorites,
+  likeMusic,
+  dislikeMusic,
+} from '@api/music';
 import {downloadFile, getFileExt} from '@utils/system/file_utils';
 import {useConfigStore} from '@store/configStore';
 import {useMusicStore} from '@store/musicStore';
 import {useTranslation} from 'react-i18next';
+import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
+import {renderMusicTitle, renderArtists} from '@utils/system/lyric_utils';
 
 const MusicList = props => {
   const {
     list = [],
     total = 0,
     onEndReached = () => {},
-    onPress = () => {},
+    onMusicPress = () => {},
     favoriteId,
-    refreshList = () => {},
     isOneself = false,
     isLocal = false,
     rightBut = null,
@@ -60,13 +63,13 @@ const MusicList = props => {
     setPlayList,
   } = useMusicStore();
 
-  /* 获取用户收藏的音乐列表 */
-  const [collectMusic, setCollectMusic] = useState([]);
-  const getAllMusicList = async _userId => {
+  /* 音乐是否收藏 */
+  const [isLiked, setIsLiked] = useState(false);
+  const getMusicIsLikedFunc = async id => {
     try {
-      const res = await getDefaultFavorites();
-      if (res.success) {
-        setCollectMusic(res.data.music);
+      const res = await getMusicIsLiked(id);
+      if (res.code === 0) {
+        setIsLiked(res.data);
       }
     } catch (error) {
       console.error(error);
@@ -74,22 +77,11 @@ const MusicList = props => {
   };
 
   // 个人歌单列表
-  const [pageNum, setPageNum] = useState(0);
-  const [favoritesList, setFavoritesList] = useState([]);
-  const getUserFavoritesList = async _userId => {
-    try {
-      const res = await getOneselfFavorites({
-        pageSize: pageNum * 20,
-        creator_uid: _userId,
-      });
-      if (res.success) {
-        // console.log(res.data.list);
-        setFavoritesList(res.data.list);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const {
+    list: favoritesList,
+    refreshData: refreshFavoritesList,
+    onEndReached: onFavoritesEndReached,
+  } = useInfiniteScroll(getOneselfFavorites);
 
   // 操作栏
   const [modalVisible, setModalVisible] = useState(false);
@@ -99,25 +91,21 @@ const MusicList = props => {
 
   /* 多选 */
   const [isMultiSelect, setIsMultiSelect] = useState(false);
-  const [selectedItems, setSelectedItems] = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [isAllSelect, setIsAllSelect] = useState(false);
 
   /* 重置多选 */
   const resetMultiSelect = () => {
     setIsMultiSelect(false);
     setIsAllSelect(false);
-    setSelectedItems([]);
-  };
-
-  /* 是否收藏 */
-  const isFavorite = musicId => {
-    return collectMusic.some(item => item.id === musicId);
+    setSelectedIds([]);
   };
 
   /* 音乐选项 */
   const [nowMusic, setNowMusic] = useState({});
-  const [selectedFavoriteItems, setSelectedFavoriteItems] = useState([]);
+  const [selectedFavoriteIds, setSelectedFavoriteIds] = useState([]);
 
+  /* 操作选项 */
   const handleMusicOptions = [
     {
       title: t('music.add_to_play_list'),
@@ -126,7 +114,7 @@ const MusicList = props => {
       onPress: () => {
         if (isMultiSelect) {
           const selectedMusic = list.filter(item =>
-            selectedItems.includes(item.id),
+            selectedIds.includes(item.id),
           );
           addPlayList(selectedMusic);
         } else {
@@ -137,15 +125,13 @@ const MusicList = props => {
       },
     },
     {
-      title: isFavorite(nowMusic?.id)
-        ? t('music.already_favorite')
-        : t('music.favorite'),
-      icon: isFavorite(nowMusic?.id) ? 'heart' : 'hearto',
-      iconColor: isFavorite(nowMusic?.id) ? Colors.red50 : Colors.grey30,
+      title: isLiked ? t('music.already_favorite') : t('music.favorite'),
+      icon: isLiked ? 'heart' : 'hearto',
+      iconColor: isLiked ? Colors.red50 : Colors.grey30,
       onPress: () => {
         let musicIds = [];
         if (isMultiSelect) {
-          musicIds = selectedItems;
+          musicIds = selectedIds;
         } else {
           musicIds = [nowMusic.id];
         }
@@ -153,29 +139,38 @@ const MusicList = props => {
           showToast(t('music.please_select_music'), 'warning');
           return;
         }
-        // editDefaultFavorites({
-        //   handleType: isFavorite(nowMusic?.id) ? 'remove' : 'add',
-        //   creator_uid: userId,
-        //   musicIds,
-        // })
-        //   .then(res => {
-        //     if (res.success) {
-        //       showToast(
-        //         isFavorite(nowMusic?.id) ? '已取消收藏' : '已收藏',
-        //         'success',
-        //       );
-        //     } else {
-        //       showToast(res.message, 'error');
-        //     }
-        //     setNowMusic({});
-        //     setModalVisible(false);
-        //     // getAllMusicList(userId);
-        //   })
-        //   .catch(error => {
-        //     console.error(error);
-        //     setNowMusic({});
-        //     setModalVisible(false);
-        //   });
+        setIsLiked(async prev => {
+          if (prev) {
+            try {
+              const res = await dislikeMusic({
+                ids: musicIds,
+              });
+              if (res.code === 0) {
+                showToast(t('music.unfavorite'), 'success');
+                return;
+              }
+              showToast(res.message, 'error');
+            } catch (error) {
+              console.error(error);
+            }
+          } else {
+            try {
+              const res = await likeMusic({
+                id: nowMusic.id,
+              });
+              if (res.code === 0) {
+                showToast(t('music.already_favorite'), 'success');
+                return;
+              }
+              showToast(res.message, 'error');
+            } catch (error) {
+              console.error(error);
+            }
+          }
+          return !prev;
+        });
+        setNowMusic({});
+        setModalVisible(false);
       },
     },
     {
@@ -185,6 +180,7 @@ const MusicList = props => {
       onPress: () => {
         setModalVisible(false);
         setFavoriteVisible(true);
+        refreshFavoritesList();
       },
     },
     {
@@ -197,43 +193,39 @@ const MusicList = props => {
       },
     },
     {
-      title: '移出该歌单',
+      title: t('music.remove_from_favorites'),
       icon: 'delete',
       iconColor: Colors.grey30,
       onPress: () => {
         let musicIds = [];
         if (isMultiSelect) {
-          musicIds = selectedItems;
+          musicIds = selectedIds;
         } else {
           musicIds = [nowMusic.id];
         }
         if (musicIds.length === 0) {
-          showToast('请选择歌曲', 'warning');
+          showToast(t('music.please_select'), 'warning');
           return;
         }
-        updateFavorites({
-          id: favoriteId,
-          handleType: 'remove',
-          musicIds,
+        removeMusicToFavorites(favoriteId, {
+          ids: musicIds,
         })
           .then(res => {
-            if (res.success) {
-              showToast('已移出该歌单', 'success');
+            if (res.code === 0) {
+              showToast(t('music.remove_success'), 'success');
             } else {
               showToast(res.message, 'error');
             }
-            refreshList();
-            setNowMusic({});
-            setModalVisible(false);
           })
-          .catch(error => {
-            console.error(error);
+          .finally(() => {
+            onRefresh();
             setNowMusic({});
             setModalVisible(false);
           });
       },
     },
   ];
+
   if (!favoriteId || !isOneself) {
     handleMusicOptions.pop();
   }
@@ -242,7 +234,7 @@ const MusicList = props => {
   const addMusicToFavorites = async () => {
     let musicIds = [];
     if (isMultiSelect) {
-      musicIds = selectedItems;
+      musicIds = selectedIds;
     } else {
       musicIds = [nowMusic.id];
     }
@@ -251,27 +243,27 @@ const MusicList = props => {
       return;
     }
     try {
-      let count = 0;
-      for (let i = 0; i < selectedFavoriteItems.length; i++) {
-        const element = selectedFavoriteItems[i];
-        const updateRes = await updateFavorites({
-          id: element,
-          handleType: 'add',
-          musicIds,
-        });
-        if (updateRes.success) {
-          count += 1;
-        }
+      const res = await appendMusicToFavorites({
+        ids: selectedIds,
+        favoritesIds: selectedFavoriteIds,
+      });
+      if (res.code === 0) {
+        showToast(
+          t('music.add_to_favorites_success', {
+            count1: selectedIds.length,
+            count2: selectedFavoriteIds.length,
+          }),
+          'success',
+        );
+        return;
       }
-      if (count > 0) {
-        showToast('成功添加歌曲到' + count + '个歌单', 'success');
-      }
-      resetMultiSelect();
-      setSelectedFavoriteItems([]);
-      setNowMusic({});
+      showToast(res.message, 'error');
     } catch (error) {
-      showToast('添加歌曲到歌单失败', 'error');
       console.error(error);
+    } finally {
+      resetMultiSelect();
+      setSelectedFavoriteIds([]);
+      setNowMusic({});
     }
   };
 
@@ -284,12 +276,12 @@ const MusicList = props => {
     setShowDialog(true);
     let musicIds = [];
     if (isMultiSelect) {
-      musicIds = selectedItems;
+      musicIds = selectedIds;
     } else {
       musicIds = [nowMusic.id];
     }
     if (musicIds.length === 0) {
-      showToast('请选择要下载的歌曲', 'warning');
+      showToast(t('music.please_select'), 'warning');
       return;
     }
     const selectedFiles = [];
@@ -313,13 +305,11 @@ const MusicList = props => {
         },
       );
       setDownloadProgress(0);
-      if (savePath) {
-        // showToast('保存成功', 'success');
-      } else {
-        showToast(`第${i + 1}首歌曲下载失败`, 'error');
+      if (!savePath) {
+        showToast(t('music.download_failed', {index: i + 1}), 'error');
       }
     }
-    showToast('歌曲下载完成', 'success');
+    showToast(t('music.download_complete'), 'success');
     setShowDialog(false);
     setFileNum(1);
     setNowFileIndex(1);
@@ -335,15 +325,15 @@ const MusicList = props => {
           color={Colors.primary}
           size={20}
           borderRadius={10}
-          value={selectedItems.includes(item.id)}
+          value={selectedIds.includes(item.id)}
           onValueChange={value => {
             if (value) {
-              setSelectedItems(prevItem => {
+              setSelectedIds(prevItem => {
                 const newItem = [...prevItem, item.id];
                 return newItem;
               });
             } else {
-              setSelectedItems(prevItem => {
+              setSelectedIds(prevItem => {
                 const newItem = prevItem.filter(id => id !== item.id);
                 return newItem;
               });
@@ -364,7 +354,7 @@ const MusicList = props => {
             Vibration.vibrate(50);
           }}
           onPress={() => {
-            onPress(item);
+            onMusicPress(item);
             setPlayingMusic(item);
             unshiftPlayList([item]);
           }}>
@@ -377,7 +367,7 @@ const MusicList = props => {
                 color={
                   playingMusic?.id === item.id ? Colors.primary : Colors.grey10
                 }>
-                {item.title}
+                {item?.title}
               </Text>
               <Text
                 text90L
@@ -387,11 +377,7 @@ const MusicList = props => {
                 color={
                   playingMusic?.id === item.id ? Colors.primary : Colors.grey10
                 }>
-                {(item.artists && item.artists?.length > 0
-                  ? item.artists.join('/')
-                  : t('music.empty_artist')) +
-                  ' - ' +
-                  (item.album ?? t('music.empty_album'))}
+                {renderArtists(item)}
               </Text>
             </View>
             <View row bottom centerV spread>
@@ -401,21 +387,18 @@ const MusicList = props => {
                   addPlayList([item]);
                   showToast(t('music.add_success'), 'success');
                 }}>
-                <AntDesign name="pluscircleo" color={Colors.grey50} size={20} />
+                <AntDesign name="plus" color={Colors.grey50} size={20} />
               </TouchableOpacity>
               {isMultiSelect || isLocal ? null : (
                 <TouchableOpacity
                   style={styles.musicBut}
-                  marginL-6
+                  marginL-4
                   onPress={() => {
                     setNowMusic(item);
+                    getMusicIsLikedFunc(item.id);
                     setModalVisible(true);
                   }}>
-                  <AntDesign
-                    name="menuunfold"
-                    color={Colors.grey50}
-                    size={20}
-                  />
+                  <AntDesign name="bars" color={Colors.grey50} size={20} />
                 </TouchableOpacity>
               )}
             </View>
@@ -466,9 +449,9 @@ const MusicList = props => {
               onPress={() => {
                 setIsAllSelect(prev => {
                   if (!prev) {
-                    setSelectedItems(list.map(item => item.id));
+                    setSelectedIds(list.map(item => item.id));
                   } else {
-                    setSelectedItems([]);
+                    setSelectedIds([]);
                   }
                   return !prev;
                 });
@@ -542,9 +525,7 @@ const MusicList = props => {
             {isEmptyObject(nowMusic) ? null : (
               <>
                 <Text center text70BO marginT-12 grey30>
-                  {nowMusic?.title +
-                    ' - ' +
-                    (nowMusic?.artists?.join('/') || t('music.empty_artist'))}
+                  {renderMusicTitle(nowMusic)}
                 </Text>
                 <View paddingH-32 marginT-12>
                   <View height={1} backgroundColor={Colors.grey70} />
@@ -553,7 +534,7 @@ const MusicList = props => {
             )}
             <FlatList
               data={handleMusicOptions}
-              keyExtractor={(item, index) => item + index}
+              keyExtractor={(_, index) => index.toString()}
               renderItem={({item}) => (
                 <View row centerV>
                   <TouchableOpacity
@@ -620,10 +601,11 @@ const MusicList = props => {
             </View>
             <FlatList
               data={favoritesList}
-              keyExtractor={(item, index) => item + index}
-              onEndReached={() => {
-                setPageNum(prev => prev + 1);
-              }}
+              keyExtractor={(_, index) => index.toString()}
+              onEndReached={onFavoritesEndReached}
+              onEndReachedThreshold={0.8}
+              showsVerticalScrollIndicator={false}
+              ListFooterComponent={<View marginB-100 />}
               ListEmptyComponent={
                 <View marginT-16 center>
                   <Text text90L grey40>
@@ -631,7 +613,7 @@ const MusicList = props => {
                   </Text>
                 </View>
               }
-              renderItem={({item, index}) => (
+              renderItem={({item}) => (
                 <View marginT-8 row centerV paddingH-12>
                   <Checkbox
                     marginR-12
@@ -639,15 +621,15 @@ const MusicList = props => {
                     size={20}
                     borderRadius={10}
                     disabled={favoriteId === item.id}
-                    value={selectedFavoriteItems.includes(item.id)}
+                    value={selectedFavoriteIds.includes(item.id)}
                     onValueChange={value => {
                       if (value) {
-                        setSelectedFavoriteItems(prevItem => {
+                        setSelectedFavoriteIds(prevItem => {
                           const newItem = [...prevItem, item.id];
                           return newItem;
                         });
                       } else {
-                        setSelectedFavoriteItems(prevItem => {
+                        setSelectedFavoriteIds(prevItem => {
                           const newItem = prevItem.filter(id => id !== item.id);
                           return newItem;
                         });
@@ -659,6 +641,7 @@ const MusicList = props => {
                       source={{
                         uri: envConfig.THUMBNAIL_URL + item.favorites_cover,
                       }}
+                      errorSource={require('@assets/images/favorites_cover.jpg')}
                       style={styles.favoritesCover}
                     />
                     <View centerV marginL-12>
@@ -677,16 +660,14 @@ const MusicList = props => {
       <Dialog visible={showDialog} onDismiss={() => setShowDialog(false)}>
         <Card padding-16>
           <Text text70BL marginB-8>
-            歌曲下载
+            {t('music.download_music')}
           </Text>
           <View>
             <Text marginB-16>
-              共
-              <Text text70 blue30 marginB-16>
-                {fileNum}
-              </Text>
-              首歌曲，正在下载第{nowFileIndex}
-              首歌曲...
+              {t('music.download_complete_tips', {
+                total: fileNum,
+                now: nowFileIndex,
+              })}
             </Text>
             {downloadProgress ? (
               <ProgressBar
