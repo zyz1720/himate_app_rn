@@ -82,7 +82,6 @@ const MusicCtrlProvider = React.memo(props => {
   const {showToast} = useToast();
   const realm = useRealm();
   const {userInfo} = useUserStore();
-  // baseConfig
   const {envConfig} = useConfigStore();
   const {
     showMusicCtrl,
@@ -469,7 +468,7 @@ const MusicCtrlProvider = React.memo(props => {
       uri: envConfig.THUMBNAIL_URL + userInfo?.user_bg_img || '',
     });
     return () => {
-      audioPlayer.removePlayBackListener(subscription);
+      audioPlayer.removePlayBackListener();
       restMusicStatus();
     };
   }, []);
