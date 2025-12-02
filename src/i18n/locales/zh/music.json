@@ -22,6 +22,7 @@
   "already_favorite": "已收藏",
   "unfavorite": "已取消收藏",
   "favorite": "收藏",
+  "unable_favorite": "不支持收藏的音乐",
   "total_music": "{{total}}首歌曲",
   "empty_favorites_tips": " 还没有任何歌单，快去新建一个吧~",
   "now_playing": "当前正在播放",
@@ -78,5 +79,6 @@
   "scan_error": "扫描音乐时发生错误",
   "scan_complete_tips": "为您扫描到{{total}}首新音乐",
   "no_new_music": "没有找到新音乐",
-  "scan_no_permission": "没有权限访问该目录"
+  "scan_no_permission": "没有权限访问该目录",
+  "unable_to_play": "无法播放的音乐！"
 }

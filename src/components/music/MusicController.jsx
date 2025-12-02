@@ -11,25 +11,20 @@ import {Image, View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 import {fullWidth} from '@style/index';
-import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import {Marquee} from '@animatereactnative/marquee';
-import {isEmptyObject, deepClone} from '@utils/common/object_utils';
+import {isEmptyObject} from '@utils/common/object_utils';
 import {getRandomInt} from '@utils/common/number_utils';
 import {useToast} from '@utils/hooks/useToast';
-import {useRealm} from '@realm/react';
-import MusicControl, {Command} from 'react-native-music-control';
-import {
-  getMusic,
-  getMusicDetail,
-  likeMusic,
-  removeFavoritesMusic,
-} from '@api/music';
+import {getMusic, likeMusic, dislikeMusic} from '@api/music';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
 import {useMusicStore} from '@store/musicStore';
 import {useTranslation} from 'react-i18next';
 import {renderMusicTitle} from '@utils/system/lyric_utils';
+import {useMusicControl} from '@utils/hooks/useMusicControl';
+import {useAudioPlayer} from '@utils/hooks/useAudioPlayer';
+import {recordPlayHistory} from '@utils/realm/useMusicInfo';
 import LyricModal from './LyricModal';
 import ToBePlayedModal from './ToBePlayedModal';
 
@@ -75,12 +70,10 @@ const styles = StyleSheet.create({
 
 export const MusicCtrlContext = createContext();
 export const useMusicCtrl = () => useContext(MusicCtrlContext);
-const audioPlayer = new AudioRecorderPlayer();
 
 const MusicCtrlProvider = React.memo(props => {
   const {children} = props;
   const {showToast} = useToast();
-  const realm = useRealm();
   const {userInfo} = useUserStore();
   const {envConfig} = useConfigStore();
   const {
@@ -111,56 +104,74 @@ const MusicCtrlProvider = React.memo(props => {
   const [playType, setPlayType] = useState('order'); // 列表播放类型 single order random
 
   const [isLoading, setIsLoading] = useState(false);
-  // 音乐播放器
-  const subscription = audioPlayer.addPlayBackListener(playbackMeta => {
-    const {currentPosition, duration} = playbackMeta;
 
+  const {
+    addPlayBackListener,
+    startPlayer,
+    pausePlayer,
+    resumePlayer,
+    stopPlayer,
+    seekToPlayer,
+    removePlayBackListener,
+  } = useAudioPlayer();
+  const {
+    setNowPlayingCtrl,
+    resumePlayerCtrl,
+    pausePlayerCtrl,
+    seekToPlayerCtrl,
+    stopPlayerCtrl,
+    playerCtrlState,
+  } = useMusicControl();
+
+  // 音乐播放器
+  addPlayBackListener(playbackMeta => {
+    const {currentPosition, duration, elapsedTime, progress, isFinished} =
+      playbackMeta;
     setAudioIsPlaying(
       currentPosition !== curPosition && currentPosition !== seekToPosition,
     );
-
     setCurPosition(currentPosition);
-
     if (duration !== audioDuration) {
       setAudioDuration(duration);
     }
-
-    MusicControl.updatePlayback({
-      elapsedTime: Math.round(currentPosition / 1000),
-    });
-
-    const progress = Math.round((currentPosition / duration) * 100);
     if (progress) {
       setPlayProgress(progress);
     }
 
-    if (playbackMeta.isFinished) {
-      restMusicStatus().then(() => {
-        if (isRandomPlay) {
-          getRandMusic();
-        } else if (playList.length > 0) {
-          if (playType === 'single') {
-            setPlayingMusic(playList[playingIndex]);
-          } else if (playType === 'order') {
-            setPlayingMusic(
-              playingIndex === playList.length - 1
-                ? playList[0]
-                : playList[playingIndex + 1],
-            );
-          } else if (playType === 'random') {
-            setPlayingMusic(
-              playList[Math.floor(Math.random() * playList.length)],
-            );
-          }
-        } else {
-          setPlayingMusic({});
-        }
-      });
+    seekToPlayerCtrl(elapsedTime);
+
+    if (isFinished) {
+      autoPlayNext();
     }
   });
 
+  // 自动播放下一首
+  const autoPlayNext = useCallback(() => {
+    restMusicStatus().then(() => {
+      if (isRandomPlay) {
+        getRandMusic();
+      } else if (playList.length > 0) {
+        if (playType === 'single') {
+          setPlayingMusic(playList[playingIndex]);
+        } else if (playType === 'order') {
+          setPlayingMusic(
+            playingIndex === playList.length - 1
+              ? playList[0]
+              : playList[playingIndex + 1],
+          );
+        } else if (playType === 'random') {
+          setPlayingMusic(
+            playList[Math.floor(Math.random() * playList.length)],
+          );
+        }
+      } else {
+        setPlayingMusic({});
+      }
+    });
+  }, [isRandomPlay, playList, playingIndex, playType]);
+
   // 上一首
-  const previousRemote = useCallback(() => {
+  const previousTrack = useCallback(() => {
     if (playingIndex === 0 && playList.length > 0) {
       setPlayingMusic(playList[playList.length - 1]);
       showToast(t('music.already_first'), 'warning');
@@ -174,23 +185,23 @@ const MusicCtrlProvider = React.memo(props => {
   }, [playList, playingIndex]);
 
   // 播放或暂停
-  const playOrPauseRemote = useCallback(() => {
+  const playOrPauseTrack = useCallback(() => {
     if (isLoading) {
       showToast(t('music.loading'), 'warning', true);
     }
     if (audioIsPlaying) {
-      audioPlayer.pausePlayer();
+      pausePlayer();
     } else {
       if (isEmptyObject(playingMusic)) {
         showToast(t('music.no_music'), 'warning');
         return;
       }
-      audioPlayer.resumePlayer();
+      resumePlayer();
     }
   }, [audioIsPlaying, playingMusic, isLoading]);
 
   // 下一首
-  const nextRemote = useCallback(() => {
+  const nextTrack = useCallback(() => {
     if (isRandomPlay) {
       getRandMusic();
       return;
@@ -213,12 +224,12 @@ const MusicCtrlProvider = React.memo(props => {
   const [seekToPosition, setSeekToPosition] = useState(0);
   const onSliderChange = useCallback(async position => {
     setSeekToPosition(parseInt(position, 10));
-    await audioPlayer?.seekToPlayer(position);
+    await seekToPlayer(position);
     setAudioIsPlaying(false);
     setIsLoading(true);
   }, []);
 
-  //  监听音乐播放状态
+  // 监听音乐播放状态
   useEffect(() => {
     if (isEmptyObject(playingMusic)) {
       return;
@@ -226,127 +237,40 @@ const MusicCtrlProvider = React.memo(props => {
     if (audioIsPlaying) {
       setIsLoading(false);
       setSeekToPosition(0);
-      MusicControl.updatePlayback({
-        state: MusicControl.STATE_PLAYING,
-      });
+      resumePlayerCtrl();
     } else {
-      MusicControl.updatePlayback({
-        state: MusicControl.STATE_PAUSED,
-      });
+      pausePlayerCtrl();
     }
   }, [audioIsPlaying]);
 
   // 重置音乐播放所有状态
   const restMusicStatus = async () => {
-    MusicControl.stopControl();
+    stopPlayerCtrl();
     setCurPosition(0);
     setAudioDuration(0);
     setPlayProgress(0);
     setSeekToPosition(0);
     setIsLoading(false);
     setAudioIsPlaying(false);
-    try {
-      const stopResult = await audioPlayer.stopPlayer();
-      return stopResult;
-    } catch (error) {
-      console.error(error);
-      return false;
-    }
-  };
-
-  /* 写入本地播放记录 */
-  const addOrUpdateLocalMusic = music => {
-    if (typeof music?.id === 'string') {
-      return;
-    }
-    const localMusic = deepClone(music);
-    for (const key in localMusic) {
-      if (localMusic[key] === null) {
-        delete localMusic[key];
-      }
-    }
-    const musicList = realm
-      .objects('music_info')
-      .filtered('id == $0', localMusic.id);
-    if (musicList.length > 0) {
-      realm.write(() => {
-        for (const ele of musicList) {
-          ele.updated_at = Date.now().toString();
-        }
-      });
-    } else {
-      localMusic.created_at = Date.now().toString();
-      localMusic.updated_at = Date.now().toString();
-      realm.write(() => {
-        realm.create('music_info', localMusic);
-      });
-    }
-  };
-
-  /* 开启播放控件 */
-  const startPlayCtrl = musicInfo => {
-    const {title, artist, album, duration, musicExtra} = musicInfo;
-    MusicControl.setNotificationId(5173, 'cancelPlayer');
-    MusicControl.enableControl('play', true);
-    MusicControl.enableControl('pause', true);
-    MusicControl.enableControl('stop', false);
-    MusicControl.enableControl('nextTrack', true);
-    MusicControl.enableControl('previousTrack', true);
-    MusicControl.enableControl('seek', true);
-    MusicControl.enableControl('closeNotification', true, {when: 'paused'});
-    MusicControl.enableBackgroundMode(true);
-    MusicControl.handleAudioInterruptions(true);
-    MusicControl.setNowPlaying({
-      title: title,
-      artwork:
-        envConfig.STATIC_URL +
-        (musicExtra?.music_cover || userInfo?.user_avatar),
-      artist: artist,
-      album: album,
-      duration: duration,
-      color: 0x0000ff,
-      date: Date.now().toString(),
-      isLiveStream: true,
-    });
-    MusicControl.updatePlayback({
-      state: MusicControl.STATE_PLAYING,
-      speed: 1,
-    });
+    await stopPlayer();
   };
 
   useEffect(() => {
-    /* 控件操作 */
-    MusicControl.on(Command.pause, () => {
-      playOrPauseRemote();
-    });
-    MusicControl.on(Command.play, () => {
-      playOrPauseRemote();
-    });
-    MusicControl.on(Command.nextTrack, () => {
-      nextRemote();
-    });
-    MusicControl.on(Command.previousTrack, () => {
-      previousRemote();
-    });
-    MusicControl.on(Command.seek, pos => {
-      onSliderChange(pos * 1000);
-    });
-  }, [playOrPauseRemote, nextRemote, previousRemote, onSliderChange]);
+    console.log(playerCtrlState);
+  }, [playerCtrlState]);
 
   // 是否要定时关闭音乐
-  let timer = null;
+  let playerTimer = null;
   useEffect(() => {
     if (closeTime) {
-      timer = setTimeout(() => {
-        audioPlayer.pausePlayer();
-        MusicControl.updatePlayback({
-          state: MusicControl.STATE_PAUSED,
-        });
+      playerTimer = setTimeout(() => {
+        pausePlayer();
+        pausePlayerCtrl();
         setIsClosed(true);
-        clearTimeout(timer);
+        clearTimeout(playerTimer);
       }, closeTime * 60000);
     } else {
-      clearTimeout(timer);
+      clearTimeout(playerTimer);
     }
   }, [closeTime]);
 
@@ -363,7 +287,7 @@ const MusicCtrlProvider = React.memo(props => {
     } catch (error) {
       console.error(error);
     }
-  }, [randomNum.max, randomNum.min]);
+  }, [randomNum]);
 
   // 随机播放
   useEffect(() => {
@@ -374,34 +298,31 @@ const MusicCtrlProvider = React.memo(props => {
 
   // 播放新音乐的方法
   const playNewMusic = async () => {
-    if (!playingMusic?.file_key) {
-      return;
-    }
-    const isStopped = await restMusicStatus();
-    if (!isStopped) {
-      return;
-    }
-    setIsLoading(true);
     try {
+      if (!playingMusic?.file_key) {
+        return;
+      }
+      await restMusicStatus();
+      setIsLoading(true);
+
       let url = '';
       if (typeof playingMusic?.id === 'number') {
+        setCloudMusicId(playingMusic?.id);
         url = envConfig.STATIC_URL + playingMusic?.file_key;
       } else {
         url = playingMusic?.file_key;
       }
 
-      await audioPlayer.startPlayer(url);
+      await startPlayer(url);
       const index = playList.findIndex(item => item.id === playingMusic.id);
       lastPlayedId.current = playingMusic.id;
       setPlayingIndex(index);
-      startPlayCtrl(playingMusic);
-      if (realm) {
-        addOrUpdateLocalMusic(playingMusic);
-      }
+      setNowPlayingCtrl(playingMusic);
+      recordPlayHistory(playingMusic);
       setIsLoading(false);
     } catch (error) {
       console.error(error);
-      showToast('无法播放的音乐！', 'error');
+      showToast(t('music.unable_to_play'), 'error');
       restMusicStatus();
       setIsLoading(false);
     }
@@ -445,35 +366,45 @@ const MusicCtrlProvider = React.memo(props => {
 
   // 编辑用户收藏的音乐
   const [isLike, setIsLike] = useState(false);
-  const editMyFavorite = async (id, isFavorite) => {
-    // try {
-    //   const res = await editDefaultFavorites({
-    //     handleType: isFavorite ? 'remove' : 'add',
-    //     favorites_uid: userId,
-    //     musicIds: [id],
-    //   });
-    //   if (res.success) {
-    //     showToast(isFavorite ? '已取消收藏' : '已收藏', 'success');
-    //     getAllMusicList(userId);
-    //   } else {
-    //     showToast(res.message, 'error');
-    //   }
-    // } catch (error) {
-    //   console.error(error);
-    // }
+  const [cloudMusicId, setCloudMusicId] = useState(null);
+  const editMyFavorite = async () => {
+    try {
+      if (!cloudMusicId) {
+        showToast(t('music.unable_favorite'), 'warning');
+        return;
+      }
+      if (isLike) {
+        const res = await dislikeMusic({
+          ids: [cloudMusicId],
+        });
+        if (res.code === 0) {
+          showToast(t('music.unfavorite'), 'success');
+          setIsLike(false);
+          return;
+        }
+        showToast(res.message, 'error');
+      } else {
+        const res = await likeMusic({
+          ids: [cloudMusicId],
+        });
+        if (res.code === 0) {
+          showToast(t('music.already_favorite'), 'success');
+          setIsLike(true);
+          return;
+        }
+        showToast(res.message, 'error');
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   useEffect(() => {
-    setBgSource({
-      uri: envConfig.THUMBNAIL_URL + userInfo?.user_bg_img || '',
-    });
     return () => {
-      audioPlayer.removePlayBackListener();
+      removePlayBackListener();
       restMusicStatus();
     };
   }, []);
-
-  const [bgSource, setBgSource] = useState({});
 
   return (
     <MusicCtrlContext.Provider value={{}}>
@@ -483,8 +414,13 @@ const MusicCtrlProvider = React.memo(props => {
           <ImageBackground
             blurRadius={40}
             style={styles.ctrlBackImage}
-            source={bgSource}
-            onError={() => setBgSource(require('@assets/images/user_bg.jpg'))}
+            source={
+              userInfo?.user_bg_img
+                ? {
+                    uri: envConfig.THUMBNAIL_URL + userInfo.user_bg_img,
+                  }
+                : require('@assets/images/user_bg.jpg')
+            }
             resizeMode="cover">
             <GestureHandlerRootView>
               <View row centerV spread>
@@ -522,7 +458,7 @@ const MusicCtrlProvider = React.memo(props => {
                   <TouchableOpacity
                     style={styles.musicBut}
                     onPress={() => {
-                      playOrPauseRemote();
+                      playOrPauseTrack();
                     }}>
                     {audioIsPlaying ? (
                       <AntDesign
@@ -558,14 +494,14 @@ const MusicCtrlProvider = React.memo(props => {
       <LyricModal
         visible={musicModalVisible}
         onClose={() => setMusicModalVisible(false)}
-        Music={playingMusic}
-        IsPlaying={audioIsPlaying}
+        music={playingMusic}
+        isPlaying={audioIsPlaying}
         isLike={isLike}
-        OnFavorite={editMyFavorite}
-        PlayMode={playType}
-        CurPosition={curPosition}
-        Duration={audioDuration}
-        OnSliderChange={value => {
+        onPressLike={editMyFavorite}
+        playMode={playType}
+        curPosition={curPosition}
+        duration={audioDuration}
+        onSliderChange={value => {
           onSliderChange(value);
         }}
         onModeChange={() => {
@@ -584,31 +520,31 @@ const MusicCtrlProvider = React.memo(props => {
             }
           });
         }}
-        OnBackWard={() => {
-          previousRemote();
+        onBackWard={() => {
+          previousTrack();
         }}
-        OnPlay={() => {
-          playOrPauseRemote();
+        onPlay={() => {
+          playOrPauseTrack();
         }}
-        OnForWard={() => {
-          nextRemote();
+        onForWard={() => {
+          nextTrack();
         }}
-        OnMain={() => {
+        onPressMenu={() => {
           setListModalVisible(true);
         }}
       />
       <ToBePlayedModal
         visible={listModalVisible}
         onClose={() => setListModalVisible(false)}
-        OnClearList={() => {
+        onClear={() => {
           setPlayList([]);
         }}
-        Music={playingMusic}
+        music={playingMusic}
         list={playList}
-        OnPressItem={item => {
+        onPressItem={item => {
           setPlayingMusic(item);
         }}
-        OnPressRemove={item => {
+        onPressRemove={item => {
           removePlayList([item]);
         }}
       />

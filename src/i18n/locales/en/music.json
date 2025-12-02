@@ -22,6 +22,7 @@
   "already_favorite": "Already favorited",
   "unfavorite": "Unfavorite",
   "favorite": "Favorite",
+  "unable_favorite": "Unsupported music for favoriting",
   "total_music": "{{total}} songs",
   "empty_favorites_tips": " No playlists yet, go create one!",
   "now_playing": "Currently Playing",
@@ -78,5 +79,6 @@
   "scan_error": "Error scanning local music",
   "scan_complete_tips": "Scanned {{total}} new music for you",
   "no_new_music": "No new music found",
-  "scan_no_permission": "No permission to access this directory"
+  "scan_no_permission": "No permission to access this directory",
+  "unable_to_play": "Unable to play this music"
 }

@@ -6,20 +6,21 @@ export const useAudioPlayer = () => {
   const prevPlayType = useRef(null);
   const prevPlayUrl = useRef(null);
   const prevPlayPosition = useRef(0);
-  const [progress, setProgress] = useState(0);
   const [currentPosition, setCurrentPosition] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [elapsedTime, setElapsedTime] = useState(0);
 
   // 监听播放状态变化
-  audioPlayer.addPlayBackListener(playbackMeta => {
-    const {currentPosition: cp, duration: d} = playbackMeta;
-    setCurrentPosition(cp);
-    setDuration(d);
-
-    setElapsedTime(Math.round(cp / 1000));
-
-    setProgress(Math.round((cp / d) * 100));
+  const addPlayBackListener = useCallback(callback => {
+    audioPlayer.addPlayBackListener(playbackMeta => {
+      const {currentPosition: cp, duration: d, isFinished} = playbackMeta;
+      setCurrentPosition(cp);
+      callback({
+        currentPosition: cp,
+        duration: d,
+        elapsedTime: Math.round(cp / 1000),
+        progress: Math.round((cp / d) * 100),
+        isFinished,
+      });
+    });
   });
 
   // 播放音频
@@ -76,10 +77,6 @@ export const useAudioPlayer = () => {
   }, [startPlayer, seekToPlayer]);
 
   return {
-    currentPosition,
-    duration,
-    elapsedTime,
-    progress,
     startPlayer,
     pausePlayer,
     resumePlayer,
@@ -87,5 +84,6 @@ export const useAudioPlayer = () => {
     seekToPlayer,
     removePlayBackListener,
     resumePrevPlayer,
+    addPlayBackListener,
   };
 };

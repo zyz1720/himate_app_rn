@@ -49,8 +49,8 @@ const ToBePlayedModal = React.memo(props => {
 
   // 记忆化背景图片URI
   const backgroundImageUri = useMemo(
-    () => envConfig.STATIC_URL + userInfo?.user_avatar,
-    [userInfo?.user_avatar],
+    () => envConfig.STATIC_URL + userInfo?.user_bg_img,
+    [userInfo?.user_bg_img],
   );
 
   // 记忆化当前播放的音乐信息
