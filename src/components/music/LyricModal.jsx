@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback, useMemo} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import {
   StyleSheet,
   Modal,
@@ -102,7 +102,6 @@ const LyricModal = React.memo(props => {
   useEffect(() => {
     setIsHorizontal(width > height);
   }, [width, height]);
-
 
   const [nowLyric, setNowLyric] = useState('');
 
@@ -313,8 +312,6 @@ const LyricModal = React.memo(props => {
               {/* 第二页：歌词视图 */}
               <View width={'50%'} paddingH-20 centerV>
                 <LrcView
-                  playingMusic={musicExtra}
-                  cover={musicExtra?.music_cover}
                   isHorizontal={true}
                   currentTime={curPosition}
                   onLyricsChange={setNowLyric}
@@ -370,7 +367,9 @@ const LyricModal = React.memo(props => {
                   {playingMusic?.sample_rate ? (
                     <View marginT-12 row centerV spread>
                       <Text color={Colors.lyricColor} text100L>
-                        {t('music.sample_rate', {rate: playingMusic.sample_rate})}
+                        {t('music.sample_rate', {
+                          rate: playingMusic.sample_rate,
+                        })}
                       </Text>
                       <Text color={Colors.lyricColor} text100L>
                         {t('music.bitrate', {rate: playingMusic.bitrate})}
@@ -470,8 +469,6 @@ const LyricModal = React.memo(props => {
               {/* 第二页：歌词视图 */}
               <View>
                 <LrcView
-                  musicExtra={musicExtra}
-                  cover={musicExtra?.music_cover}
                   currentTime={curPosition}
                   onLyricsChange={setNowLyric}
                 />

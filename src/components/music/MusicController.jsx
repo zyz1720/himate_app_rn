@@ -25,6 +25,11 @@ import {renderMusicTitle} from '@utils/system/lyric_utils';
 import {useMusicControl} from '@utils/hooks/useMusicControl';
 import {useAudioPlayer} from '@utils/hooks/useAudioPlayer';
 import {recordPlayHistory} from '@utils/realm/useMusicInfo';
+import Animated, {
+  useSharedValue,
+  withTiming,
+  useAnimatedStyle,
+} from 'react-native-reanimated';
 import LyricModal from './LyricModal';
 import ToBePlayedModal from './ToBePlayedModal';
 
@@ -38,7 +43,6 @@ const styles = StyleSheet.create({
   },
 
   ctrlBackImage: {
-    width: '100%',
     height: '100%',
     borderRadius: 60,
     overflow: 'hidden',
@@ -98,10 +102,10 @@ const MusicCtrlProvider = React.memo(props => {
   const [audioIsPlaying, setAudioIsPlaying] = useState(false); // 音频是否正在播放
   const [curPosition, setCurPosition] = useState(0); // 当前播放进度
   const [audioDuration, setAudioDuration] = useState(0); // 音频总时长
-  const lastPlayedId = useRef(null); // 记录上一次播放的音乐Id
   const [playingIndex, setPlayingIndex] = useState(0); // 当前播放音乐的索引
   const [playProgress, setPlayProgress] = useState(0); // 进度条数值
   const [playType, setPlayType] = useState('order'); // 列表播放类型 single order random
+  const lastPlayedId = useRef(null); // 记录上一次播放的音乐Id
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -358,29 +362,27 @@ const MusicCtrlProvider = React.memo(props => {
   }, [playingMusic?.id]);
 
   // 加载音乐名
-  const renderMarquee = useCallback(
-    music => {
-      const {id} = music;
-      let musicText = renderMusicTitle(music);
-      if (isLoading) {
-        musicText = t('music.loading');
-      }
-      const speed = musicText.length > 16 ? 0.4 : 0;
-      const spacing = musicText.length > 16 ? fullWidth * 0.2 : fullWidth * 0.6;
-      return (
-        <View>
-          <Marquee
-            key={id + String(isLoading)}
-            speed={speed}
-            spacing={spacing}
-            style={styles.marquee}>
-            <Text white>{musicText}</Text>
-          </Marquee>
-        </View>
-      );
-    },
-    [isLoading],
-  );
+  const renderMarquee = useCallback(() => {
+    const {id} = playingMusic;
+    let musicText = renderMusicTitle(playingMusic);
+    if (isLoading) {
+      musicText = t('music.loading');
+    }
+    const speed = musicText.length > 16 ? 0.4 : 0;
+    const spacing = musicText.length > 16 ? fullWidth * 0.2 : fullWidth * 0.6;
+    return (
+      <View>
+        <Marquee
+          withGesture={false}
+          key={id + String(isLoading)}
+          speed={speed}
+          spacing={spacing}
+          style={styles.marquee}>
+          <Text white>{musicText}</Text>
+        </Marquee>
+      </View>
+    );
+  }, [isLoading, playingMusic?.id]);
 
   // 编辑用户收藏的音乐
   const [isLike, setIsLike] = useState(false);
@@ -424,92 +426,108 @@ const MusicCtrlProvider = React.memo(props => {
     };
   }, []);
 
+  const ctrlWidth = useSharedValue(fullWidth - 32);
+  const animatedStyles = useAnimatedStyle(() => ({
+    width: ctrlWidth.value,
+  }));
+
   return (
     <MusicCtrlContext.Provider value={{}}>
       {children}
       {showMusicCtrl ? (
         <View style={styles.CtrlContainer}>
-          <ImageBackground
-            blurRadius={40}
-            style={styles.ctrlBackImage}
-            source={
-              userInfo?.user_bg_img
-                ? {
-                    uri: envConfig.THUMBNAIL_URL + userInfo.user_bg_img,
-                  }
-                : require('@assets/images/user_bg.jpg')
-            }
-            resizeMode="cover">
-            <GestureHandlerRootView>
-              <View row centerV spread>
-                <TouchableOpacity
-                  row
-                  centerV
-                  onPress={() => {
-                    setMusicModalVisible(true);
-                  }}>
-                  <View marginR-6>
-                    <AnimatedCircularProgress
-                      key={playingMusic?.id}
-                      size={47}
-                      width={3}
-                      fill={playProgress}
-                      tintColor={Colors.red40}
-                      rotation={0}
-                      lineCap="square">
-                      {() => (
-                        <Image
-                          source={
-                            playingMusic?.musicExtra?.music_cover
-                              ? {
-                                  uri:
-                                    envConfig.THUMBNAIL_URL +
-                                    playingMusic.musicExtra.music_cover,
-                                }
-                              : require('@assets/images/music_cover.jpg')
-                          }
-                          style={styles.image}
-                        />
-                      )}
-                    </AnimatedCircularProgress>
-                  </View>
-                  <View centerV>{renderMarquee(playingMusic)}</View>
-                </TouchableOpacity>
-                <View row centerV>
+          <Animated.View style={[animatedStyles, styles.ctrlBackImage]}>
+            <ImageBackground
+              blurRadius={40}
+              source={
+                userInfo?.user_bg_img
+                  ? {
+                      uri: envConfig.THUMBNAIL_URL + userInfo.user_bg_img,
+                    }
+                  : require('@assets/images/user_bg.jpg')
+              }
+              resizeMode="cover">
+              <GestureHandlerRootView>
+                <View row centerV spread>
                   <TouchableOpacity
-                    style={styles.musicBut}
+                    row
+                    centerV
                     onPress={() => {
-                      playOrPauseTrack();
+                      ctrlWidth.value = withTiming(
+                        ctrlWidth.value === 47 ? fullWidth - 32 : 47,
+                      );
                     }}>
-                    {audioIsPlaying ? (
-                      <AntDesign
-                        name="pausecircleo"
-                        color={Colors.white}
-                        size={24}
-                      />
-                    ) : (
-                      <AntDesign
-                        name="playcircleo"
-                        color={Colors.white}
-                        size={24}
-                      />
-                    )}
+                    <View>
+                      <AnimatedCircularProgress
+                        key={playingMusic?.id}
+                        size={47}
+                        width={3}
+                        fill={playProgress}
+                        tintColor={Colors.red40}
+                        rotation={0}
+                        lineCap="square">
+                        {() => (
+                          <Image
+                            source={
+                              playingMusic?.musicExtra?.music_cover
+                                ? {
+                                    uri:
+                                      envConfig.THUMBNAIL_URL +
+                                      playingMusic.musicExtra.music_cover,
+                                  }
+                                : require('@assets/images/music_cover.jpg')
+                            }
+                            style={styles.image}
+                          />
+                        )}
+                      </AnimatedCircularProgress>
+                    </View>
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.musicBut}
-                    marginL-6
-                    marginR-12
-                    onPress={() => setListModalVisible(true)}>
-                    <AntDesign
-                      name="menuunfold"
-                      color={Colors.white}
-                      size={22}
-                    />
-                  </TouchableOpacity>
+                  <View row centerV>
+                    <TouchableOpacity
+                      centerV
+                      onPress={() => {
+                        setMusicModalVisible(true);
+                      }}>
+                      {renderMarquee()}
+                    </TouchableOpacity>
+                    <View row centerV>
+                      <TouchableOpacity
+                        style={styles.musicBut}
+                        onPress={() => {
+                          playOrPauseTrack();
+                        }}>
+                        {audioIsPlaying ? (
+                          <AntDesign
+                            name="pausecircleo"
+                            color={Colors.white}
+                            size={24}
+                          />
+                        ) : (
+                          <AntDesign
+                            name="playcircleo"
+                            color={Colors.white}
+                            size={24}
+                          />
+                        )}
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.musicBut}
+                        marginL-6
+                        marginR-12
+                        onPress={() => setListModalVisible(true)}>
+                        <AntDesign
+                          name="menuunfold"
+                          color={Colors.white}
+                          size={22}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
                 </View>
-              </View>
-            </GestureHandlerRootView>
-          </ImageBackground>
+              </GestureHandlerRootView>
+            </ImageBackground>
+          </Animated.View>
         </View>
       ) : null}
       <LyricModal

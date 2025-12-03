@@ -7,6 +7,7 @@ import {useToast} from '@utils/hooks/useToast';
 import {useMusicStore} from '@store/musicStore';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
+import {renderArtists} from '@utils/system/lyric_utils';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LrcItem from './LrcItem';
 
@@ -66,12 +67,7 @@ const styles = StyleSheet.create({
 });
 
 const LrcView = React.memo(props => {
-  const {
-    isHorizontal = false,
-    cover,
-    currentTime,
-    onLyricsChange = () => {},
-  } = props;
+  const {isHorizontal = false, currentTime, onLyricsChange = () => {}} = props;
   const {t} = useTranslation();
   const {envConfig} = useConfigStore();
   const {switchCount, setSwitchCount, playingMusic} = useMusicStore();
@@ -117,7 +113,7 @@ const LrcView = React.memo(props => {
 
     setItemHeights(new Map());
     shouldSkip.current = false;
-  }, [musicExtra]);
+  }, [musicExtra?.music_lyric]);
 
   // 过滤出可用的歌词模式
   const filteredModes = (_haveYrc, _haveTrans, _haveRoma) => {
@@ -234,7 +230,7 @@ const LrcView = React.memo(props => {
   // 每行歌词高度变化
   const [itemHeights, setItemHeights] = useState(() => new Map());
   const shouldSkip = useRef(false);
-  const OnItemLayout = useCallback(
+  const onItemLayout = useCallback(
     (index, height) => {
       if (shouldSkip.current || index === parsedLrc.length - 1) {
         shouldSkip.current = true;
@@ -330,7 +326,7 @@ const LrcView = React.memo(props => {
           yrcVisible={yrcVisible && haveYrc}
           transVisible={transVisible && haveTrans}
           romaVisible={romaVisible && haveRoma}
-          onItemLayout={OnItemLayout}
+          onItemLayout={onItemLayout}
           isHorizontal={isHorizontal}
         />
       );
@@ -359,8 +355,8 @@ const LrcView = React.memo(props => {
           {playingMusic?.title ? (
             <Image
               source={
-                cover
-                  ? {uri: envConfig.STATIC_URL + cover}
+                musicExtra?.music_cover
+                  ? {uri: envConfig.STATIC_URL + musicExtra.music_cover}
                   : require('@assets/images/music_cover.jpg')
               }
               style={[styles.image, {borderColor: Colors.lyricColor}]}
@@ -379,7 +375,7 @@ const LrcView = React.memo(props => {
               marginT-2
               width={fullWidth * 0.78}
               numberOfLines={1}>
-              {playingMusic?.artist}
+              {renderArtists(playingMusic)}
             </Text>
           </View>
         </View>
