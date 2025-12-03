@@ -120,13 +120,18 @@ const MusicCtrlProvider = React.memo(props => {
     pausePlayerCtrl,
     seekToPlayerCtrl,
     stopPlayerCtrl,
-    playerCtrlState,
+    onPauseCtrl,
+    onPlayCtrl,
+    onNextTrackCtrl,
+    onPreviousTrackCtrl,
+    onSeekCtrl,
   } = useMusicControl();
 
   // 音乐播放器
   addPlayBackListener(playbackMeta => {
     const {currentPosition, duration, elapsedTime, progress, isFinished} =
       playbackMeta;
+
     setAudioIsPlaying(
       currentPosition !== curPosition && currentPosition !== seekToPosition,
     );
@@ -224,10 +229,27 @@ const MusicCtrlProvider = React.memo(props => {
   const [seekToPosition, setSeekToPosition] = useState(0);
   const onSliderChange = useCallback(async position => {
     setSeekToPosition(parseInt(position, 10));
-    await seekToPlayer(position);
     setAudioIsPlaying(false);
     setIsLoading(true);
+    await seekToPlayer(position);
   }, []);
+
+  // 通知栏控件操作
+  onPauseCtrl(() => {
+    playOrPauseTrack();
+  });
+  onPlayCtrl(() => {
+    playOrPauseTrack();
+  });
+  onNextTrackCtrl(() => {
+    nextTrack();
+  });
+  onPreviousTrackCtrl(() => {
+    previousTrack();
+  });
+  onSeekCtrl(position => {
+    onSliderChange(position);
+  });
 
   // 监听音乐播放状态
   useEffect(() => {
@@ -254,10 +276,6 @@ const MusicCtrlProvider = React.memo(props => {
     setAudioIsPlaying(false);
     await stopPlayer();
   };
-
-  useEffect(() => {
-    console.log(playerCtrlState);
-  }, [playerCtrlState]);
 
   // 是否要定时关闭音乐
   let playerTimer = null;
@@ -313,7 +331,7 @@ const MusicCtrlProvider = React.memo(props => {
         url = playingMusic?.file_key;
       }
 
-      await startPlayer(url);
+      await startPlayer(url, 'music');
       const index = playList.findIndex(item => item.id === playingMusic.id);
       lastPlayedId.current = playingMusic.id;
       setPlayingIndex(index);
@@ -337,7 +355,7 @@ const MusicCtrlProvider = React.memo(props => {
     ) {
       playNewMusic();
     }
-  }, [playingMusic]);
+  }, [playingMusic?.id]);
 
   // 加载音乐名
   const renderMarquee = useCallback(
@@ -352,7 +370,7 @@ const MusicCtrlProvider = React.memo(props => {
       return (
         <View>
           <Marquee
-            key={id + isLoading}
+            key={id + String(isLoading)}
             speed={speed}
             spacing={spacing}
             style={styles.marquee}>
@@ -432,7 +450,7 @@ const MusicCtrlProvider = React.memo(props => {
                   }}>
                   <View marginR-6>
                     <AnimatedCircularProgress
-                      key={playingMusic}
+                      key={playingMusic?.id}
                       size={47}
                       width={3}
                       fill={playProgress}
@@ -441,12 +459,15 @@ const MusicCtrlProvider = React.memo(props => {
                       lineCap="square">
                       {() => (
                         <Image
-                          source={{
-                            uri:
-                              envConfig.THUMBNAIL_URL +
-                              playingMusic?.musicExtra?.music_cover,
-                          }}
-                          errorSource={require('@assets/images/music_cover.jpg')}
+                          source={
+                            playingMusic?.musicExtra?.music_cover
+                              ? {
+                                  uri:
+                                    envConfig.THUMBNAIL_URL +
+                                    playingMusic.musicExtra.music_cover,
+                                }
+                              : require('@assets/images/music_cover.jpg')
+                          }
                           style={styles.image}
                         />
                       )}
@@ -494,7 +515,6 @@ const MusicCtrlProvider = React.memo(props => {
       <LyricModal
         visible={musicModalVisible}
         onClose={() => setMusicModalVisible(false)}
-        music={playingMusic}
         isPlaying={audioIsPlaying}
         isLike={isLike}
         onPressLike={editMyFavorite}
@@ -507,31 +527,23 @@ const MusicCtrlProvider = React.memo(props => {
         onModeChange={() => {
           setPlayType(prev => {
             if (prev === 'order') {
-              showToast('随机播放', 'success', true);
+              showToast(t('music.random_play'), 'success', true);
               return 'random';
             }
             if (prev === 'random') {
-              showToast('单曲循环', 'success', true);
+              showToast(t('music.single_play'), 'success', true);
               return 'single';
             }
             if (prev === 'single') {
-              showToast('顺序播放', 'success', true);
+              showToast(t('music.order_play'), 'success', true);
               return 'order';
             }
           });
         }}
-        onBackWard={() => {
-          previousTrack();
-        }}
-        onPlay={() => {
-          playOrPauseTrack();
-        }}
-        onForWard={() => {
-          nextTrack();
-        }}
-        onPressMenu={() => {
-          setListModalVisible(true);
-        }}
+        onBackWard={previousTrack}
+        onPlay={playOrPauseTrack}
+        onForWard={nextTrack}
+        onPressMenu={() => setListModalVisible(true)}
       />
       <ToBePlayedModal
         visible={listModalVisible}
@@ -539,7 +551,6 @@ const MusicCtrlProvider = React.memo(props => {
         onClear={() => {
           setPlayList([]);
         }}
-        music={playingMusic}
         list={playList}
         onPressItem={item => {
           setPlayingMusic(item);

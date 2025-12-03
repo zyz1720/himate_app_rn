@@ -4,7 +4,9 @@ import {View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
 import {fullHeight, statusBarHeight} from '@style/index';
 import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
+import {useMusicStore} from '@store/musicStore';
 import {useTranslation} from 'react-i18next';
+import {renderArtists} from '@utils/system/lyric_utils';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
 const styles = StyleSheet.create({
@@ -36,26 +38,19 @@ const ToBePlayedModal = React.memo(props => {
   const {
     visible = false,
     list = [],
-    music = {},
     onClose = () => {},
     onClear = () => {},
     onPressItem = () => {},
     onPressRemove = () => {},
   } = props;
   const {t} = useTranslation();
-
+  const {playingMusic} = useMusicStore();
   const {envConfig} = useConfigStore();
   const {userInfo} = useUserStore();
 
-  // 记忆化背景图片URI
-  const backgroundImageUri = useMemo(
-    () => envConfig.STATIC_URL + userInfo?.user_bg_img,
-    [userInfo?.user_bg_img],
-  );
-
   // 记忆化当前播放的音乐信息
   const currentMusicInfo = useMemo(() => {
-    if (!music?.id) {
+    if (!playingMusic?.id) {
       return null;
     }
 
@@ -65,11 +60,11 @@ const ToBePlayedModal = React.memo(props => {
           {t('music.now_playing')}
         </Text>
         <Text white text80BO marginB-12 flexG>
-          {music.title}
+          {playingMusic.title}
         </Text>
       </View>
     );
-  }, [music]);
+  }, [playingMusic]);
 
   // 记忆化空列表组件
   const emptyListComponent = useMemo(
@@ -89,10 +84,8 @@ const ToBePlayedModal = React.memo(props => {
   // 记忆化渲染项
   const renderItem = useCallback(
     ({item}) => {
-      const artistsText =
-        item?.artists?.length > 0 ? item.artists.join('/') : '未知歌手';
-      const albumText = item?.album ?? '未知专辑';
-      const isCurrent = music?.id === item.id;
+      const artistsText = renderArtists(item);
+      const isCurrent = playingMusic?.id === item.id;
 
       return (
         <View row centerV>
@@ -102,7 +95,7 @@ const ToBePlayedModal = React.memo(props => {
               flexS
               centerV
               style={styles.playingStyle}
-              backgroundColor={isCurrent ? Colors.black4 : 'transparent'}
+              backgroundColor={isCurrent ? Colors.black2 : 'transparent'}
               padding-12>
               <View row spread centerV>
                 <View width={'86%'}>
@@ -110,7 +103,7 @@ const ToBePlayedModal = React.memo(props => {
                     {item.title}
                   </Text>
                   <Text text90L white marginT-4 numberOfLines={1}>
-                    {`${artistsText} - ${albumText}`}
+                    {artistsText}
                   </Text>
                 </View>
                 <TouchableOpacity
@@ -124,7 +117,7 @@ const ToBePlayedModal = React.memo(props => {
         </View>
       );
     },
-    [music?.id, onPressItem, onPressRemove],
+    [playingMusic?.id, onPressItem, onPressRemove],
   );
 
   // 记忆化keyExtractor
@@ -144,7 +137,11 @@ const ToBePlayedModal = React.memo(props => {
         <ImageBackground
           blurRadius={40}
           style={styles.listBackImage}
-          source={{uri: backgroundImageUri}}
+          source={
+            userInfo?.user_bg_img
+              ? {uri: envConfig.STATIC_URL + userInfo.user_bg_img}
+              : require('@assets/images/user_bg.jpg')
+          }
           resizeMode="cover">
           <View padding-12>
             <View row centerV spread>
@@ -152,7 +149,7 @@ const ToBePlayedModal = React.memo(props => {
                 <AntDesign name="close" color={Colors.white} size={24} />
               </TouchableOpacity>
               <TouchableOpacity onPress={onClear}>
-                <Text white>清空列表</Text>
+                <Text white>{t('music.clear_list')}</Text>
               </TouchableOpacity>
             </View>
             {currentMusicInfo}

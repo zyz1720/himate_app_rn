@@ -55,6 +55,8 @@
   "recent_play_tips": "It has been",
   "recent_play_day": " days since last listening",
   "welcome": "Let's listen to some music today ~",
+  "order_play": "Order Play",
+  "single_play": "Single Loop",
   "random_play": "Shuffle Play",
   "alarm_close": "Timer Off",
   "my_playlist": "My Playlists",
@@ -80,5 +82,6 @@
   "scan_complete_tips": "Scanned {{total}} new music for you",
   "no_new_music": "No new music found",
   "scan_no_permission": "No permission to access this directory",
-  "unable_to_play": "Unable to play this music"
+  "unable_to_play": "Unable to play this music",
+  "clear_list": "Clear Playlist"
 }

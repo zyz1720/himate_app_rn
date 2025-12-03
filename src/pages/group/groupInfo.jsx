@@ -18,7 +18,7 @@ import {editGroupMember, exitGroup} from '@api/group_member';
 import {uploadFile} from '@utils/system/file_utils';
 import {formatMsg, setLocalMsg} from '@utils/system/chat_utils';
 import {getSessionDetail} from '@api/session';
-import {useConfigStore} from '@/stores/configStore';
+import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
 import {GroupRoleEnum, MemberStatusEnum} from '@const/database_enum';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';

@@ -106,11 +106,11 @@ export const parseYrcs = lyricsString => {
 
 /**
  * 格式化歌词函数
- * @param {object} Music 音乐对象
+ * @param {object} musicExtra 音乐对象
  * @returns {object} 格式化后的歌词对象
  */
-export const formatLrc = Music => {
-  const {music_lyric, music_trans, music_yrc, music_roma} = Music || {};
+export const formatLrc = musicExtra => {
+  const {music_lyric, music_trans, music_yrc, music_roma} = musicExtra || {};
 
   const lyric = parserLrc(music_lyric);
   const transLyrics = parserLrc(music_trans);

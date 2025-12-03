@@ -86,7 +86,7 @@ const LocalMusic = () => {
       updateAudioFiles(audioFileList);
     } catch (error) {
       console.error('扫描音乐时发生错误:', error);
-      showToast(t('music:scan_error'), 'error', true);
+      showToast(t('music.scan_error'), 'error', true);
     } finally {
       setLoading(false);
       setSelectedDirs([]);
@@ -111,10 +111,10 @@ const LocalMusic = () => {
 
       showToast(
         uniqueNewFiles.length
-          ? t('music:scan_complete_tips', {
+          ? t('music.scan_complete_tips', {
               total: uniqueNewFiles.length,
             })
-          : t('music:no_new_music'),
+          : t('music.no_new_music'),
         uniqueNewFiles.length ? 'success' : 'warning',
         true,
       );
@@ -149,7 +149,7 @@ const LocalMusic = () => {
 
         setDirList(dirList);
       } catch (error) {
-        showToast(t('music:scan_no_permission'), 'error', true);
+        showToast(t('music.scan_no_permission'), 'error', true);
         console.error(error);
       }
     };
@@ -183,7 +183,7 @@ const LocalMusic = () => {
   const [delVisible, setDelVisible] = useState(false);
   const delLocalMusic = () => {
     clearLocalMusic();
-    showToast(t('music:clear_local_success'), 'success');
+    showToast(t('music.clear_local_success'), 'success');
     getLocalMusicFunc();
   };
 

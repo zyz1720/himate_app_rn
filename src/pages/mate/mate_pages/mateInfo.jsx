@@ -28,16 +28,12 @@ const MateInfo = ({navigation, route}) => {
 
   const [isMate, setIsMate] = useState(false);
   const [otherUserInfo, setOtherUserInfo] = useState({});
-  const [bgSource, setBgSource] = useState({uri: ''});
   /* 获取用户信息 */
   const getOtherUserInfo = async () => {
     try {
       const res = await getUserDetail(userId);
       if (res.code === 0) {
         setOtherUserInfo(res.data);
-        setBgSource({
-          uri: envConfig.STATIC_URL + res.data?.user_bg_img,
-        });
       }
     } catch (error) {
       console.error(error);
@@ -140,8 +136,11 @@ const MateInfo = ({navigation, route}) => {
       <ImageBackground
         key={otherUserInfo?.id}
         style={styles.userBgImage}
-        source={bgSource}
-        onError={() => setBgSource(require('@assets/images/user_bg.jpg'))}
+        source={
+          otherUserInfo?.user_bg_img
+            ? {uri: envConfig.STATIC_URL + otherUserInfo.user_bg_img}
+            : require('@assets/images/user_bg.jpg')
+        }
         resizeMode="cover">
         <View backgroundColor={Colors.black2}>
           <View

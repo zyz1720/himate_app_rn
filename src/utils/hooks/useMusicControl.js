@@ -1,10 +1,9 @@
 import MusicControl, {Command} from 'react-native-music-control';
-import {useState, useCallback} from 'react';
+import {useCallback} from 'react';
 import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
 
 export const useMusicControl = () => {
-  const [playerCtrlState, setPlayerCtrlState] = useState(null);
   const {userInfo} = useUserStore();
   const {envConfig} = useConfigStore();
 
@@ -22,15 +21,15 @@ export const useMusicControl = () => {
   // 设置正在播放的音乐信息
   const setNowPlayingCtrl = useCallback(
     musicInfo => {
-      const {title, artist, album, duration, musicExtra} = musicInfo;
+      const {title, artist, album, duration, musicExtra = {}} = musicInfo;
       MusicControl.setNowPlaying({
         title: title,
         artwork:
           envConfig.STATIC_URL +
           (musicExtra?.music_cover || userInfo?.user_avatar),
-        artist: artist,
-        album: album,
-        duration: duration,
+        artist: artist || '',
+        album: album || '',
+        duration: duration || 0,
         color: 0x0000ff,
         date: Date.now().toString(),
         isLiveStream: true,
@@ -43,7 +42,7 @@ export const useMusicControl = () => {
   const resumePlayerCtrl = useCallback(() => {
     MusicControl.updatePlayback({
       state: MusicControl.STATE_PLAYING,
-      speed: 1,
+      // speed: 1,
     });
   }, []);
 
@@ -67,21 +66,39 @@ export const useMusicControl = () => {
   }, []);
 
   /* 控件操作 */
-  MusicControl.on(Command.pause, value => {
-    setPlayerCtrlState(value);
-  });
-  MusicControl.on(Command.play, value => {
-    setPlayerCtrlState(value);
-  });
-  MusicControl.on(Command.nextTrack, value => {
-    setPlayerCtrlState(value);
-  });
-  MusicControl.on(Command.previousTrack, value => {
-    setPlayerCtrlState(value);
-  });
-  MusicControl.on(Command.seek, pos => {
-    setPlayerCtrlState(pos * 1000);
-  });
+  const onPauseCtrl = useCallback(callBack => {
+    MusicControl.on(Command.pause, () => {
+      callBack();
+    });
+  }, []);
+
+  // 播放/暂停
+  const onPlayCtrl = useCallback(callBack => {
+    MusicControl.on(Command.play, () => {
+      callBack();
+    });
+  }, []);
+
+  // 下一首
+  const onNextTrackCtrl = useCallback(callBack => {
+    MusicControl.on(Command.nextTrack, () => {
+      callBack();
+    });
+  }, []);
+
+  // 上一首
+  const onPreviousTrackCtrl = useCallback(callBack => {
+    MusicControl.on(Command.previousTrack, () => {
+      callBack();
+    });
+  }, []);
+
+  // 拖动进度条
+  const onSeekCtrl = useCallback(callBack => {
+    MusicControl.on(Command.seek, pos => {
+      callBack(pos * 1000);
+    });
+  }, []);
 
   return {
     setNowPlayingCtrl,
@@ -89,6 +106,10 @@ export const useMusicControl = () => {
     pausePlayerCtrl,
     seekToPlayerCtrl,
     stopPlayerCtrl,
-    playerCtrlState,
+    onPauseCtrl,
+    onPlayCtrl,
+    onNextTrackCtrl,
+    onPreviousTrackCtrl,
+    onSeekCtrl,
   };
 };

@@ -20,6 +20,9 @@ export const useMusicStore = create(
     set => ({
       ...defaultState,
       setPlayingMusic: music => {
+        if (typeof music?.id === 'string') {
+          return set({playingMusic: music || {}});
+        }
         getMusicDetail(music?.id).then(res => {
           res.code === 0 && set({playingMusic: res.data || {}});
         });

@@ -21,9 +21,9 @@ import Animated, {FadeInUp, FadeOutDown} from 'react-native-reanimated';
 import {getColors} from 'react-native-image-colors';
 import {getWhitenessScore} from '@utils/system/color_utils';
 import {useKeepAwake} from 'expo-keep-awake';
-import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
+import {useMusicStore} from '@store/musicStore';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LrcView from './LrcView';
@@ -75,7 +75,6 @@ const styles = StyleSheet.create({
 const LyricModal = React.memo(props => {
   const {
     visible = false,
-    music = {},
     isPlaying = false,
     isLike = false,
     onPressLike = () => {},
@@ -90,8 +89,12 @@ const LyricModal = React.memo(props => {
     onForWard = () => {},
     onPressMenu = () => {},
   } = props;
+
   useKeepAwake();
   const {t} = useTranslation();
+  const {envConfig} = useConfigStore();
+  const {playingMusic} = useMusicStore();
+  const {musicExtra = {}} = playingMusic;
 
   // 屏幕变化监听
   const {width, height} = useWindowDimensions();
@@ -100,40 +103,34 @@ const LyricModal = React.memo(props => {
     setIsHorizontal(width > height);
   }, [width, height]);
 
-  const {userInfo} = useUserStore();
-  const {envConfig} = useConfigStore();
 
-  const {musicExtra = {}} = music || {};
   const [nowLyric, setNowLyric] = useState('');
 
   // 颜色计算 - 只在相关依赖变化时执行
   useEffect(() => {
-    if (!musicExtra?.music_cover) {
-      return;
-    }
-
-    getColors(envConfig.STATIC_URL + musicExtra.music_cover, {
-      fallback: Colors.black,
-      cache: true, // 启用缓存
-    }).then(res => {
-      const platform = res.platform;
-      const colorValue = platform === 'android' ? res.average : res.background;
-      const num = getWhitenessScore(colorValue);
-      Colors.loadColors({
-        lyricColor: num > 76 ? Colors.grey10 : Colors.white,
+    if (musicExtra?.music_cover) {
+      getColors(envConfig.STATIC_URL + musicExtra.music_cover, {
+        fallback: Colors.black,
+        cache: true, // 启用缓存
+      }).then(res => {
+        const platform = res.platform;
+        const colorValue =
+          platform === 'android' ? res.average : res.background;
+        const num = getWhitenessScore(colorValue);
+        Colors.loadColors({
+          lyricColor: num > 76 ? Colors.grey10 : Colors.white,
+        });
       });
-    });
+    }
   }, [musicExtra?.music_cover]);
-
-  // 记忆化回调函数
-  const handleFavorite = useCallback(() => {
-    onPressLike(music.id, isLike);
-  }, [onPressLike, music.id, isLike]);
 
   // 艺术家字符串
   const artistsString = useMemo(
-    () => music?.artists?.join(' / ') || '未知歌手',
-    [music?.artists],
+    () =>
+      Array.isArray(playingMusic?.artists)
+        ? playingMusic?.artists?.join(' / ')
+        : t('music.empty_artist'),
+    [playingMusic?.artists],
   );
 
   // 当前时间和总时长格式化
@@ -146,12 +143,6 @@ const LyricModal = React.memo(props => {
     () => formatMilliSeconds(duration),
     [duration],
   );
-
-  const [bgSource, setBgSource] = useState({
-    uri:
-      envConfig.THUMBNAIL_URL +
-      (musicExtra?.music_cover || userInfo?.user_avatar || ''),
-  });
 
   // 歌词动画组件
   const lyricAnimation = useMemo(() => {
@@ -185,8 +176,11 @@ const LyricModal = React.memo(props => {
         <ImageBackground
           blurRadius={50}
           style={styles.backImage}
-          source={bgSource}
-          onError={() => setBgSource(require('@assets/images/user_bg.jpg'))}
+          source={
+            musicExtra?.music_cover
+              ? {uri: envConfig.STATIC_URL + musicExtra.music_cover}
+              : require('@assets/images/user_bg.jpg')
+          }
           resizeMode="cover">
           <TouchableOpacity paddingT-48 paddingL-22 onPress={onClose}>
             <Ionicons name="chevron-down" color={Colors.lyricColor} size={24} />
@@ -197,11 +191,11 @@ const LyricModal = React.memo(props => {
               <View width={'50%'} paddingH-50>
                 <View flexS center marginT-8>
                   <Image
-                    source={{
-                      uri:
-                        envConfig.STATIC_URL + (musicExtra?.music_cover || ''),
-                    }}
-                    errorSource={require('@assets/images/music_cover.jpg')}
+                    source={
+                      musicExtra?.music_cover
+                        ? {uri: envConfig.STATIC_URL + musicExtra.music_cover}
+                        : require('@assets/images/music_cover.jpg')
+                    }
                     style={[styles.HbigImage, {borderColor: Colors.lyricColor}]}
                   />
                 </View>
@@ -210,7 +204,7 @@ const LyricModal = React.memo(props => {
                     <View row centerV spread marginT-24>
                       <View flexS>
                         <Text text60BO color={Colors.lyricColor}>
-                          {music?.title || t('empty.play_music')}
+                          {playingMusic?.title || t('empty.play_music')}
                         </Text>
                         <Text marginT-6 color={Colors.lyricColor} text90L>
                           {artistsString}
@@ -218,7 +212,7 @@ const LyricModal = React.memo(props => {
                       </View>
                       <TouchableOpacity
                         style={styles.musicBut}
-                        onPress={handleFavorite}>
+                        onPress={onPressLike}>
                         <AntDesign
                           name={isLike ? 'heart' : 'hearto'}
                           color={Colors.lyricColor}
@@ -319,11 +313,11 @@ const LyricModal = React.memo(props => {
               {/* 第二页：歌词视图 */}
               <View width={'50%'} paddingH-20 centerV>
                 <LrcView
-                  music={musicExtra}
-                  Cover={envConfig.STATIC_URL + musicExtra?.music_cover}
-                  IsHorizontal={true}
-                  CurrentTime={curPosition}
-                  OnLyricsChange={setNowLyric}
+                  playingMusic={musicExtra}
+                  cover={musicExtra?.music_cover}
+                  isHorizontal={true}
+                  currentTime={curPosition}
+                  onLyricsChange={setNowLyric}
                 />
               </View>
             </View>
@@ -342,11 +336,13 @@ const LyricModal = React.memo(props => {
               <View>
                 <View flexS center marginT-40>
                   <Image
-                    source={{
-                      uri:
-                        envConfig.STATIC_URL + (musicExtra?.music_cover || ''),
-                    }}
-                    errorSource={require('@assets/images/music_cover.jpg')}
+                    source={
+                      musicExtra?.music_cover
+                        ? {
+                            uri: envConfig.STATIC_URL + musicExtra.music_cover,
+                          }
+                        : require('@assets/images/music_cover.jpg')
+                    }
                     style={[styles.bigImage, {borderColor: Colors.lyricColor}]}
                   />
                 </View>
@@ -354,7 +350,7 @@ const LyricModal = React.memo(props => {
                   <View row centerV spread marginT-12>
                     <View flexS>
                       <Text text60BO color={Colors.lyricColor}>
-                        {music?.title || t('empty.play_music')}
+                        {playingMusic?.title || t('empty.play_music')}
                       </Text>
                       <Text marginT-6 color={Colors.lyricColor} text70>
                         {artistsString}
@@ -362,7 +358,7 @@ const LyricModal = React.memo(props => {
                     </View>
                     <TouchableOpacity
                       style={styles.musicBut}
-                      onPress={handleFavorite}>
+                      onPress={onPressLike}>
                       <AntDesign
                         name={isLike ? 'heart' : 'hearto'}
                         color={Colors.lyricColor}
@@ -371,13 +367,13 @@ const LyricModal = React.memo(props => {
                     </TouchableOpacity>
                   </View>
                   {lyricAnimation}
-                  {music?.sample_rate ? (
+                  {playingMusic?.sample_rate ? (
                     <View marginT-12 row centerV spread>
                       <Text color={Colors.lyricColor} text100L>
-                        {t('music.sample_rate', {rate: music.sample_rate})}
+                        {t('music.sample_rate', {rate: playingMusic.sample_rate})}
                       </Text>
                       <Text color={Colors.lyricColor} text100L>
-                        {t('music.bitrate', {rate: music.bitrate})}
+                        {t('music.bitrate', {rate: playingMusic.bitrate})}
                       </Text>
                     </View>
                   ) : null}
@@ -474,10 +470,10 @@ const LyricModal = React.memo(props => {
               {/* 第二页：歌词视图 */}
               <View>
                 <LrcView
-                  music={musicExtra}
-                  Cover={envConfig.STATIC_URL + musicExtra?.music_cover}
-                  CurrentTime={curPosition}
-                  OnLyricsChange={setNowLyric}
+                  musicExtra={musicExtra}
+                  cover={musicExtra?.music_cover}
+                  currentTime={curPosition}
+                  onLyricsChange={setNowLyric}
                 />
               </View>
             </Carousel>

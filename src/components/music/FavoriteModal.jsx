@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  StyleSheet,
-  ScrollView,
-  Modal,
-  useState,
-  ImageBackground,
-} from 'react-native';
+import {StyleSheet, ScrollView, Modal, ImageBackground} from 'react-native';
 import {
   View,
   Text,
@@ -45,16 +39,12 @@ const FavoriteModal = React.memo(props => {
   const {
     visible = false,
     onClose = () => {},
-    backgroundImg = '',
+    backgroundImg,
     title = '',
     remarks = '',
     userAvatar = '',
     userName = '',
   } = props;
-
-  const [bgSource, setBgSource] = useState({
-    uri: backgroundImg,
-  });
 
   return (
     <Modal
@@ -70,8 +60,11 @@ const FavoriteModal = React.memo(props => {
         <ImageBackground
           blurRadius={50}
           style={styles.listBackImage}
-          source={bgSource}
-          onError={() => setBgSource(require('@assets/images/user_bg.jpg'))}
+          source={
+            backgroundImg
+              ? {uri: backgroundImg}
+              : require('@assets/images/user_bg.jpg')
+          }
           resizeMode="cover">
           <TouchableOpacity paddingT-48 paddingL-22 onPress={onClose}>
             <AntDesign name="close" color={Colors.white} size={24} />

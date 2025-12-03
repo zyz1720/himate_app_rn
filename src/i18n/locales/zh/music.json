@@ -55,6 +55,8 @@
   "recent_play_tips": "距离上次听歌已经过去",
   "recent_play_day": "天了",
   "welcome": "今天也来听听歌吧 ~",
+  "order_play": "顺序播放",
+  "single_play": "单曲循环",
   "random_play": "随机播放",
   "alarm_close": "定时关闭",
   "my_playlist": "我的歌单",
@@ -80,5 +82,6 @@
   "scan_complete_tips": "为您扫描到{{total}}首新音乐",
   "no_new_music": "没有找到新音乐",
   "scan_no_permission": "没有权限访问该目录",
-  "unable_to_play": "无法播放的音乐！"
+  "unable_to_play": "无法播放的音乐！",
+  "clear_list": "清空列表"
 }

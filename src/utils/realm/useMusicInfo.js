@@ -24,27 +24,23 @@ export const clearPlayHistory = () => {
  * @param {Object} musicInfo 音乐信息
  */
 export const recordPlayHistory = musicInfo => {
-  if (typeof musicInfo?.id !== 'string') {
+  if (typeof musicInfo?.id === 'string') {
     return;
   }
   const needMusicInfo = deepClone(musicInfo);
-  for (const key in needMusicInfo) {
-    if (needMusicInfo[key] === null) {
-      delete needMusicInfo[key];
-    }
-  }
+
   const musicList = realm
     .objects('music_info')
     .filtered('id == $0', needMusicInfo.id);
   if (musicList.length > 0) {
     realm.write(() => {
       for (const ele of musicList) {
-        ele.updated_at = Date.now().toString();
+        ele.updated_at = new Date();
       }
     });
   } else {
-    needMusicInfo.created_at = Date.now().toString();
-    needMusicInfo.updated_at = Date.now().toString();
+    needMusicInfo.created_at = new Date();
+    needMusicInfo.updated_at = new Date();
     realm.write(() => {
       realm.create('music_info', needMusicInfo);
     });

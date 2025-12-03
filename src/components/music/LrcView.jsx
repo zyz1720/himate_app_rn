@@ -4,7 +4,8 @@ import {formatLrc} from '@utils/system/lyric_utils';
 import {View, Text, Colors, TouchableOpacity, Image} from 'react-native-ui-lib';
 import {fullHeight, fullWidth} from '@style/index';
 import {useToast} from '@utils/hooks/useToast';
-import {useMusicStore} from '@/stores/musicStore';
+import {useMusicStore} from '@store/musicStore';
+import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LrcItem from './LrcItem';
@@ -67,13 +68,14 @@ const styles = StyleSheet.create({
 const LrcView = React.memo(props => {
   const {
     isHorizontal = false,
-    music = {},
-    cover = '',
+    cover,
     currentTime,
     onLyricsChange = () => {},
   } = props;
   const {t} = useTranslation();
-  const {switchCount, setSwitchCount} = useMusicStore();
+  const {envConfig} = useConfigStore();
+  const {switchCount, setSwitchCount, playingMusic} = useMusicStore();
+  const {musicExtra = {}} = playingMusic;
   const {showToast} = useToast();
   const [parsedLrc, setParsedLrc] = useState([]);
   const flatListRef = useRef(null);
@@ -104,7 +106,7 @@ const LrcView = React.memo(props => {
       haveTrans: _haveTrans,
       haveRoma: _haveRoma,
       haveYrc: _haveYrc,
-    } = formatLrc(music);
+    } = formatLrc(musicExtra);
     setParsedLrc(Lyrics);
     setHaveYrc(_haveYrc);
     setHaveRoma(_haveRoma);
@@ -115,7 +117,7 @@ const LrcView = React.memo(props => {
 
     setItemHeights(new Map());
     shouldSkip.current = false;
-  }, [music]);
+  }, [musicExtra]);
 
   // 过滤出可用的歌词模式
   const filteredModes = (_haveYrc, _haveTrans, _haveRoma) => {
@@ -216,7 +218,7 @@ const LrcView = React.memo(props => {
     return parsedLrc.length - 1;
   }, [parsedLrc, yrcVisible, haveYrc, currentTime]);
 
-  // 自动滚动到当前歌词 - 保留基本逻辑
+  // 自动滚动到当前歌词
   const [nowIndex, setNowIndex] = useState(-1);
   useEffect(() => {
     const index = findCurrentLineIndex();
@@ -284,7 +286,7 @@ const LrcView = React.memo(props => {
 
   // 计算每行歌词高度
   const getItemLayout = useCallback(
-    (data, index) => {
+    (_, index) => {
       const {lengths, offsets} = itemLayouts || {};
       return {
         length: lengths.get(index) || isTwoLines ? 68 : 48,
@@ -300,7 +302,7 @@ const LrcView = React.memo(props => {
     ({item, index}) => {
       const isActive = nowIndex === index;
       let progress = 0;
-      let visibleChars = '';
+      let displayChars = '';
       const fullText = item?.words
         ? item.words.map(w => w.char).join('')
         : item?.text;
@@ -310,7 +312,7 @@ const LrcView = React.memo(props => {
 
         for (const word of item.words) {
           if (currentTime >= word.startTime) {
-            visibleChars += word.char;
+            displayChars += word.char;
           } else {
             break;
           }
@@ -319,17 +321,16 @@ const LrcView = React.memo(props => {
 
       return (
         <LrcItem
-          Item={item}
-          Index={index}
-          currentTime={currentTime}
-          NowIndex={nowIndex}
-          Progress={progress}
-          VisibleChars={visibleChars}
-          FullText={fullText}
-          YrcVisible={yrcVisible && haveYrc}
-          TransVisible={transVisible && haveTrans}
-          RomaVisible={romaVisible && haveRoma}
-          OnItemLayout={OnItemLayout}
+          item={item}
+          index={index}
+          nowIndex={nowIndex}
+          progress={progress}
+          displayChars={displayChars}
+          fullText={fullText}
+          yrcVisible={yrcVisible && haveYrc}
+          transVisible={transVisible && haveTrans}
+          romaVisible={romaVisible && haveRoma}
+          onItemLayout={OnItemLayout}
           isHorizontal={isHorizontal}
         />
       );
@@ -355,10 +356,13 @@ const LrcView = React.memo(props => {
     <View>
       {isHorizontal ? null : (
         <View flexS row centerV paddingV-16 paddingH-20 paddingB-20>
-          {music?.music_name ? (
+          {playingMusic?.title ? (
             <Image
-              source={{uri: cover}}
-              errorSource={require('@assets/images/music_cover.jpg')}
+              source={
+                cover
+                  ? {uri: envConfig.STATIC_URL + cover}
+                  : require('@assets/images/music_cover.jpg')
+              }
               style={[styles.image, {borderColor: Colors.lyricColor}]}
             />
           ) : null}
@@ -368,14 +372,14 @@ const LrcView = React.memo(props => {
               text70BO
               width={fullWidth * 0.78}
               numberOfLines={1}>
-              {music?.music_name}
+              {playingMusic?.title}
             </Text>
             <Text
               color={Colors.lyricColor}
               marginT-2
               width={fullWidth * 0.78}
               numberOfLines={1}>
-              {music?.music_singer}
+              {playingMusic?.artist}
             </Text>
           </View>
         </View>
@@ -397,7 +401,7 @@ const LrcView = React.memo(props => {
         ) : (
           <View height={'100%'} center>
             <Text color={Colors.lyricColor} text80>
-              此歌曲暂时还没有歌词哦 ~
+              {t('empty.music_lrc')}
             </Text>
           </View>
         )}

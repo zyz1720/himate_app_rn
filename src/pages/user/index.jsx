@@ -111,10 +111,6 @@ const User = ({navigation}) => {
     setShowAppUpdate(false);
   };
 
-  const [bgSource, setBgSource] = useState({
-    uri: envConfig.STATIC_URL + userInfo?.user_bg_img,
-  });
-
   return (
     <>
       {isEmptyObject(userInfo) ? (
@@ -123,8 +119,11 @@ const User = ({navigation}) => {
         <View flexG top paddingH-16 paddingT-16>
           <ImageBackground
             style={styles.userBgImage}
-            source={bgSource}
-            onError={() => setBgSource(require('@assets/images/user_bg.jpg'))}
+            source={
+              userInfo?.user_bg_img
+                ? {uri: envConfig.STATIC_URL + userInfo.user_bg_img}
+                : require('@assets/images/user_bg.jpg')
+            }
             resizeMode="cover">
             <View backgroundColor={Colors.black2}>
               <View

@@ -1,4 +1,4 @@
-import React, {useEffect, useCallback} from 'react';
+import React, {useEffect, useCallback, useState} from 'react';
 import {StyleSheet} from 'react-native';
 import {View, Text, Colors} from 'react-native-ui-lib';
 import {fullWidth} from '@style/index';

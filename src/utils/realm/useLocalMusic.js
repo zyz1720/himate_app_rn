@@ -15,6 +15,7 @@ export const getLocalMusic = () => {
 export const saveLocalMusic = newFiles => {
   realm.write(() => {
     newFiles.forEach(file => {
+      file.created_at = new Date();
       realm.create('local_music', file);
     });
   });
