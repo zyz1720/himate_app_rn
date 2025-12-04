@@ -77,6 +77,7 @@ import {CustomDay} from '@components/message/CustomDay';
 import {CustomLoadEarlier} from '@components/message/CustomLoadEarlier';
 import {CustomBubble} from '@components/message/CustomBubble';
 import {CustomSend} from '@components/message/CustomSend';
+import {CustomComposer} from '@components/message/CustomComposer';
 import CustomTicks from '@components/message/CustomTicks';
 import CustomActions from '@components/message/CustomActions';
 import CustomInputToolbar from '@components/message/CustomInputToolbar';
@@ -244,7 +245,7 @@ const Chat = React.memo(({navigation, route}) => {
         renderInputToolbar={props => (
           <CustomInputToolbar props={props} showActions={showActions} />
         )}
-        renderComposer={renderComposer}
+        renderComposer={CustomComposer}
         renderAccessory={renderAccessory}
         renderMessageImage={renderMessageImage}
         renderMessageVideo={renderMessageVideo}
