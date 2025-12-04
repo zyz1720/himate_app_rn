@@ -14,7 +14,7 @@ import {
   RadioButton,
 } from 'react-native-ui-lib';
 import {keepChangedFields} from '@utils/common/object_utils';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {useTranslation} from 'react-i18next';
 import {getUserInfo, editUserInfo} from '@api/user';
 import {useConfigStore} from '@store/configStore';

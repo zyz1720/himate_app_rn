@@ -17,7 +17,7 @@ import {
   Slider,
 } from 'react-native-ui-lib';
 import {FlatList, StyleSheet, Vibration} from 'react-native';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {fullHeight, fullWidth} from '@style/index';
 import {
   getOneselfFavorites,
@@ -34,6 +34,7 @@ import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
 import {useTranslation} from 'react-i18next';
 import {getPlayHistory} from '@utils/realm/useMusicInfo';
 import {getLocalMusic} from '@utils/realm/useLocalMusic';
+import {useIsFocused} from '@react-navigation/native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -43,6 +44,7 @@ import dayjs from 'dayjs';
 const Music = ({navigation}) => {
   const {showToast} = useToast();
   const {t} = useTranslation();
+  const isFocused = useIsFocused();
 
   const {userInfo} = useUserStore();
   const {isClosed, randomNum, setRandomNum, setCloseTime, setIsRandomPlay} =
@@ -122,7 +124,6 @@ const Music = ({navigation}) => {
 
   /* 删除歌单 */
   const [delVisible, setDelVisible] = useState(false);
-  const [delName, setDelName] = useState('');
   const delFavorites = async () => {
     try {
       const delRes = await deleteFavorites({
@@ -235,7 +236,7 @@ const Music = ({navigation}) => {
     getAllMusicCount();
     getLocalMusicInfo();
     refreshData();
-  }, []);
+  }, [isFocused]);
 
   useEffect(() => {
     if (isClosed) {
@@ -482,7 +483,6 @@ const Music = ({navigation}) => {
                       if (isMultiSelect) {
                         return;
                       }
-                      setDelName(item.favorites_name);
                       setSelectedIds([item.id]);
                       setDelVisible(true);
                     },
@@ -502,10 +502,13 @@ const Music = ({navigation}) => {
                     });
                   }}>
                   <Image
-                    source={{
-                      uri: envConfig.THUMBNAIL_URL + item?.favorites_cover,
-                    }}
-                    errorSource={require('@assets/images/favorites_cover.jpg')}
+                    source={
+                      item?.favorites_cover
+                        ? {
+                            uri: envConfig.THUMBNAIL_URL + item.favorites_cover,
+                          }
+                        : require('@assets/images/favorites_cover.jpg')
+                    }
                     style={styles.favoritesCover}
                   />
                   <View centerV marginL-12>
@@ -689,7 +692,7 @@ const Music = ({navigation}) => {
               useRange={true}
               step={1}
               onRangeChange={values => {
-                setRandomNum(values);
+                setRandomNum(values.min, values.max);
               }}
             />
           </View>

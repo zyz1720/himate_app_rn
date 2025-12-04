@@ -11,5 +11,13 @@
     "msg_type_video": "视频",
     "msg_type_audio": "音频",
     "msg_type_file": "文件",
-    "msg_type_other": "其他"
+    "msg_type_other": "其他",
+    "msg_mute_placeholder": "您已被禁言!",
+    "msg_placeholder": "开始聊天吧~",
+    "msg_failed": "未发送",
+    "msg_waiting": "等待发送",
+    "msg_sending": "发送中...",
+    "send": "发送",
+    "msg_mute_error": "你已被禁言，无法使用!",
+    "msg_wait_error": "请先等待当前消息发送完成!"
 }

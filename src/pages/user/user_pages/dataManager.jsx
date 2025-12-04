@@ -14,7 +14,7 @@ import {
   ProgressBar,
 } from 'react-native-ui-lib';
 import {getFiles, delFiles, getUserMsgs, delUserMsgs} from '@api/data_manager';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {
   downloadFile,
   getFileFromDocumentPicker,
@@ -35,6 +35,7 @@ import BaseTopBar from '@components/common/BaseTopBar';
 import VideoModal from '@components/common/VideoModal';
 import ImgModal from '@components/common/ImgModal';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import DocumentPicker from 'react-native-document-picker';
 import BaseDialog from '@components/common/BaseDialog';
 import dayjs from 'dayjs';
@@ -565,7 +566,11 @@ const DataManager = ({navigation}) => {
             </View>
           ) : (
             <TouchableOpacity center onPress={() => setIsMultiSelect(true)}>
-              <FontAwesome name="list-ul" color={Colors.grey40} size={20} />
+              <AntDesign
+                name="bars"
+                color={Colors.grey40}
+                size={24}
+              />
             </TouchableOpacity>
           )}
         </View>

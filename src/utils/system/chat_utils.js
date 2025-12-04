@@ -1,26 +1,26 @@
 import {deepClone} from '@utils/common/object_utils';
 import {useConfigStore} from '@store/configStore';
 import {useSettingStore} from '@store/settingStore';
-import {getLocalUser} from '@utils/realm/useUsersInfo';
+import {getLocalUsers} from '@utils/realm/useUsersInfo';
 import {getTrueSecretKey, decryptAES} from './crypto_utils';
 
 /* 解密消息 */
 const {msgSecretKey} = useConfigStore.getState();
-export const decryptMsg = (msg, secret) => {
+export const decryptMsg = (content, secret) => {
   if (secret) {
-    const {iv, encryptedData} = JSON.parse(msg);
+    const {iv, encryptedData} = JSON.parse(content);
     const trueSecret = getTrueSecretKey(secret, msgSecretKey);
     return decryptAES(encryptedData, iv, trueSecret);
   } else {
-    return msg;
+    return content;
   }
 };
 
 /* 显示媒体类型 */
-export const showMediaType = (msg, type, secret = false) => {
+export const showMediaType = (content, type, secret = false) => {
   switch (type) {
     case 'text':
-      return decryptMsg(msg, secret);
+      return decryptMsg(content, secret);
     case 'image':
       return '[图片]';
     case 'video':
@@ -144,14 +144,13 @@ export const addOrUpdateLocalUser = (realm, users) => {
   }
 };
 
-
 /**
  * 匹配消息发送者名称
  * @param {Object} msgInfo 消息信息
  * @returns {string} 发送者名称
  */
 export const matchMsgInfo = msgInfo => {
-  const localUsers = getLocalUser();
+  const localUsers = getLocalUsers();
   const data = localUsers.find(
     item => item.session_primary_id === msgInfo.session_primary_id,
   );

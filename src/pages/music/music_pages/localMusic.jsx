@@ -8,7 +8,7 @@ import {
   Button,
 } from 'react-native-ui-lib';
 import {FlatList, StyleSheet, Platform, Modal} from 'react-native';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {v4 as uuid} from 'uuid';
 import {fullHeight, statusBarHeight} from '@style/index';
 import {audioExtNames} from '@const/file_ext_names';

@@ -21,7 +21,7 @@ import {
 import {statusBarHeight, fullHeight} from '@style/index';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {isEmptyObject} from '@utils/common/object_utils';
 import {getOneselfFavorites} from '@api/favorites';
 import {
@@ -156,7 +156,7 @@ const MusicList = props => {
           } else {
             try {
               const res = await likeMusic({
-                id: nowMusic.id,
+                ids: musicIds,
               });
               if (res.code === 0) {
                 showToast(t('music.already_favorite'), 'success');

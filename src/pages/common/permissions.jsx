@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import {View, Card, Colors, Text} from 'react-native-ui-lib';
 import {openSettings} from 'react-native-permissions';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {useTranslation} from 'react-i18next';
 import {usePermissionStore} from '@store/permissionStore';
 import ListItem from '@components/common/ListItem';

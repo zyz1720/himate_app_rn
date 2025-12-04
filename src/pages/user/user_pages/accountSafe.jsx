@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, ScrollView, RefreshControl} from 'react-native';
 import {View, Text, Card, Colors, TextField, Button} from 'react-native-ui-lib';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {editUserAccount, editUserPassword, getUserInfo} from '@api/user';
 import {validateEmail} from '@utils/common/string_utils';
 import {useUserStore} from '@store/userStore';

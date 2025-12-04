@@ -14,7 +14,7 @@ import {fullWidth} from '@style/index';
 import {Marquee} from '@animatereactnative/marquee';
 import {isEmptyObject} from '@utils/common/object_utils';
 import {getRandomInt} from '@utils/common/number_utils';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {getMusic, likeMusic, dislikeMusic} from '@api/music';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {useUserStore} from '@store/userStore';
@@ -29,6 +29,7 @@ import Animated, {
   useSharedValue,
   withTiming,
   useAnimatedStyle,
+  withSpring,
 } from 'react-native-reanimated';
 import LyricModal from './LyricModal';
 import ToBePlayedModal from './ToBePlayedModal';
@@ -82,7 +83,6 @@ const MusicCtrlProvider = React.memo(props => {
   const {envConfig} = useConfigStore();
   const {
     showMusicCtrl,
-    alwaysShowMusicCtrl,
     playList,
     playingMusic,
     closeTime,
@@ -427,109 +427,134 @@ const MusicCtrlProvider = React.memo(props => {
   }, []);
 
   const ctrlWidth = useSharedValue(fullWidth - 32);
-  const animatedStyles = useAnimatedStyle(() => ({
+  const expandAnimatedStyle = useAnimatedStyle(() => ({
     width: ctrlWidth.value,
   }));
+
+  const display = useSharedValue('none');
+  const opacity = useSharedValue(0);
+  const translateY = useSharedValue(50);
+
+  const fadeDownAnimatedStyle = useAnimatedStyle(() => ({
+    display: display.value,
+    opacity: opacity.value,
+    transform: [{translateY: translateY.value}],
+  }));
+
+  useEffect(() => {
+    if (showMusicCtrl) {
+      display.value = 'flex';
+      opacity.value = withTiming(1);
+      translateY.value = withTiming(0);
+    } else {
+      display.value = 'none';
+      opacity.value = withTiming(0);
+      translateY.value = withTiming(50);
+    }
+  }, [showMusicCtrl]);
 
   return (
     <MusicCtrlContext.Provider value={{}}>
       {children}
-      {showMusicCtrl ? (
-        <View style={styles.CtrlContainer}>
-          <Animated.View style={[animatedStyles, styles.ctrlBackImage]}>
-            <ImageBackground
-              blurRadius={40}
-              source={
-                userInfo?.user_bg_img
-                  ? {
-                      uri: envConfig.THUMBNAIL_URL + userInfo.user_bg_img,
-                    }
-                  : require('@assets/images/user_bg.jpg')
-              }
-              resizeMode="cover">
-              <GestureHandlerRootView>
-                <View row centerV spread>
+      <View style={styles.CtrlContainer}>
+        <Animated.View
+          style={[
+            expandAnimatedStyle,
+            fadeDownAnimatedStyle,
+            styles.ctrlBackImage,
+          ]}>
+          <ImageBackground
+            blurRadius={40}
+            source={
+              userInfo?.user_bg_img
+                ? {
+                    uri: envConfig.THUMBNAIL_URL + userInfo.user_bg_img,
+                  }
+                : require('@assets/images/user_bg.jpg')
+            }
+            resizeMode="cover">
+            <GestureHandlerRootView>
+              <View row centerV spread>
+                <TouchableOpacity
+                  row
+                  centerV
+                  onPress={() => {
+                    ctrlWidth.value = withTiming(
+                      ctrlWidth.value === 47 ? fullWidth - 32 : 47,
+                    );
+                  }}>
+                  <View>
+                    <AnimatedCircularProgress
+                      key={playingMusic?.id}
+                      size={47}
+                      width={3}
+                      fill={playProgress}
+                      tintColor={Colors.red40}
+                      rotation={0}
+                      lineCap="square">
+                      {() => (
+                        <Image
+                          source={
+                            playingMusic?.musicExtra?.music_cover
+                              ? {
+                                  uri:
+                                    envConfig.THUMBNAIL_URL +
+                                    playingMusic.musicExtra.music_cover,
+                                }
+                              : require('@assets/images/music_cover.jpg')
+                          }
+                          style={styles.image}
+                        />
+                      )}
+                    </AnimatedCircularProgress>
+                  </View>
+                </TouchableOpacity>
+                <View row centerV>
                   <TouchableOpacity
-                    row
                     centerV
                     onPress={() => {
-                      ctrlWidth.value = withTiming(
-                        ctrlWidth.value === 47 ? fullWidth - 32 : 47,
-                      );
+                      setMusicModalVisible(true);
                     }}>
-                    <View>
-                      <AnimatedCircularProgress
-                        key={playingMusic?.id}
-                        size={47}
-                        width={3}
-                        fill={playProgress}
-                        tintColor={Colors.red40}
-                        rotation={0}
-                        lineCap="square">
-                        {() => (
-                          <Image
-                            source={
-                              playingMusic?.musicExtra?.music_cover
-                                ? {
-                                    uri:
-                                      envConfig.THUMBNAIL_URL +
-                                      playingMusic.musicExtra.music_cover,
-                                  }
-                                : require('@assets/images/music_cover.jpg')
-                            }
-                            style={styles.image}
-                          />
-                        )}
-                      </AnimatedCircularProgress>
-                    </View>
+                    {renderMarquee()}
                   </TouchableOpacity>
                   <View row centerV>
                     <TouchableOpacity
-                      centerV
+                      style={styles.musicBut}
                       onPress={() => {
-                        setMusicModalVisible(true);
+                        playOrPauseTrack();
                       }}>
-                      {renderMarquee()}
-                    </TouchableOpacity>
-                    <View row centerV>
-                      <TouchableOpacity
-                        style={styles.musicBut}
-                        onPress={() => {
-                          playOrPauseTrack();
-                        }}>
-                        {audioIsPlaying ? (
-                          <AntDesign
-                            name="pausecircleo"
-                            color={Colors.white}
-                            size={24}
-                          />
-                        ) : (
-                          <AntDesign
-                            name="playcircleo"
-                            color={Colors.white}
-                            size={24}
-                          />
-                        )}
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.musicBut}
-                        marginL-6
-                        marginR-12
-                        onPress={() => setListModalVisible(true)}>
+                      {audioIsPlaying ? (
                         <AntDesign
-                          name="menuunfold"
+                          name="pausecircleo"
                           color={Colors.white}
-                          size={22}
+                          size={24}
                         />
-                      </TouchableOpacity>
-                    </View>
+                      ) : (
+                        <AntDesign
+                          name="playcircleo"
+                          color={Colors.white}
+                          size={24}
+                        />
+                      )}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.musicBut}
+                      marginL-6
+                      marginR-12
+                      onPress={() => setListModalVisible(true)}>
+                      <AntDesign
+                        name="menuunfold"
+                        color={Colors.white}
+                        size={22}
+                      />
+                    </TouchableOpacity>
                   </View>
                 </View>
-              </GestureHandlerRootView>
-            </ImageBackground>
-          </Animated.View>
-        </View>
-      ) : null}
+              </View>
+            </GestureHandlerRootView>
+          </ImageBackground>
+        </Animated.View>
+      </View>
       <LyricModal
         visible={musicModalVisible}
         onClose={() => setMusicModalVisible(false)}

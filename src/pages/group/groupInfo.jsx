@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   Avatar,
 } from 'react-native-ui-lib';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {getGroupDetail, editGroup, deleteGroup} from '@api/group';
 import {editGroupMember, exitGroup} from '@api/group_member';
 import {uploadFile} from '@utils/system/file_utils';

@@ -10,7 +10,7 @@ import {
   Button,
   TouchableOpacity,
 } from 'react-native-ui-lib';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {getUserDetail} from '@api/user';
 import {addMate, editMateRemarks, deleteMate, getIsMate} from '@api/mate';
 import {useConfigStore} from '@store/configStore';

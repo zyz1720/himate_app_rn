@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {View, Button, TextField, Card, Colors, Text} from 'react-native-ui-lib';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {useRealm} from '@realm/react';
 import {encryptAES, decryptAES} from '@utils/system/crypto_utils';
 import {writeJSONFile, readJSONFile} from '@utils/system/file_utils';

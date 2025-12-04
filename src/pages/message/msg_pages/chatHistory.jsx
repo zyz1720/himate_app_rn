@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {View, Card, Colors} from 'react-native-ui-lib';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {getSessionDetail} from '@api/session';
 import {formatMsg, setLocalMsg} from '@utils/system/chat_utils';
 import ListItem from '@components/common/ListItem';

@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   TextField,
 } from 'react-native-ui-lib';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {
   getApplyList,
   getRejectedList,

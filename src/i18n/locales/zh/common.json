@@ -58,5 +58,9 @@
   "delete_msg_success": "成功删除{{count}}条聊天记录",
   "delete_tips": "您确定要删除选中项吗？",
   "video_load_failed": "视频加载失败",
-  "scan_qrcode_failed": "未识别到二维码"
+  "scan_qrcode_failed": "未识别到二维码",
+  "toDay": "今天",
+  "yesterday": "昨天",
+  "lastWeek": "上周",
+  "load_more": "加载更多"
 }

@@ -7,7 +7,6 @@ const defaultState = {
   playingMusic: {}, // 当前播放音乐
   playList: [], // 播放列表
   showMusicCtrl: false, // 是否显示音乐控制器
-  alwaysShowMusicCtrl: false, // 是否一直显示音乐控制器
   closeTime: 0, // 关闭时间
   isClosed: false, // 是否关闭
   randomNum: {min: 0, max: 1}, // 随机数范围
@@ -57,16 +56,11 @@ export const useMusicStore = create(
           return state;
         }),
       setShowMusicCtrl: router => {
-        set(state => {
-          if (!state.alwaysShowMusicCtrl) {
-            if (router.includes('Music') || router.includes('Favorites')) {
-              state.showMusicCtrl = true;
-            } else {
-              state.showMusicCtrl = false;
-            }
-          }
-          return state;
-        });
+        if (router.includes('Music') || router.includes('Favorites')) {
+          return set({showMusicCtrl: true});
+        } else {
+          return set({showMusicCtrl: false});
+        }
       },
       setCloseTime: time => set({closeTime: time || 0}),
       setIsClosed: flag => set({isClosed: flag ?? false}),

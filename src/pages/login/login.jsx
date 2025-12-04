@@ -11,7 +11,7 @@ import {
 import {getEmailCode, getImgCaptcha} from '@api/common';
 import {userLoginAccount, userLoginCode} from '@api/login';
 import {userReg} from '@api/user';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {validateEmail} from '@utils/common/string_utils';
 import {displayName} from '@root/app.json';
 import {SvgXml} from 'react-native-svg';

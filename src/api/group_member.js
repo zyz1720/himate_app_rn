@@ -1,5 +1,9 @@
 import instance from '@utils/request';
 
+// 获取自己在群中的信息
+export const getSelfGroupMember = group_id =>
+  instance.get(`app/group-member/oneself/${group_id}`);
+
 // 获取所有群成员
 export const getGroupMembers = (groupId, params) =>
   instance.get(`app/group-member/${groupId}`, {params});

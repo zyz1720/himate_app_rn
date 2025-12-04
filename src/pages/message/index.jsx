@@ -9,8 +9,8 @@ import {
   TouchableOpacity,
   Badge,
 } from 'react-native-ui-lib';
-import {getUserSessions, dleUserSession} from '@api/session';
-import {useToast} from '@utils/hooks/useToast';
+import {getUserSessions} from '@api/session';
+import {useToast} from '@components/common/useToast';
 import {
   setLocalMsg,
   decryptMsg,
@@ -33,25 +33,13 @@ import Feather from 'react-native-vector-icons/Feather';
 const Msg = ({navigation}) => {
   const isFocused = useIsFocused();
   const {envConfig, msgSecretKey} = useConfigStore();
-  const {notRemindSessionIds, setNotRemindSessionIds} = useChatMsgStore();
+  const {notRemindSessionIds, setNotRemindSessionIds, deleteIds, setDeleteIds} =
+    useChatMsgStore();
   const {showToast} = useToast();
   const {t} = useTranslation();
 
   const {list, onEndReached, loading, onRefresh, refreshData} =
     useInfiniteScroll(getUserSessions);
-
-  /* 删除会话 */
-  const deleteSession = async id => {
-    try {
-      const res = await dleUserSession(id);
-      if (res.code === 0) {
-        refreshData();
-      }
-      showToast(res.message, res.success ? 'success' : 'error');
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   /* 向服务器确认收到消息 */
   const readMsg = async (msgId, sessionId, userId) => {};
@@ -62,11 +50,13 @@ const Msg = ({navigation}) => {
   // 监听应用状态
   const appState = useRef(AppState.currentState);
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
+
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
       appState.current = nextAppState;
       setAppStateVisible(appState.current);
     });
+    refreshData();
     return () => {
       subscription.remove();
     };
@@ -83,8 +73,7 @@ const Msg = ({navigation}) => {
           if (
             prev.find(
               item =>
-                item.session_id === sessionInfo.session_id &&
-                item.selfRemind === selfRemind,
+                item.id === sessionInfo.id && item.selfRemind === selfRemind,
             )
           ) {
             return prev;
@@ -92,7 +81,7 @@ const Msg = ({navigation}) => {
             return [
               ...prev,
               {
-                session_id: sessionInfo.session_id,
+                id: sessionInfo.id,
                 selfRemind,
               },
             ];
@@ -103,28 +92,28 @@ const Msg = ({navigation}) => {
   };
 
   /* 列表元素 */
-  const renderSessionItem = item => {
+  const renderSessionItem = ({item}) => {
     return (
       <Drawer
         disableHaptic={true}
         itemsMinWidth={80}
         rightItems={[
           {
-            text: notRemindSessionIds.includes(item.session_id)
+            text: notRemindSessionIds.includes(item.id)
               ? t('chat.reminder_restored')
               : t('chat.mute'),
-            background: notRemindSessionIds.includes(item.session_id)
+            background: notRemindSessionIds.includes(item.id)
               ? Colors.success
               : Colors.warning,
             onPress: () => {
-              setNotRemindSessionIds(item.session_id);
+              setNotRemindSessionIds(item.id);
             },
           },
           {
             text: t('common.delete'),
             background: Colors.error,
             onPress: () => {
-              deleteSession(item.id);
+              setDeleteIds(item.id);
             },
           },
         ]}
@@ -142,8 +131,8 @@ const Msg = ({navigation}) => {
           bg-white
           onPress={() => {
             navigation.navigate('Chat', {
-              session_id: item.session_id,
               primaryId: item.id,
+              session_id: item.session_id,
               session_name: item.session_name,
             });
           }}>
@@ -153,35 +142,35 @@ const Msg = ({navigation}) => {
             }}
           />
           <View marginL-12>
-            <View flexG row centerV spread style={{width: '92%'}}>
+            <View flexG row centerV spread width={'92%'}>
               <Text text70BL>{item.session_name}</Text>
               <View flexS row centerV>
                 <Badge
                   marginR-6
                   label={item.unread_count}
                   backgroundColor={
-                    notRemindSessionIds.includes(item.session_id)
+                    notRemindSessionIds.includes(item.id)
                       ? Colors.grey50
                       : Colors.error
                   }
                   size={16}
                 />
-                {notRemindSessionIds.includes(item.session_id) ? (
+                {notRemindSessionIds.includes(item.id) ? (
                   <Feather name="bell-off" color={Colors.grey40} size={16} />
                 ) : null}
               </View>
             </View>
-            <View flexG row centerV spread style={{width: '92%'}}>
+            <View flexG row centerV spread width={'92%'}>
               <Text text80 numberOfLines={1} grey30 style={{width: '70%'}}>
-                {remindSessions.includes(item.session_id) ? (
+                {remindSessions.includes(item.id) ? (
                   <Text text80 red40>
                     {t('chat.reminder')}
                   </Text>
                 ) : null}
                 {showMediaType(
-                  item.last_msg,
-                  item.last_msgType,
-                  item?.last_msgSecret,
+                  item.lastMsg.content,
+                  item.lastMsg.msg_type,
+                  item.lastMsg?.msg_secret,
                 )}
               </Text>
               <Text text90L grey40>
@@ -204,10 +193,11 @@ const Msg = ({navigation}) => {
             onRefresh={onRefresh}
           />
         }
-        data={list}
-        keyExtractor={(item, index) => item?.session_id + index}
-        onEndReached={() => {}}
-        renderItem={({item}) => renderSessionItem(item)}
+        data={list.filter(item => !deleteIds.includes(item.id))}
+        keyExtractor={(item, index) => `${item?.id}-${index}`}
+        onEndReached={onEndReached}
+        renderItem={renderSessionItem}
+        ListFooterComponent={<View marginB-200 />}
         ListEmptyComponent={
           <View marginT-16 center>
             <Text text90L grey40>

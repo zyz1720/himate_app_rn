@@ -3,7 +3,7 @@ import {FlatList, StyleSheet} from 'react-native';
 import {formatLrc} from '@utils/system/lyric_utils';
 import {View, Text, Colors, TouchableOpacity, Image} from 'react-native-ui-lib';
 import {fullHeight, fullWidth} from '@style/index';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {useMusicStore} from '@store/musicStore';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';

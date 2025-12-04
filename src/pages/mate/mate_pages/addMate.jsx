@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   Avatar,
 } from 'react-native-ui-lib';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {searchUsers} from '@api/user';
 import {addMate} from '@api/mate';
 import {

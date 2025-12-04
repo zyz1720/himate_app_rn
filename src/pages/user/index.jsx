@@ -16,7 +16,7 @@ import {
   Platform,
   ImageBackground,
 } from 'react-native';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {downloadFile} from '@utils/system/file_utils';
 import {getAppVersion} from '@api/app_package';
 import {name as appName, displayName} from '@root/app.json';

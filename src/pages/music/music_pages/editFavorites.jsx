@@ -10,7 +10,7 @@ import {
   Button,
 } from 'react-native-ui-lib';
 import {StyleSheet, ScrollView} from 'react-native';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {getFavoritesDetail, updateFavorites} from '@api/favorites';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';

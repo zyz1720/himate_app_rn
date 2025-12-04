@@ -66,21 +66,6 @@ const ToBePlayedModal = React.memo(props => {
     );
   }, [playingMusic]);
 
-  // 记忆化空列表组件
-  const emptyListComponent = useMemo(
-    () => (
-      <View marginT-16 center>
-        <Text text90L white>
-          {t('empty.play_music')}
-        </Text>
-      </View>
-    ),
-    [],
-  );
-
-  // 记忆化列表底部组件
-  const listFooterComponent = useMemo(() => <View marginB-140 />, []);
-
   // 记忆化渲染项
   const renderItem = useCallback(
     ({item}) => {
@@ -120,9 +105,6 @@ const ToBePlayedModal = React.memo(props => {
     [playingMusic?.id, onPressItem, onPressRemove],
   );
 
-  // 记忆化keyExtractor
-  const keyExtractor = useCallback((item, index) => `${item.id}_${index}`, []);
-
   return (
     <Modal
       animationType="fade"
@@ -155,10 +137,16 @@ const ToBePlayedModal = React.memo(props => {
             {currentMusicInfo}
             <FlatList
               data={list}
-              keyExtractor={keyExtractor}
+              keyExtractor={(item, index) => `${item.id}_${index}`}
               renderItem={renderItem}
-              ListEmptyComponent={emptyListComponent}
-              ListFooterComponent={listFooterComponent}
+              ListEmptyComponent={
+                <View marginT-16 center>
+                  <Text text90L white>
+                    {t('empty.play_music')}
+                  </Text>
+                </View>
+              }
+              ListFooterComponent={<View marginB-140 />}
               initialNumToRender={10}
               maxToRenderPerBatch={5}
               windowSize={11}

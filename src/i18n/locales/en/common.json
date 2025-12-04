@@ -58,5 +58,9 @@
   "delete_msg_success": "Successfully deleted {{count}} chat records",
   "delete_tips": "Are you sure you want to delete the selected items?",
   "video_load_failed": "Video loading failed",
-  "scan_qrcode_failed": "Failed to scan QR code"
+  "scan_qrcode_failed": "Failed to scan QR code",
+  "toDay": "Today",
+  "yesterday": "Yesterday",
+  "lastWeek": "Last week",
+  "load_more": "Load more"
 }

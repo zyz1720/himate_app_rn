@@ -9,7 +9,7 @@ import {
   ColorPicker,
   Switch,
 } from 'react-native-ui-lib';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {playSystemSound} from '@utils/system/notification';
 import {displayName} from '@root/app.json';
 import {getAppConfig} from '@api/app_config';

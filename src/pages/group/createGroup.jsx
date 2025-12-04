@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {View, Colors, Text, Button} from 'react-native-ui-lib';
 import {getMateList} from '@api/mate';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
 import {addGroup} from '@api/group';
 import {addGroupMember} from '@api/group_member';

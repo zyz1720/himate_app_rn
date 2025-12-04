@@ -3,7 +3,7 @@ import {StyleSheet} from 'react-native';
 import {View} from 'react-native-ui-lib';
 import {WebView} from 'react-native-webview';
 import {useConfigStore} from '@store/configStore';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {useTranslation} from 'react-i18next';
 
 const BaseWebView = ({route}) => {

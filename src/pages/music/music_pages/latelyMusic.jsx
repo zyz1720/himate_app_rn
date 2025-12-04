@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {View, Colors, Button} from 'react-native-ui-lib';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {useTranslation} from 'react-i18next';
 import {getPlayHistory, clearPlayHistory} from '@utils/realm/useMusicInfo';
 import BaseDialog from '@components/common/BaseDialog';

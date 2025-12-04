@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {StatusBar} from 'react-native';
 import {Colors} from 'react-native-ui-lib';
-import {useToast} from '@utils/hooks/useToast';
+import {useToast} from '@components/common/useToast';
 import {displayName} from '@root/app.json';
 import {install} from 'react-native-quick-crypto';
 import {useConfigStore} from '@store/configStore';
@@ -9,6 +9,7 @@ import {useUserStore} from '@store/userStore';
 import {useSettingStore} from '@store/settingStore';
 import {useErrorMsgStore} from '@store/errorMsgStore';
 import {useTranslation} from 'react-i18next';
+import {useSocket} from '@utils/hooks/useSocket';
 import FullScreenLoading from '@components/common/FullScreenLoading';
 import RootScreen from './rootScreen';
 import i18n from 'i18next';
@@ -22,6 +23,7 @@ const RootView = () => {
   const {envConfig, configLoading, updateEnvConfig} = useConfigStore();
   const {isFastStatic, themeColor, language, isFullScreen} = useSettingStore();
   const {errorMsg, clearMsgStore} = useErrorMsgStore();
+  const {socketInit} = useSocket();
 
   // 在应用启动时
   const [isInitialized, setIsInitialized] = useState(false);
@@ -42,6 +44,7 @@ const RootView = () => {
   useEffect(() => {
     if (isLogin) {
       setUserInfo();
+      socketInit();
     }
   }, [isLogin]);
 
