@@ -9,7 +9,7 @@ import {useUserStore} from '@store/userStore';
 import {useSettingStore} from '@store/settingStore';
 import {useErrorMsgStore} from '@store/errorMsgStore';
 import {useTranslation} from 'react-i18next';
-import {useSocket} from '@utils/hooks/useSocket';
+import {useSocketStore} from '@store/socketStore';
 import FullScreenLoading from '@components/common/FullScreenLoading';
 import RootScreen from './rootScreen';
 import i18n from 'i18next';
@@ -23,7 +23,7 @@ const RootView = () => {
   const {envConfig, configLoading, updateEnvConfig} = useConfigStore();
   const {isFastStatic, themeColor, language, isFullScreen} = useSettingStore();
   const {errorMsg, clearMsgStore} = useErrorMsgStore();
-  const {socketInit} = useSocket();
+  const {socketInit} = useSocketStore();
 
   // 在应用启动时
   const [isInitialized, setIsInitialized] = useState(false);

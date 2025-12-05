@@ -231,6 +231,7 @@ const MateInfo = ({navigation, route}) => {
               navigation.navigate('Chat', {
                 session_id: mateInfo.mate_id,
                 session_name: mateRemarks,
+                chat_type: 'private',
               });
             }}
           />

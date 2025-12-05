@@ -50,17 +50,17 @@ const Msg = ({navigation}) => {
   // 监听应用状态
   const appState = useRef(AppState.currentState);
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
+  const subscription = AppState.addEventListener('change', nextAppState => {
+    appState.current = nextAppState;
+    setAppStateVisible(appState.current);
+  });
 
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', nextAppState => {
-      appState.current = nextAppState;
-      setAppStateVisible(appState.current);
-    });
-    refreshData();
-    return () => {
-      subscription.remove();
-    };
-  }, []);
+    if (isFocused) {
+      refreshData();
+    }
+    return subscription.remove();
+  }, [isFocused]);
 
   /* 强制显示提醒 */
   const [remindSessions, setRemindSessions] = useState([]);
@@ -134,6 +134,7 @@ const Msg = ({navigation}) => {
               primaryId: item.id,
               session_id: item.session_id,
               session_name: item.session_name,
+              chat_type: item.chat_type,
             });
           }}>
           <Avatar

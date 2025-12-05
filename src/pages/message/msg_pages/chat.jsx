@@ -1,102 +1,48 @@
 import React, {useEffect, useCallback, useState, useRef} from 'react';
-import {ActivityIndicator, StyleSheet, Vibration, Modal} from 'react-native';
-import {
-  View,
-  Button,
-  Text,
-  Colors,
-  TouchableOpacity,
-  Card,
-  Avatar,
-} from 'react-native-ui-lib';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import {
-  GiftedChat,
-  Bubble,
-  Send,
-  InputToolbar,
-  LoadEarlier,
-  Composer,
-  Day,
-  MessageText,
-  Message,
-} from 'react-native-gifted-chat';
-import Clipboard from '@react-native-clipboard/clipboard';
-import ImagePicker from 'react-native-image-crop-picker';
-import {useSocket} from '@utils/hooks/useSocket';
-import {getSessionDetail} from '@api/session';
+import {Vibration} from 'react-native';
+import {View} from 'react-native-ui-lib';
+import {GiftedChat, Message} from 'react-native-gifted-chat';
+import {useSocketStore} from '@store/socketStore';
 import {useToast} from '@components/common/useToast';
-import {
-  formatMsg,
-  formatJoinUser,
-  setLocalMsg,
-  getLocalMsg,
-  getLocalUsers,
-  delLocalMsg,
-  addOrUpdateLocalUser,
-} from '@utils/system/chat_utils';
 import {deepClone, isEmptyObject} from '@utils/common/object_utils';
 import {createRandomNumber} from '@utils/common/number_utils';
-import {
-  getFileFromAudioRecorderPlayer,
-  getFileFromDocumentPicker,
-  getFileFromImageCropPicker,
-  uploadFile,
-  downloadFile,
-  getFileName,
-  getFileExt,
-  getFileColor,
-} from '@utils/system/file_utils';
-import DocumentPicker from 'react-native-document-picker';
-import AudioRecorderPlayer from 'react-native-audio-recorder-player';
-import {
-  FlatList,
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from 'react-native-gesture-handler';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-  runOnJS,
-  Easing,
-} from 'react-native-reanimated';
-import {fullWidth, fullHeight} from '@style/index';
-import {cancelNotification} from '@utils/system/notification';
 import {createRandomSecretKey, encryptAES} from '@utils/system/crypto_utils';
 import {useConfigStore} from '@store/configStore';
-import {usePermissionStore} from '@store/permissionStore';
+import {useUserStore} from '@store/userStore';
 import {useSettingStore} from '@store/settingStore';
 import {getSelfGroupMember} from '@api/group_member';
 import {MemberStatusEnum} from '@const/database_enum';
 import {useTranslation} from 'react-i18next';
-import {CustomDay} from '@components/message/CustomDay';
-import {CustomLoadEarlier} from '@components/message/CustomLoadEarlier';
-import {CustomBubble} from '@components/message/CustomBubble';
-import {CustomSend} from '@components/message/CustomSend';
-import {CustomComposer} from '@components/message/CustomComposer';
-import CustomTicks from '@components/message/CustomTicks';
-import CustomActions from '@components/message/CustomActions';
-import CustomInputToolbar from '@components/message/CustomInputToolbar';
+import {CustomDay} from '@components/message/custom/CustomDay';
+import {CustomLoadEarlier} from '@components/message/custom/CustomLoadEarlier';
+import {CustomBubble} from '@components/message/custom/CustomBubble';
+import {CustomSend} from '@components/message/custom/CustomSend';
+import {CustomComposer} from '@components/message/custom/CustomComposer';
+import {CustomSystemMessage} from '@components/message/custom/CustomSystemMessage';
+import CustomTicks from '@components/message/custom/CustomTicks';
+import CustomActions from '@components/message/custom/CustomActions';
+import CustomInputToolbar from '@components/message/custom/CustomInputToolbar';
+import CustomAccessory from '@components/message/custom/CustomAccessory';
+import CustomFileMessage from '@components/message/custom/CustomFileMessage';
 import VideoModal from '@components/common/VideoModal';
 import ImgModal from '@components/common/ImgModal';
-import VideoMsg from '@components/message/VideoMsg';
-import ImageMsg from '@components/message/ImageMsg';
-import AudioMsg from '@components/message/AudioMsg';
+import VideoMsg from '@components/message/media/VideoMsg';
+import ImageMsg from '@components/message/media/ImageMsg';
+import AudioMsg from '@components/message/media/AudioMsg';
 import BaseSheet from '@components/common/BaseSheet';
 import 'dayjs/locale/zh-cn';
 
-const audioRecorderPlayer = new AudioRecorderPlayer();
-let recordTimer = null;
-
 const Chat = React.memo(({navigation, route}) => {
   const {session_id, primaryId, searchMsg_cid} = route.params;
-  const {t} = useTranslation();
+  console.log('session_id', session_id, primaryId);
 
-  const chatListRef = useRef(null);
+  const {t} = useTranslation();
+  const {userInfo} = useUserStore();
+  const {envConfig, msgSecretKey} = useConfigStore();
+  const {isEncryptMsg} = useSettingStore();
+  const {showToast} = useToast();
+  const {socket, isConnected} = useSocketStore();
+
   const [chatMessages, setChatMessages] = useState([]);
   const [content, setContent] = useState('');
 
@@ -181,12 +127,146 @@ const Chat = React.memo(({navigation, route}) => {
     }
   };
 
+  /* 发送消息 */
+  const sendMessage = async (_content, msgType = 'text') => {
+    const baseMsg = {
+      session_id,
+      content: _content,
+      msg_type: msgType,
+    };
+    primaryId && (baseMsg.session_primary_id = primaryId);
+    // 加密消息
+    if (isEncryptMsg) {
+      const {secret, trueSecret} = createRandomSecretKey(msgSecretKey);
+      baseMsg.msg_secret = secret;
+      baseMsg.content = JSON.stringify(encryptAES(_content, trueSecret));
+    }
+    console.log('baseMsg', isConnected, socket);
+
+    if (!isConnected) {
+      showToast(t('chat.socket_error'), 'error');
+      return new Promise(resolve => {
+        resolve(false);
+      });
+    }
+    return new Promise(resolve => {
+      try {
+        socket.emit('send-message', baseMsg, res => {
+          if (res.code === 0) {
+            resolve(res.data);
+          } else {
+            showToast(res.message, 'error');
+            resolve(false);
+          }
+        });
+      } catch (error) {
+        resolve(false);
+      }
+    });
+  };
+
+  /* 本地发送 */
+  const onSend = async (messages = []) => {
+    setChatMessages(prev => GiftedChat.append(prev, messages));
+
+    for (const message of messages) {
+      try {
+        const res = await sendMessage(message.text, message.msg_type);
+        console.log('sendMessage', res);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+
+  /* 媒体消息 */
+  const sendFileMsg = files => {
+    const mediaMsgs = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const media_type = file.type;
+      const mediaMsg = {
+        text: null,
+        _id: createRandomNumber(),
+        createdAt: new Date(),
+        msg_type: media_type,
+        file: file.file,
+        user: {
+          _id: 1,
+          name: isEmptyObject(userInGroupInfo)
+            ? userInfo?.user_name
+            : userInGroupInfo?.member_remarks,
+          avatar: envConfig?.STATIC_URL + userInfo?.user_avatar,
+        },
+      };
+      if (media_type === 'image') {
+        mediaMsg.image = file.uri;
+        mediaMsg.originalImage = file.uri;
+      }
+      if (media_type === 'video') {
+        mediaMsg.video = file.uri;
+      }
+      if (media_type === 'audio') {
+        mediaMsg.audio = file.uri;
+      }
+      if (media_type === 'other') {
+        mediaMsg.text = file.ext;
+      }
+      mediaMsgs.push(mediaMsg);
+    }
+    onSend(mediaMsgs);
+  };
+
+  const [searchIndex, setSearchIndex] = useState(-1);
+  const [offsetHeight, setOffsetHeight] = useState(0);
+  const chatListRef = useRef(null);
+
+  const offsetCount = useRef(0);
+  const heightSum = useRef(0);
+  /* 获取需要滚动的高度 */
+  const onMessageLayout = event => {
+    if (searchIndex !== -1) {
+      const {height} = event.nativeEvent.layout;
+      if (offsetCount.current === searchIndex) {
+        setOffsetHeight(heightSum.current);
+        return;
+      }
+      heightSum.current += height;
+      offsetCount.current++;
+      // 每10次测量更新一次高度
+      if (offsetCount.current % 10 === 0) {
+        setOffsetHeight(heightSum.current);
+      }
+    }
+  };
+
+  /* 自定义消息（用于计算高度） */
+  const renderMessage = props => (
+    <View onLayout={e => onMessageLayout(e)}>
+      <Message {...props} />
+    </View>
+  );
+
+  /* 滚动到指定消息 */
+  useEffect(() => {
+    chatListRef.current?.scrollToOffset({
+      offset: offsetHeight - 4,
+      animated: true,
+    });
+  }, [offsetHeight]);
+
+  useEffect(() => {
+    if (searchIndex !== -1) {
+      showToast(t('chat.to_search_result'), 'success');
+    }
+  }, [searchIndex]);
+
   useEffect(() => {
     getSelfGroupMemberInfo();
   }, []);
 
   return (
-    <View>
+    <>
       <GiftedChat
         messageContainerRef={chatListRef}
         placeholder={
@@ -195,9 +275,9 @@ const Chat = React.memo(({navigation, route}) => {
             : t('chat.msg_placeholder')
         }
         dateFormatCalendar={{
-          sameDay: `[${t('chat.toDay')}] HH:mm`,
-          lastDay: `[${t('chat.yesterday')}] HH:mm`,
-          lastWeek: `[${t('chat.lastWeek')}] DDDD HH:mm`,
+          sameDay: `[${t('common.toDay')}] HH:mm`,
+          lastDay: `[${t('common.yesterday')}] HH:mm`,
+          lastWeek: `[${t('common.lastWeek')}] DDDD HH:mm`,
           sameElse: 'YYYY-MM-DD HH:mm',
         }}
         locale={'zh-cn'}
@@ -246,26 +326,41 @@ const Chat = React.memo(({navigation, route}) => {
           <CustomInputToolbar props={props} showActions={showActions} />
         )}
         renderComposer={CustomComposer}
-        renderAccessory={renderAccessory}
-        renderMessageImage={renderMessageImage}
-        renderMessageVideo={renderMessageVideo}
-        renderMessageAudio={renderMessageAudio}
-        renderSystemMessage={renderSystemMessage}
-        renderMessageText={renderFileMessage}
-        onSend={msgs => onSend(msgs)}
+        renderAccessory={props => (
+          <CustomAccessory
+            props={props}
+            onAudioRecordSuccess={sendFileMsg}
+            onShootSuccess={sendFileMsg}
+            onVideoRecordSuccess={sendFileMsg}
+            onImgPickSuccess={sendFileMsg}
+            onFilePickSuccess={sendFileMsg}
+          />
+        )}
+        renderMessage={renderMessage}
+        renderSystemMessage={CustomSystemMessage}
+        renderMessageImage={() => <ImageMsg />}
+        renderMessageVideo={() => <VideoMsg />}
+        renderMessageAudio={() => <AudioMsg />}
+        renderMessageText={props => (
+          <CustomFileMessage
+            props={props}
+            onPress={() => {}}
+            onLongPress={() => {}}
+          />
+        )}
+        onSend={onSend}
         textInputProps={{
           readOnly: userInGroupInfo.member_status === 'forbidden',
         }}
         user={{
           _id: 1,
-          avatar: STATIC_URL + userInfo.user_avatar,
-          name:
-            chat_type === 'group'
-              ? userInGroupInfo.member_remark
-              : userInfo.user_name,
+          avatar: envConfig.STATIC_URL + userInfo.user_avatar,
+          name: isEmptyObject(userInGroupInfo)
+            ? userInGroupInfo.member_remark
+            : userInfo.user_name,
         }}
       />
-    </View>
+    </>
   );
 });
 

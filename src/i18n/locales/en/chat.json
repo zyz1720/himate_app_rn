@@ -19,5 +19,17 @@
     "msg_sending": "Sending...",
     "send": "Send",
     "msg_mute_error": "You have been muted, please wait!",
-    "msg_wait_error": "Please wait for the current message to send complete!"
+    "msg_wait_error": "Please wait for the current message to send complete!",
+    "msg_record_error": "Failed to start recording audio",
+    "record_placeholder": "Please long press to start recording",
+    "record": "Audio",
+    "shoot": "Shoot",
+    "video_record": "Video Record",
+    "photo_library": "Photo Library",
+    "file": "File",
+    "record_tips": "Listening... {{recordTime}}S",
+    "send_tips": "Release to send",
+    "cancel_tips": "Release to cancel",
+    "to_search_result": "Scrolling to search result...",
+    "socket_error": "socket not connected"
 }

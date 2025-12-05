@@ -129,7 +129,6 @@ export const getFileFromImageCropPicker = fileInfo => {
 
 /**
  * 获取文件来自react-native-document-picker
- * @param {string} doName 文件名
  * @param {object} fileInfo 文件信息
  * @returns {object} 文件信息
  */
@@ -137,6 +136,7 @@ export const getFileFromDocumentPicker = fileInfo => {
   const baseType = fileInfo.type;
   const originalName = fileInfo.name;
   const ext = getFileExt(originalName);
+  const documentTypes = [...docTypes, ...excelTypes, ...pptTypes, ...pdfTypes];
 
   let type = 'other';
   if (baseType.startsWith('image/') || imageExtNames.includes(ext)) {
@@ -145,6 +145,8 @@ export const getFileFromDocumentPicker = fileInfo => {
     type = 'video';
   } else if (baseType.startsWith('audio/') || audioExtNames.includes(ext)) {
     type = 'audio';
+  } else if (documentTypes.includes(ext)) {
+    type = 'document';
   }
 
   const file = {
@@ -162,20 +164,17 @@ export const getFileFromDocumentPicker = fileInfo => {
 
 /**
  * 获取录音文件来自react-native-audio-recorder-player
- * @param {string} doName 文件名
  * @param {string} filePath 文件路径
  * @returns {object} 文件信息
  */
-export const getFileFromAudioRecorderPlayer = (doName, filePath) => {
+export const getFileFromAudioRecorderPlayer = filePath => {
   const type = 'audio';
 
   const ext = getFileExt(filePath);
 
   const file = {
     name: 'file',
-    filename: `${doName}_${type}_${Math.random()
-      .toString(16)
-      .substring(2)}.${ext}`,
+    filename: getFileName(filePath),
     data: Platform.OS === 'ios' ? filePath : ReactNativeBlobUtil.wrap(filePath),
   };
 

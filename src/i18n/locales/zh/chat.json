@@ -19,5 +19,17 @@
     "msg_sending": "发送中...",
     "send": "发送",
     "msg_mute_error": "你已被禁言，无法使用!",
-    "msg_wait_error": "请先等待当前消息发送完成!"
+    "msg_wait_error": "请先等待当前消息发送完成!",
+    "msg_record_error": "无法开始录制语音",
+    "record_placeholder": "请长按开始说话",
+    "record": "语音",
+    "shoot": "拍照",
+    "video_record": "录像",
+    "photo_library": "图库",
+    "file": "文件",
+    "record_tips": "倾听中... {{recordTime}}S",
+    "send_tips": "松手后发送",
+    "cancel_tips": "松手后取消发送",
+    "to_search_result": "正在尝试跳转到搜索结果",
+    "socket_error": "socket 未连接"
 }

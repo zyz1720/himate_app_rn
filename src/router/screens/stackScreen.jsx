@@ -119,7 +119,7 @@ function StackScreen() {
             name="Chat"
             component={Chat}
             options={({route, navigation}) => ({
-              title: route.params.sessionName,
+              title: route.params.session_name,
               // eslint-disable-next-line react/no-unstable-nested-components
               headerRight: () => (
                 <TouchableOpacity

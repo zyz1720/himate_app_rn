@@ -231,11 +231,13 @@ const Music = ({navigation}) => {
   };
 
   useEffect(() => {
-    getDefaultFavoritesCount();
-    getAllFavoritesCount();
-    getAllMusicCount();
-    getLocalMusicInfo();
-    refreshData();
+    if (isFocused) {
+      getDefaultFavoritesCount();
+      getAllFavoritesCount();
+      getAllMusicCount();
+      getLocalMusicInfo();
+      refreshData();
+    }
   }, [isFocused]);
 
   useEffect(() => {

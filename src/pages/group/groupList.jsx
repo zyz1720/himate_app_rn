@@ -56,9 +56,9 @@ const GroupList = ({navigation}) => {
       centerV
       onPress={() => {
         navigation.navigate('Chat', {
+          session_id: item.group_id,
+          session_name: item.group_name,
           chat_type: 'group',
-          to_remark: item.group_name,
-          group_id: item.group_id,
         });
       }}>
       <View flexS row centerV>

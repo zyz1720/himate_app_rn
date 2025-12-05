@@ -121,8 +121,6 @@ const MateList = props => {
   };
 
   useEffect(() => {
-    console.log('originalList', originalList);
-
     handleData();
   }, [originalList]);
 
