@@ -1,26 +1,34 @@
 import MusicControl, {Command} from 'react-native-music-control';
-import {useCallback} from 'react';
+import {useCallback, useState} from 'react';
 import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
+import {cancelNotification, deleteChannel} from '@utils/system/notification';
 
 export const useMusicControl = () => {
   const {userInfo} = useUserStore();
   const {envConfig} = useConfigStore();
+  const [isInit, setIsInit] = useState(false);
 
-  MusicControl.setNotificationId(5173, 'music_control_notification');
-  MusicControl.enableControl('play', true);
-  MusicControl.enableControl('pause', true);
-  MusicControl.enableControl('stop', false);
-  MusicControl.enableControl('nextTrack', true);
-  MusicControl.enableControl('previousTrack', true);
-  MusicControl.enableControl('seek', true);
-  MusicControl.enableControl('closeNotification', true, {when: 'paused'});
-  MusicControl.enableBackgroundMode(true);
-  MusicControl.handleAudioInterruptions(true);
+  const initMusicControl = () => {
+    MusicControl.setNotificationId(6666, 'music_controller_channel');
+    MusicControl.enableControl('play', true);
+    MusicControl.enableControl('pause', true);
+    MusicControl.enableControl('stop', false);
+    MusicControl.enableControl('nextTrack', true);
+    MusicControl.enableControl('previousTrack', true);
+    MusicControl.enableControl('seek', true);
+    MusicControl.enableControl('closeNotification', true, {when: 'paused'});
+    MusicControl.enableBackgroundMode(true);
+    MusicControl.handleAudioInterruptions(true);
+    setIsInit(true);
+  };
 
   // 设置正在播放的音乐信息
   const setNowPlayingCtrl = useCallback(
     musicInfo => {
+      if (!isInit) {
+        initMusicControl();
+      }
       const {title, artist, album, duration, musicExtra = {}} = musicInfo;
       MusicControl.setNowPlaying({
         title: title,
@@ -42,7 +50,6 @@ export const useMusicControl = () => {
   const resumePlayerCtrl = useCallback(() => {
     MusicControl.updatePlayback({
       state: MusicControl.STATE_PLAYING,
-      // speed: 1,
     });
   }, []);
 
@@ -63,6 +70,8 @@ export const useMusicControl = () => {
   // 停止播放
   const stopPlayerCtrl = useCallback(() => {
     MusicControl.stopControl();
+    cancelNotification('6666');
+    deleteChannel('music_controller_channel');
   }, []);
 
   /* 控件操作 */
@@ -101,6 +110,7 @@ export const useMusicControl = () => {
   }, []);
 
   return {
+    initMusicControl,
     setNowPlayingCtrl,
     resumePlayerCtrl,
     pausePlayerCtrl,

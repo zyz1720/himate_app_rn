@@ -19,5 +19,13 @@
   "apply": "好友申请",
   "remarks": "好友备注",
   "refuse_tips": "您确定要拒绝该好友申请吗？",
-  "delete_tips": "您确定要删除该条好友申请记录吗？"
+  "delete_tips": "您确定要删除该条好友申请记录吗？",
+  "create_group": "创建群组",
+  "search_history": "查找历史消息",
+  "export_chat_history": "导出聊天记录",
+  "clear_chat_history": "清空历史消息",
+  "sync_chat_history": "从云端同步消息",
+  "clear_chat_history_tips": "您确定要清除历史消息吗？",
+  "clear_success": "清除成功",
+  "sync_success": "同步成功"
 }

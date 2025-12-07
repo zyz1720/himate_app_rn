@@ -1,18 +1,15 @@
-import {useCallback, useRef} from 'react';
+import {useCallback} from 'react';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
+
 const audioPlayer = new AudioRecorderPlayer();
 
 export const useAudioPlayer = () => {
-  const prevPlayType = useRef(null);
-  const prevPlayUrl = useRef(null);
-  const prevPlayPosition = useRef(0);
 
   // 监听播放状态变化
   const addPlayBackListener = useCallback(
     callback => {
       audioPlayer.addPlayBackListener(playbackMeta => {
         const {currentPosition, duration, isFinished} = playbackMeta;
-        prevPlayPosition.current = currentPosition;
         callback({
           currentPosition: currentPosition,
           duration: duration,
@@ -27,12 +24,8 @@ export const useAudioPlayer = () => {
 
   // 播放音频
   const startPlayer = useCallback(
-    async (url, playType = 'other') => {
-      if (prevPlayUrl.current !== url) {
-        prevPlayUrl.current = url;
-        prevPlayType.current = playType;
-      }
-      return audioPlayer.startPlayer(url);
+    async url => {
+      await audioPlayer.startPlayer(url);
     },
     [audioPlayer],
   );
@@ -65,18 +58,6 @@ export const useAudioPlayer = () => {
     audioPlayer.removePlayBackListener();
   }, [audioPlayer]);
 
-  // 继续上一次播放
-  const resumePrevPlayer = useCallback(async () => {
-    if (
-      prevPlayUrl.current &&
-      prevPlayPosition.current &&
-      prevPlayType.current === 'music'
-    ) {
-      await startPlayer(prevPlayUrl.current, prevPlayType.current);
-      await seekToPlayer(prevPlayPosition.current);
-    }
-  }, [startPlayer, seekToPlayer]);
-
   return {
     startPlayer,
     pausePlayer,
@@ -84,7 +65,6 @@ export const useAudioPlayer = () => {
     stopPlayer,
     seekToPlayer,
     removePlayBackListener,
-    resumePrevPlayer,
     addPlayBackListener,
   };
 };

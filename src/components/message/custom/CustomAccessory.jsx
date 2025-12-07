@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {StyleSheet, Vibration, ActivityIndicator} from 'react-native';
+import {StyleSheet, Vibration, ActivityIndicator, Modal} from 'react-native';
 import {Colors, TouchableOpacity, Text, View, Card} from 'react-native-ui-lib';
 import {useToast} from '@components/common/useToast';
 import {
@@ -36,6 +36,7 @@ const styles = StyleSheet.create({
     bottom: 140,
     borderRadius: 30,
     overflow: 'hidden',
+    zIndex: 100,
   },
   cancelBut: {
     position: 'absolute',
@@ -45,6 +46,7 @@ const styles = StyleSheet.create({
     bottom: 60,
     borderRadius: 30,
     overflow: 'hidden',
+    zIndex: 100,
   },
   radioTips: {
     position: 'absolute',
@@ -54,7 +56,7 @@ const styles = StyleSheet.create({
     left: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.black4,
+    backgroundColor: Colors.black3,
   },
 });
 
@@ -74,6 +76,7 @@ const CustomAccessory = props => {
     onImgPickComplete = () => {},
     onFilePickSuccess = () => {},
     onFilePickComplete = () => {},
+    onClose = () => {},
   } = props;
   const {showToast} = useToast();
   const {t} = useTranslation();
@@ -88,6 +91,8 @@ const CustomAccessory = props => {
 
   const [recordTime, setRecordTime] = useState(0);
   const [recordFlag, setRecordFlag] = useState('');
+
+  const [visible, setVisible] = useState(false);
 
   const recorderVisible = useSharedValue(false);
   const isSureSend = useSharedValue(false);
@@ -128,7 +133,7 @@ const CustomAccessory = props => {
       .then(res => {
         if (recordFlag === 'sure') {
           const fileInfo = getFileFromAudioRecorderPlayer(res);
-          onAudioRecordSuccess(fileInfo);
+          onAudioRecordSuccess([fileInfo]);
         }
       })
       .catch(error => {
@@ -139,6 +144,7 @@ const CustomAccessory = props => {
         isSureSend.value = false;
         setRecordFlag('');
         onAudioRecordComplete();
+        onClose();
       });
   };
 
@@ -149,6 +155,7 @@ const CustomAccessory = props => {
     .onStart(() => {
       recorderVisible.value = true;
       runOnJS(startRecord)();
+      runOnJS(setVisible)(true);
     })
     .onUpdate(({translationX, translationY}) => {
       if (
@@ -178,16 +185,9 @@ const CustomAccessory = props => {
     .onEnd(() => {
       recorderVisible.value = false;
       runOnJS(stopRecord)();
+      runOnJS(setVisible)(false);
     });
 
-  /* 显示语音录制弹窗 */
-  const radioAnimatedStyles = useAnimatedStyle(() => {
-    return {
-      opacity: withTiming(recorderVisible.value ? 1 : 0),
-      width: recorderVisible.value ? fullWidth : 0,
-      height: recorderVisible.value ? fullHeight : 0,
-    };
-  });
   /* 显示确认/取消发送按钮 */
   const butAnimatedStyles = useAnimatedStyle(() => {
     return {
@@ -251,10 +251,11 @@ const CustomAccessory = props => {
               })
                 .then(image => {
                   const fileInfo = getFileFromImageCropPicker(image);
-                  onShootSuccess(fileInfo);
+                  onShootSuccess([fileInfo]);
                 })
                 .finally(() => {
                   onShootComplete();
+                  onClose();
                 });
             }}>
             <View
@@ -285,10 +286,11 @@ const CustomAccessory = props => {
               })
                 .then(video => {
                   const fileInfo = getFileFromImageCropPicker(video);
-                  onVideoRecordSuccess(fileInfo);
+                  onVideoRecordSuccess([fileInfo]);
                 })
                 .finally(() => {
                   onVideoRecordComplete();
+                  onClose();
                 });
             }}>
             <View
@@ -321,10 +323,11 @@ const CustomAccessory = props => {
               })
                 .then(image => {
                   const fileInfo = getFileFromImageCropPicker(image);
-                  onImgPickSuccess(fileInfo);
+                  onImgPickSuccess([fileInfo]);
                 })
                 .finally(() => {
                   onImgPickComplete();
+                  onClose();
                 });
             }}>
             <View
@@ -363,6 +366,7 @@ const CustomAccessory = props => {
                 })
                 .finally(() => {
                   onFilePickComplete();
+                  onClose();
                 });
             }}>
             <View
@@ -380,32 +384,37 @@ const CustomAccessory = props => {
           </TouchableOpacity>
         </View>
       </View>
-      {/* 语音录制弹窗 */}
-      <Animated.View style={[radioAnimatedStyles, styles.radioTips]}>
-        <Card flexS padding-16 center width={160}>
-          <ActivityIndicator color={Colors.primary} size={24} />
-          <Text grey30 marginT-4>
-            {t('chat.record_tips', {recordTime})}
-          </Text>
-          {recordFlag === 'sure' ? (
-            <Text green40 marginT-4>
-              {t('chat.send_tips')}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        statusBarTranslucent
+        visible={visible}>
+        <View flexG center backgroundColor={Colors.black2}>
+          <Card flexS padding-16 center width={160}>
+            <ActivityIndicator color={Colors.primary} size={24} />
+            <Text grey30 marginT-4>
+              {t('chat.record_tips', {recordTime})}
             </Text>
-          ) : null}
-          {recordFlag === 'cancel' ? (
-            <Text red40 marginT-4>
-              {t('chat.cancel_tips')}
-            </Text>
-          ) : null}
-        </Card>
-      </Animated.View>
+            {recordFlag === 'sure' ? (
+              <Text green40 marginT-4>
+                {t('chat.send_tips')}
+              </Text>
+            ) : null}
+            {recordFlag === 'cancel' ? (
+              <Text red40 marginT-4>
+                {t('chat.cancel_tips')}
+              </Text>
+            ) : null}
+          </Card>
+        </View>
+      </Modal>
       <Animated.View
         style={[styles.cancelBut, sureButAnimatedStyles, butAnimatedStyles]}>
-        <FontAwesome name="check" color={Colors.white} size={24} />
+        <FontAwesome name="check" color={Colors.white} size={28} />
       </Animated.View>
       <Animated.View
         style={[styles.sureBut, cancelButAnimated, butAnimatedStyles]}>
-        <FontAwesome name="remove" color={Colors.white} size={24} />
+        <FontAwesome name="remove" color={Colors.white} size={28} />
       </Animated.View>
     </>
   );

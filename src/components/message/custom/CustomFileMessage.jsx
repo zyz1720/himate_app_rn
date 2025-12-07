@@ -17,13 +17,10 @@ const styles = StyleSheet.create({
 });
 
 /* 自定义文件消息 */
-const CustomFileMessage = ({
-  props,
-  onPress = () => {},
-  onLongPress = () => {},
-}) => {
-  if (props.currentMessage.msg_type === 'file') {
-    const message = props.currentMessage;
+const CustomFileMessage = props => {
+  const {currentMessage, onPress = () => {}, onLongPress = () => {}} = props;
+
+  if (currentMessage.msg_type === 'file') {
     return (
       <TouchableOpacity
         bg-white
@@ -32,9 +29,13 @@ const CustomFileMessage = ({
         style={styles.fileContainer}
         onPress={onPress}
         onLongPress={onLongPress}>
-        <FontAwesome name="file" color={getFileColor(message.text)} size={80} />
+        <FontAwesome
+          name="file"
+          color={getFileColor(currentMessage.text)}
+          size={80}
+        />
         <Text white text50BL style={styles.fileExt}>
-          {message.text}
+          {currentMessage.text}
         </Text>
       </TouchableOpacity>
     );

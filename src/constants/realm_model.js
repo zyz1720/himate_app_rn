@@ -8,8 +8,10 @@ export class ChatMsg extends Realm.Object {
       id: 'int?',
       session_id: {type: 'string', indexed: true},
       session_primary_id: 'int?',
-      client_msg_id: 'string',
-      sender_id: 'int?',
+      client_msg_id: {type: 'string', indexed: true},
+      sender_id: 'int',
+      sender_remarks: 'string',
+      sender_avatar: 'string',
       sender_ip: 'string?',
       content: 'string',
       msg_type: 'string',
@@ -17,25 +19,6 @@ export class ChatMsg extends Realm.Object {
       msg_secret: 'string?',
       create_time: 'string',
       status: 'string',
-    },
-  };
-}
-
-export class UsersInfo extends Realm.Object {
-  static schema = {
-    name: 'users_info',
-    primaryKey: '_id',
-    properties: {
-      _id: 'string',
-      userId: {type: 'int', indexed: true},
-      remarks: 'string',
-      avatar: 'string?',
-      session_primary_id: {type: 'int', indexed: true},
-      session_id: {type: 'string', indexed: true},
-      session_name: 'string',
-      session_avatar: 'string?',
-      created_at: 'date',
-      updated_at: 'date',
     },
   };
 }

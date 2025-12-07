@@ -13,6 +13,8 @@ const styles = StyleSheet.create({
 });
 
 /* 自定义加载更多 */
-export const CustomComposer = props => {
+const CustomComposer = props => {
   return <Composer {...props} textInputStyle={styles.textInputStyle} />;
 };
+
+export default CustomComposer;

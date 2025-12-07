@@ -353,31 +353,33 @@ const LrcView = React.memo(props => {
       {isHorizontal ? null : (
         <View flexS row centerV paddingV-16 paddingH-20 paddingB-20>
           {playingMusic?.title ? (
-            <Image
-              source={
-                musicExtra?.music_cover
-                  ? {uri: envConfig.STATIC_URL + musicExtra.music_cover}
-                  : require('@assets/images/music_cover.jpg')
-              }
-              style={[styles.image, {borderColor: Colors.lyricColor}]}
-            />
+            <>
+              <Image
+                source={
+                  musicExtra?.music_cover
+                    ? {uri: envConfig.STATIC_URL + musicExtra.music_cover}
+                    : require('@assets/images/music_cover.jpg')
+                }
+                style={[styles.image, {borderColor: Colors.lyricColor}]}
+              />
+              <View>
+                <Text
+                  color={Colors.lyricColor}
+                  text70BO
+                  width={fullWidth * 0.78}
+                  numberOfLines={1}>
+                  {playingMusic?.title}
+                </Text>
+                <Text
+                  color={Colors.lyricColor}
+                  marginT-2
+                  width={fullWidth * 0.78}
+                  numberOfLines={1}>
+                  {renderArtists(playingMusic)}
+                </Text>
+              </View>
+            </>
           ) : null}
-          <View>
-            <Text
-              color={Colors.lyricColor}
-              text70BO
-              width={fullWidth * 0.78}
-              numberOfLines={1}>
-              {playingMusic?.title}
-            </Text>
-            <Text
-              color={Colors.lyricColor}
-              marginT-2
-              width={fullWidth * 0.78}
-              numberOfLines={1}>
-              {renderArtists(playingMusic)}
-            </Text>
-          </View>
         </View>
       )}
       <View height={lrcHeight}>

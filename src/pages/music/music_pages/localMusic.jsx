@@ -293,7 +293,7 @@ const LocalMusic = () => {
                   </Text>
                 </View>
               }
-              renderItem={({item, index}) => (
+              renderItem={({item}) => (
                 <View marginT-8 row centerV paddingH-12>
                   <Checkbox
                     marginR-12
@@ -304,7 +304,7 @@ const LocalMusic = () => {
                     onValueChange={value => {
                       if (value) {
                         setSelectedDirs(prevItem => {
-                          const newItem = [...prevItem, item.path];
+                          const newItem = [...new Set([...prevItem, item.path])];
                           return newItem;
                         });
                       } else {

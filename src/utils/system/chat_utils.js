@@ -1,12 +1,80 @@
 import {deepClone} from '@utils/common/object_utils';
 import {useConfigStore} from '@store/configStore';
 import {useSettingStore} from '@store/settingStore';
-import {getLocalUsers} from '@utils/realm/useUsersInfo';
-import {getTrueSecretKey, decryptAES} from './crypto_utils';
+import {useUserStore} from '@store/userStore';
+import {
+  getTrueSecretKey,
+  createRandomSecretKey,
+  encryptAES,
+  decryptAES,
+} from './crypto_utils';
+import {v4 as uuid} from 'uuid';
+import {isEmptyObject} from '@utils/common/object_utils';
+import {createRandomNumber} from '@utils/common/number_utils';
+import {getFileExt, uploadFile} from './file_utils';
+import {FileUseTypeEnum} from '@const/database_enum';
+import i18n from 'i18next';
+
+/* 创建临时消息 */
+export const createTmpMessage = (options = {}) => {
+  const {
+    text,
+    isOneself,
+    isSystem = false,
+    userId,
+    userName,
+    userAvatar,
+    fileInfo = {},
+  } = options;
+
+  const message = {
+    _id: uuid(),
+    text: text,
+    createdAt: new Date(),
+    user: {
+      _id: isOneself ? 1 : 2,
+      id: userId,
+      name: userName,
+      avatar: userAvatar,
+    },
+    msg_type: 'text',
+    fileInfo,
+  };
+  if (isSystem) {
+    message.system = true;
+  }
+  if (!isEmptyObject(fileInfo)) {
+    const {type, uri, ext} = fileInfo;
+    const mediaTypes = ['image', 'video', 'audio'];
+    if (mediaTypes.includes(type)) {
+      message[type] = uri;
+      message.msg_type = type;
+    } else {
+      message.text = ext;
+      message.msg_type = 'file';
+      message.file_url = uri;
+    }
+  }
+
+  return message;
+};
+
+/* 加密消息 */
+export const encryptMsg = _content => {
+  const {msgSecretKey} = useConfigStore.getState();
+
+  const {secret, trueSecret} = createRandomSecretKey(msgSecretKey);
+  const content = JSON.stringify(encryptAES(_content, trueSecret));
+  return {
+    content,
+    secret,
+  };
+};
 
 /* 解密消息 */
-const {msgSecretKey} = useConfigStore.getState();
 export const decryptMsg = (content, secret) => {
+  const {msgSecretKey} = useConfigStore.getState();
+
   if (secret) {
     const {iv, encryptedData} = JSON.parse(content);
     const trueSecret = getTrueSecretKey(secret, msgSecretKey);
@@ -16,34 +84,101 @@ export const decryptMsg = (content, secret) => {
   }
 };
 
-/* 显示媒体类型 */
-export const showMediaType = (content, type, secret = false) => {
-  switch (type) {
-    case 'text':
-      return decryptMsg(content, secret);
-    case 'image':
-      return '[图片]';
-    case 'video':
-      return '[视频]';
-    case 'audio':
-      return '[语音]';
-    case 'other':
-      return '[文件]';
-    default:
-      return '';
-  }
+/* 格式化消息类型 */
+export const showMediaType = (content, type, secret) => {
+  const msgTypeMap = {
+    text: decryptMsg(content, secret),
+    image: `[${i18n.t('chat.msg_type_image')}]`,
+    video: `[${i18n.t('chat.msg_type_video')}]`,
+    audio: `[${i18n.t('chat.msg_type_audio')}]`,
+    file: `[${i18n.t('chat.msg_type_file')}]`,
+    other: `[${i18n.t('chat.msg_type_other')}]`,
+  };
+  return msgTypeMap[type] || '';
 };
 
-/* 格式化消息 */
-export const formatMsg = data => {
-  const {id, content, msg_secret, update_time} = data || {}; // 需要格式化的聊天数据
+/* 格式化云端消息为本地消息 */
+export const formatCloudMsgToLocal = (data, session_id) => {
+  const {message, senderInfo} = data || {};
   return {
-    _id: id,
-    text: decryptMsg(content, msg_secret),
-    createdAt: new Date(update_time),
+    session_id: session_id,
+    sender_avatar: senderInfo?.avatar,
+    sender_remarks: senderInfo?.remarks,
+    chat_type: senderInfo?.chat_type,
     status: 'ok',
-    ...data,
+    ...message,
   };
+};
+
+/* 格式化临时消息为本地消息 */
+export const formatTmpMsgToLocal = (message, options = {}) => {
+  const {_id, createdAt, text, user, msg_type} = message || {};
+  const {session_id, chat_type, sender_id, sender_avatar, status} =
+    options || {};
+  return {
+    id: -createRandomNumber(11),
+    session_id: session_id,
+    session_primary_id: -1,
+    client_msg_id: _id,
+    sender_id: sender_id,
+    sender_avatar: sender_avatar,
+    sender_remarks: user?.name,
+    sender_ip: 'localhost',
+    content: text,
+    msg_type: msg_type || 'text',
+    chat_type: chat_type,
+    create_time: createdAt?.toISOString(),
+    status: status,
+  };
+};
+
+/* 格式化本地消息为临时消息 */
+export const formatLocalMsgToTmp = messages => {
+  const {userInfo} = useUserStore.getState();
+  const {envConfig} = useConfigStore.getState();
+
+  return messages.map(msg => {
+    const {
+      client_msg_id,
+      msg_type,
+      content,
+      msg_secret,
+      create_time,
+      sender_id,
+      sender_remarks,
+      sender_avatar,
+      status,
+    } = msg;
+    const text = msg_secret ? decryptMsg(content, msg_secret) : content;
+    const message = {
+      _id: client_msg_id,
+      text: text,
+      createdAt: new Date(create_time),
+      user: {
+        _id: sender_id === userInfo.id ? 1 : 2,
+        id: sender_id,
+        name: sender_remarks,
+        avatar: envConfig.STATIC_URL + sender_avatar,
+      },
+      msg_type: msg_type,
+      status: status,
+    };
+    if (msg_type !== 'text') {
+      message.text = null;
+      const mediaTypes = ['image', 'video', 'audio'];
+      if (mediaTypes.includes(msg_type)) {
+        if (msg_type === 'image') {
+          message[msg_type] = envConfig.THUMBNAIL_URL + text;
+        } else {
+          message[msg_type] = envConfig.STATIC_URL + text;
+        }
+      } else {
+        message.file_url = envConfig.STATIC_URL + text;
+        message.text = getFileExt(text);
+      }
+    }
+    return message;
+  });
 };
 
 /* 格式化加入会话的用户信息 */
@@ -104,15 +239,6 @@ export const getLocalMsg = (realm, session_id) => {
   };
 };
 
-/* 删除指定本地消息 */
-export const delLocalMsg = (realm, cmsg_id) => {
-  const toDelete = realm
-    .objects('ChatMsg')
-    .filtered('clientMsg_id == $0', cmsg_id);
-  realm.write(() => {
-    realm.delete(toDelete);
-  });
-};
 
 /* 写入本地用户信息 */
 export const addOrUpdateLocalUser = (realm, users) => {
@@ -144,18 +270,45 @@ export const addOrUpdateLocalUser = (realm, users) => {
   }
 };
 
-/**
- * 匹配消息发送者名称
- * @param {Object} msgInfo 消息信息
- * @returns {string} 发送者名称
- */
-export const matchMsgInfo = msgInfo => {
-  const localUsers = getLocalUsers();
-  const data = localUsers.find(
-    item => item.session_primary_id === msgInfo.session_primary_id,
-  );
-  if (data) {
-    return data.session_name;
+/* 处理文件类消息 */
+export const handleMessage = async (
+  message,
+  {onProgress = () => {}, setUploadId = () => {}, setUploadIds = () => {}},
+) => {
+  const {msg_type = 'text', text, fileInfo} = message || {};
+  if (msg_type === 'text') {
+    return {msg_type, text};
+  } else {
+    if (!fileInfo || isEmptyObject(fileInfo)) {
+      return false;
+    }
+    try {
+      setUploadId(message._id);
+      setUploadIds(prevIds => [...new Set([...prevIds, message._id])]);
+      const res = await uploadFile(fileInfo.file, {
+        form: {
+          file_type: fileInfo.type,
+          use_type: FileUseTypeEnum.chat,
+        },
+        onProgress: onProgress,
+      });
+      const upRes = JSON.parse(res.text());
+      if (upRes.code === 0) {
+        return {
+          msg_type,
+          text: upRes.data.file_key,
+        };
+      } else {
+        console.error(upRes.message);
+        return false;
+      }
+    } catch (error) {
+      console.error(error);
+      return false;
+    } finally {
+      onProgress(0);
+      setUploadId(null);
+      setUploadIds(prevIds => prevIds.filter(id => id !== message._id));
+    }
   }
-  return null;
 };

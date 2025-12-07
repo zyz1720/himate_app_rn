@@ -6,7 +6,7 @@
   "mate": " friends",
   "delete_success": "Group has been disbanded",
   "exit_success": "Left the group",
-  "delete_member_success": "Removed the group member",
+  "delete_member_success": "Removed {{num}} group members",
   "async_success": "Sync successful",
   "owner": "Group Owner",
   "admin": "Administrator",
@@ -36,5 +36,12 @@
   "delete_member_confirm": "Are you sure you want to remove this group member?",
   "group_owner": "Created Groups",
   "group_admin": "Managed Groups",
-  "group_member": "Joined Groups"
+  "group_member": "Joined Groups",
+  "join": "Join",
+  "remove": "Remove",
+  "mute": "Mute",
+  "unmute": "Unmute",
+  "set_admin": "Set Admin",
+  "unset_admin": "Unset Admin",
+  "forbidden": "Forbidden"
 }

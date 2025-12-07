@@ -7,5 +7,6 @@
   "save_to": "已保存到 ",
   "save_failed": "保存失败",
   "choose_img": "选择图片",
-  "batch_save_tips": "共{{total}}个文件，正在{{type}}第{{index}}个文件..."
+  "batch_save_tips": "共{{total}}个文件，正在{{type}}第{{index}}个文件...",
+  "save_file": "保存文件"
 }

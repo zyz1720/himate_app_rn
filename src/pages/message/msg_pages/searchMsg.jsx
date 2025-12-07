@@ -9,7 +9,6 @@ import {
   TextField,
 } from 'react-native-ui-lib';
 import {showMediaType} from '@utils/system/chat_utils';
-import {getLocalUsers} from '@utils/realm/useUsersInfo';
 import {fullHeight, fullWidth} from '@style/index';
 import {useConfigStore} from '@store/configStore';
 import dayjs from 'dayjs';
@@ -85,7 +84,7 @@ const SearchMsg = ({navigation, route}) => {
   };
 
   /* 获取匹配头像备注信息 */
-  const matchInfoList = getLocalUsers() || [];
+  const matchInfoList = [];
 
   /* 为消息匹配头像备注信息 */
   const matchAvatarAndRemark = (list, userId, sessionId) => {

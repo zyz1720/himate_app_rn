@@ -462,7 +462,7 @@ const Music = ({navigation}) => {
                   onValueChange={value => {
                     if (value) {
                       setSelectedIds(prevItem => {
-                        const newItem = [...prevItem, item.id];
+                        const newItem = [...new Set([...prevItem, item.id])];
                         return newItem;
                       });
                     } else {

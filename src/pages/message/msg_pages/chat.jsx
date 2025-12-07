@@ -4,37 +4,40 @@ import {View} from 'react-native-ui-lib';
 import {GiftedChat, Message} from 'react-native-gifted-chat';
 import {useSocketStore} from '@store/socketStore';
 import {useToast} from '@components/common/useToast';
-import {deepClone, isEmptyObject} from '@utils/common/object_utils';
-import {createRandomNumber} from '@utils/common/number_utils';
-import {createRandomSecretKey, encryptAES} from '@utils/system/crypto_utils';
+import {isEmptyObject} from '@utils/common/object_utils';
+import {
+  encryptMsg,
+  formatCloudMsgToLocal,
+  formatLocalMsgToTmp,
+  formatTmpMsgToLocal,
+  createTmpMessage,
+  handleMessage,
+} from '@utils/system/chat_utils';
+import {setLocalMessages, getLocalMessages} from '@utils/realm/useChatMsg';
 import {useConfigStore} from '@store/configStore';
 import {useUserStore} from '@store/userStore';
 import {useSettingStore} from '@store/settingStore';
 import {getSelfGroupMember} from '@api/group_member';
-import {MemberStatusEnum} from '@const/database_enum';
+import {MemberStatusEnum, ChatTypeEnum} from '@const/database_enum';
 import {useTranslation} from 'react-i18next';
-import {CustomDay} from '@components/message/custom/CustomDay';
-import {CustomLoadEarlier} from '@components/message/custom/CustomLoadEarlier';
-import {CustomBubble} from '@components/message/custom/CustomBubble';
-import {CustomSend} from '@components/message/custom/CustomSend';
-import {CustomComposer} from '@components/message/custom/CustomComposer';
-import {CustomSystemMessage} from '@components/message/custom/CustomSystemMessage';
+import CustomDay from '@components/message/custom/CustomDay';
+import CustomLoadEarlier from '@components/message/custom/CustomLoadEarlier';
+import CustomBubble from '@components/message/custom/CustomBubble';
+import CustomSend from '@components/message/custom/CustomSend';
+import CustomComposer from '@components/message/custom/CustomComposer';
+import CustomSystemMessage from '@components/message/custom/CustomSystemMessage';
 import CustomTicks from '@components/message/custom/CustomTicks';
 import CustomActions from '@components/message/custom/CustomActions';
 import CustomInputToolbar from '@components/message/custom/CustomInputToolbar';
 import CustomAccessory from '@components/message/custom/CustomAccessory';
 import CustomFileMessage from '@components/message/custom/CustomFileMessage';
-import VideoModal from '@components/common/VideoModal';
-import ImgModal from '@components/common/ImgModal';
 import VideoMsg from '@components/message/media/VideoMsg';
 import ImageMsg from '@components/message/media/ImageMsg';
 import AudioMsg from '@components/message/media/AudioMsg';
-import BaseSheet from '@components/common/BaseSheet';
 import 'dayjs/locale/zh-cn';
 
 const Chat = React.memo(({navigation, route}) => {
   const {session_id, primaryId, searchMsg_cid} = route.params;
-  console.log('session_id', session_id, primaryId);
 
   const {t} = useTranslation();
   const {userInfo} = useUserStore();
@@ -52,8 +55,10 @@ const Chat = React.memo(({navigation, route}) => {
   const [msgsLoading, setMsgsLoading] = useState(false);
 
   const [uploadIds, setUploadIds] = useState([]);
-  const [nowUploadId, setNowUploadId] = useState('');
+  const [nowUploadId, setNowUploadId] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  const [nowPlayAudioId, setNowPlayAudioId] = useState(null);
 
   const [showActions, setShowActions] = useState(false);
   // 获取自己在群中的信息
@@ -113,9 +118,9 @@ const Chat = React.memo(({navigation, route}) => {
   };
 
   /* 点击头像 */
-  const onAvatarPress = User => {
+  const onAvatarPress = user => {
     navigation.navigate('MateInfo', {
-      userId: User._id === 1 ? 1 : User?.user_id,
+      userId: user.id,
     });
   };
 
@@ -127,8 +132,49 @@ const Chat = React.memo(({navigation, route}) => {
     }
   };
 
+  // 离开房间
+  const leaveRoom = _session_id => {
+    try {
+      socket.emit('leave-room', _session_id, res => {
+        console.log('leave-room', res);
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // 接受消息
+  const acceptMessage = _session_id => {
+    if (!isConnected) {
+      showToast(t('chat.socket_error'), 'error');
+      return;
+    }
+    try {
+      socket.emit('join-room', _session_id, res => {
+        if (res.code === 0) {
+          socket.on('message', data => {
+            console.log('acceptMessage', data);
+
+            const msg = formatCloudMsgToLocal(data, _session_id);
+            const tmpMsgs = formatLocalMsgToTmp([msg]);
+            setLocalMessages([msg]);
+            appendTmpMessage(tmpMsgs);
+          });
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   /* 发送消息 */
   const sendMessage = async (_content, msgType = 'text') => {
+    if (!_content) {
+      showToast(t('chat.empty_msg'), 'error');
+      return new Promise(resolve => {
+        resolve(false);
+      });
+    }
     const baseMsg = {
       session_id,
       content: _content,
@@ -137,11 +183,10 @@ const Chat = React.memo(({navigation, route}) => {
     primaryId && (baseMsg.session_primary_id = primaryId);
     // 加密消息
     if (isEncryptMsg) {
-      const {secret, trueSecret} = createRandomSecretKey(msgSecretKey);
+      const {content: encryptedContent, secret} = encryptMsg(_content);
       baseMsg.msg_secret = secret;
-      baseMsg.content = JSON.stringify(encryptAES(_content, trueSecret));
+      baseMsg.content = encryptedContent;
     }
-    console.log('baseMsg', isConnected, socket);
 
     if (!isConnected) {
       showToast(t('chat.socket_error'), 'error');
@@ -149,10 +194,18 @@ const Chat = React.memo(({navigation, route}) => {
         resolve(false);
       });
     }
+
     return new Promise(resolve => {
       try {
+        const emitTimer = setTimeout(() => {
+          clearTimeout(emitTimer);
+          resolve(false);
+        }, 5000);
+
         socket.emit('send-message', baseMsg, res => {
+          clearTimeout(emitTimer);
           if (res.code === 0) {
+            console.log('sendMessage', res.data);
             resolve(res.data);
           } else {
             showToast(res.message, 'error');
@@ -165,56 +218,98 @@ const Chat = React.memo(({navigation, route}) => {
     });
   };
 
+  /* 更新临时消息 */
+  const updateTmpMessage = (message = {}, status) => {
+    const localMsg = formatTmpMsgToLocal(message, {
+      session_id,
+      chat_type: isEmptyObject(userInGroupInfo)
+        ? ChatTypeEnum.private
+        : ChatTypeEnum.group,
+      sender_id: userInfo?.id,
+      sender_avatar: userInfo?.user_avatar,
+      status: status,
+    });
+    setLocalMessages([localMsg]);
+    setChatMessages(prevMsgs => {
+      const messageId = message._id;
+      if (!messageId) {
+        return prevMsgs;
+      }
+      const updatedMsgs = prevMsgs.map(msg => {
+        if (msg._id === messageId) {
+          return {
+            ...msg,
+            ...message,
+            status: status,
+          };
+        }
+        return msg;
+      });
+      return updatedMsgs;
+    });
+  };
+
+  /* 追加临时消息 */
+  const appendTmpMessage = (messages = []) => {
+    setChatMessages(prev => {
+      const existingIds = new Set(prev.map(msg => msg._id));
+      const newMessages = messages.filter(item => !existingIds.has(item._id));
+      return GiftedChat.append(prev, newMessages);
+    });
+  };
+
   /* 本地发送 */
   const onSend = async (messages = []) => {
-    setChatMessages(prev => GiftedChat.append(prev, messages));
-
+    appendTmpMessage(messages);
     for (const message of messages) {
       try {
-        const res = await sendMessage(message.text, message.msg_type);
-        console.log('sendMessage', res);
+        const handleMsg = await handleMessage(message, {
+          onProgress: setUploadProgress,
+          setUploadId: setNowUploadId,
+          setUploadIds: setUploadIds,
+        });
+
+        if (!handleMsg) {
+          updateTmpMessage(message, 'failed');
+          continue;
+        }
+        const data = await sendMessage(handleMsg.text, handleMsg.msg_type);
+        if (data) {
+          const msg = formatCloudMsgToLocal(data, session_id);
+          setLocalMessages([msg]);
+        } else {
+          updateTmpMessage(message, 'failed');
+        }
       } catch (error) {
         console.error(error);
+        updateTmpMessage(message, 'failed');
       }
     }
   };
 
-  /* 媒体消息 */
-  const sendFileMsg = files => {
-    const mediaMsgs = [];
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const media_type = file.type;
-      const mediaMsg = {
-        text: null,
-        _id: createRandomNumber(),
-        createdAt: new Date(),
-        msg_type: media_type,
-        file: file.file,
-        user: {
-          _id: 1,
-          name: isEmptyObject(userInGroupInfo)
-            ? userInfo?.user_name
-            : userInGroupInfo?.member_remarks,
-          avatar: envConfig?.STATIC_URL + userInfo?.user_avatar,
-        },
-      };
-      if (media_type === 'image') {
-        mediaMsg.image = file.uri;
-        mediaMsg.originalImage = file.uri;
-      }
-      if (media_type === 'video') {
-        mediaMsg.video = file.uri;
-      }
-      if (media_type === 'audio') {
-        mediaMsg.audio = file.uri;
-      }
-      if (media_type === 'other') {
-        mediaMsg.text = file.ext;
-      }
-      mediaMsgs.push(mediaMsg);
-    }
+  /* 媒体和文件消息 */
+  const sendFileMessages = files => {
+    const mediaMsgs = files.map(file =>
+      createTmpMessage({
+        isOneself: true,
+        userId: userInfo?.id,
+        userName: isEmptyObject(userInGroupInfo)
+          ? userInfo?.user_name
+          : userInGroupInfo?.member_remarks,
+        userAvatar: envConfig.STATIC_URL + userInfo?.user_avatar,
+        fileInfo: file,
+      }),
+    );
     onSend(mediaMsgs);
+  };
+
+  /* 获取本地消息 */
+  const getLocalMsgList = _session_id => {
+    const localMsgList = getLocalMessages(_session_id);
+    console.log('getLocalMsgList', localMsgList);
+
+    const tmpMsgList = formatLocalMsgToTmp(localMsgList);
+    appendTmpMessage(tmpMsgList);
   };
 
   const [searchIndex, setSearchIndex] = useState(-1);
@@ -262,6 +357,12 @@ const Chat = React.memo(({navigation, route}) => {
   }, [searchIndex]);
 
   useEffect(() => {
+    acceptMessage(session_id);
+    getLocalMsgList(session_id);
+    return () => leaveRoom(session_id);
+  }, [session_id]);
+
+  useEffect(() => {
     getSelfGroupMemberInfo();
   }, []);
 
@@ -283,7 +384,7 @@ const Chat = React.memo(({navigation, route}) => {
         locale={'zh-cn'}
         dateFormat={'MM/DD HH:mm'}
         timeFormat={'HH:mm'}
-        renderDay={CustomDay}
+        renderDay={props => <CustomDay {...props} />}
         messages={chatMessages}
         text={content}
         onInputTextChanged={text => setContent(text)}
@@ -293,7 +394,7 @@ const Chat = React.memo(({navigation, route}) => {
         showAvatarForEveryMessage={!isEmptyObject(userInGroupInfo)}
         renderUsernameOnMessage={!isEmptyObject(userInGroupInfo)}
         loadEarlier={chatMessages.length < localMsgCount}
-        renderLoadEarlier={CustomLoadEarlier}
+        renderLoadEarlier={props => <CustomLoadEarlier {...props} />}
         infiniteScroll={true}
         isLoadingEarlier={msgsLoading}
         onLoadEarlier={() => {
@@ -302,7 +403,7 @@ const Chat = React.memo(({navigation, route}) => {
         onLongPress={onLongPress}
         onPressAvatar={onAvatarPress}
         onLongPressAvatar={onLongPressAvatar}
-        renderBubble={CustomBubble}
+        renderBubble={props => <CustomBubble {...props} />}
         renderTicks={message => (
           <CustomTicks
             message={message}
@@ -311,53 +412,79 @@ const Chat = React.memo(({navigation, route}) => {
             uploadProgress={uploadProgress}
           />
         )}
-        renderSend={CustomSend}
+        renderSend={props => <CustomSend {...props} />}
         renderTime={() => {}}
         renderActions={() => (
           <CustomActions
             userInGroupInfo={userInGroupInfo}
             uploadIds={uploadIds}
-            onExpand={value => {
+            isExpand={showActions}
+            setExpand={value => {
               setShowActions(value);
             }}
           />
         )}
         renderInputToolbar={props => (
-          <CustomInputToolbar props={props} showActions={showActions} />
+          <CustomInputToolbar {...props} showActions={showActions} />
         )}
-        renderComposer={CustomComposer}
-        renderAccessory={props => (
+        renderComposer={props => <CustomComposer {...props} />}
+        renderAccessory={() => (
           <CustomAccessory
-            props={props}
-            onAudioRecordSuccess={sendFileMsg}
-            onShootSuccess={sendFileMsg}
-            onVideoRecordSuccess={sendFileMsg}
-            onImgPickSuccess={sendFileMsg}
-            onFilePickSuccess={sendFileMsg}
+            onAudioRecordSuccess={sendFileMessages}
+            onShootSuccess={sendFileMessages}
+            onVideoRecordSuccess={sendFileMessages}
+            onImgPickSuccess={sendFileMessages}
+            onFilePickSuccess={sendFileMessages}
+            onClose={() => {
+              setShowActions(false);
+            }}
           />
         )}
         renderMessage={renderMessage}
-        renderSystemMessage={CustomSystemMessage}
-        renderMessageImage={() => <ImageMsg />}
-        renderMessageVideo={() => <VideoMsg />}
-        renderMessageAudio={() => <AudioMsg />}
+        renderSystemMessage={props => <CustomSystemMessage {...props} />}
+        renderMessageImage={props => (
+          <ImageMsg
+            {...props}
+            uploadIds={uploadIds}
+            nowUploadId={nowUploadId}
+            uploadProgress={uploadProgress}
+          />
+        )}
+        renderMessageVideo={props => (
+          <VideoMsg
+            {...props}
+            uploadIds={uploadIds}
+            nowUploadId={nowUploadId}
+            uploadProgress={uploadProgress}
+          />
+        )}
+        renderMessageAudio={props => (
+          <AudioMsg
+            {...props}
+            nowPlayAudioId={nowPlayAudioId}
+            setNowPlayAudioId={setNowPlayAudioId}
+          />
+        )}
         renderMessageText={props => (
           <CustomFileMessage
-            props={props}
+            {...props}
             onPress={() => {}}
             onLongPress={() => {}}
           />
         )}
+        shouldUpdateMessage={(prevMsg, newMsg) => {
+          return prevMsg._id === newMsg._id;
+        }}
         onSend={onSend}
         textInputProps={{
           readOnly: userInGroupInfo.member_status === 'forbidden',
         }}
         user={{
           _id: 1,
-          avatar: envConfig.STATIC_URL + userInfo.user_avatar,
-          name: isEmptyObject(userInGroupInfo)
-            ? userInGroupInfo.member_remark
-            : userInfo.user_name,
+          avatar: envConfig.STATIC_URL + userInfo?.user_avatar,
+          name: !isEmptyObject(userInGroupInfo)
+            ? userInGroupInfo?.member_remark
+            : userInfo?.user_name,
         }}
       />
     </>

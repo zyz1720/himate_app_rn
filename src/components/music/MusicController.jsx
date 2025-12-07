@@ -8,7 +8,6 @@ import React, {
 } from 'react';
 import {StyleSheet, ImageBackground} from 'react-native';
 import {Image, View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
-import AntDesign from 'react-native-vector-icons/AntDesign';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 import {fullWidth} from '@style/index';
 import {Marquee} from '@animatereactnative/marquee';
@@ -29,8 +28,8 @@ import Animated, {
   useSharedValue,
   withTiming,
   useAnimatedStyle,
-  withSpring,
 } from 'react-native-reanimated';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import LyricModal from './LyricModal';
 import ToBePlayedModal from './ToBePlayedModal';
 
@@ -93,6 +92,12 @@ const MusicCtrlProvider = React.memo(props => {
     addPlayList,
     setPlayList,
     removePlayList,
+    setIsMusicResumePlay,
+    isMusicResumePlay,
+    playPosition,
+    setPlayPosition,
+    isMusicPaused,
+    setIsMusicPaused,
   } = useMusicStore();
 
   const {t} = useTranslation();
@@ -140,6 +145,7 @@ const MusicCtrlProvider = React.memo(props => {
       currentPosition !== curPosition && currentPosition !== seekToPosition,
     );
     setCurPosition(currentPosition);
+    setPlayPosition(currentPosition);
     if (duration !== audioDuration) {
       setAudioDuration(duration);
     }
@@ -194,18 +200,20 @@ const MusicCtrlProvider = React.memo(props => {
   }, [playList, playingIndex]);
 
   // 播放或暂停
-  const playOrPauseTrack = useCallback(() => {
+  const playOrPauseTrack = useCallback(async () => {
     if (isLoading) {
       showToast(t('music.loading'), 'warning', true);
     }
     if (audioIsPlaying) {
-      pausePlayer();
+      await pausePlayer();
+      setAudioIsPlaying(false);
     } else {
       if (isEmptyObject(playingMusic)) {
         showToast(t('music.no_music'), 'warning');
         return;
       }
-      resumePlayer();
+      await resumePlayer();
+      setAudioIsPlaying(true);
     }
   }, [audioIsPlaying, playingMusic, isLoading]);
 
@@ -237,23 +245,6 @@ const MusicCtrlProvider = React.memo(props => {
     setIsLoading(true);
     await seekToPlayer(position);
   }, []);
-
-  // 通知栏控件操作
-  onPauseCtrl(() => {
-    playOrPauseTrack();
-  });
-  onPlayCtrl(() => {
-    playOrPauseTrack();
-  });
-  onNextTrackCtrl(() => {
-    nextTrack();
-  });
-  onPreviousTrackCtrl(() => {
-    previousTrack();
-  });
-  onSeekCtrl(position => {
-    onSliderChange(position);
-  });
 
   // 监听音乐播放状态
   useEffect(() => {
@@ -335,7 +326,7 @@ const MusicCtrlProvider = React.memo(props => {
         url = playingMusic?.file_key;
       }
 
-      await startPlayer(url, 'music');
+      await startPlayer(url);
       const index = playList.findIndex(item => item.id === playingMusic.id);
       lastPlayedId.current = playingMusic.id;
       setPlayingIndex(index);
@@ -360,6 +351,20 @@ const MusicCtrlProvider = React.memo(props => {
       playNewMusic();
     }
   }, [playingMusic?.id]);
+
+  useEffect(() => {
+    if (isMusicResumePlay) {
+      playNewMusic().then(() => onSliderChange(playPosition));
+      setIsMusicResumePlay(false);
+      setIsMusicPaused(false);
+    }
+  }, [isMusicResumePlay]);
+
+  useEffect(() => {
+    if (isMusicPaused) {
+      playOrPauseTrack();
+    }
+  }, [isMusicPaused]);
 
   // 加载音乐名
   const renderMarquee = useCallback(() => {
@@ -419,12 +424,26 @@ const MusicCtrlProvider = React.memo(props => {
     }
   };
 
-  useEffect(() => {
-    return () => {
-      removePlayBackListener();
-      restMusicStatus();
-    };
-  }, []);
+  // 通知栏控件操作
+  onPauseCtrl(() => {
+    playOrPauseTrack();
+  });
+
+  onPlayCtrl(() => {
+    playOrPauseTrack();
+  });
+
+  onNextTrackCtrl(() => {
+    nextTrack();
+  });
+
+  onPreviousTrackCtrl(() => {
+    previousTrack();
+  });
+
+  onSeekCtrl(position => {
+    onSliderChange(position);
+  });
 
   const ctrlWidth = useSharedValue(fullWidth - 32);
   const expandAnimatedStyle = useAnimatedStyle(() => ({
@@ -452,6 +471,13 @@ const MusicCtrlProvider = React.memo(props => {
       translateY.value = withTiming(50);
     }
   }, [showMusicCtrl]);
+
+  useEffect(() => {
+    return () => {
+      removePlayBackListener();
+      restMusicStatus();
+    };
+  }, []);
 
   return (
     <MusicCtrlContext.Provider value={{}}>

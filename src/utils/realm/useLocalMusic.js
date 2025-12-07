@@ -5,7 +5,12 @@ import {realm} from './index';
  * @returns {Array} 本地音乐列表
  */
 export const getLocalMusic = () => {
-  return realm.objects('local_music').toJSON();
+  try {
+    return realm.objects('local_music').toJSON();
+  } catch (error) {
+    console.error('查询本地音乐失败', error);
+    return [];
+  }
 };
 
 /**
@@ -13,20 +18,28 @@ export const getLocalMusic = () => {
  * @param {Array} newFiles 新文件数组
  */
 export const saveLocalMusic = newFiles => {
-  realm.write(() => {
-    newFiles.forEach(file => {
-      file.created_at = new Date();
-      realm.create('local_music', file);
+  try {
+    realm.write(() => {
+      newFiles.forEach(file => {
+        file.created_at = new Date();
+        realm.create('local_music', file);
+      });
     });
-  });
+  } catch (error) {
+    console.error('保存本地音乐失败', error);
+  }
 };
 
 /**
  * 清空本地音乐
  */
 export const clearLocalMusic = () => {
-  const toDelete = realm.objects('local_music');
-  realm.write(() => {
-    realm.delete(toDelete);
-  });
+  try {
+    const toDelete = realm.objects('local_music');
+    realm.write(() => {
+      realm.delete(toDelete);
+    });
+  } catch (error) {
+    console.error('清空本地音乐失败', error);
+  }
 };

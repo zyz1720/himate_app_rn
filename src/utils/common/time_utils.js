@@ -48,3 +48,11 @@ export const formatDateTime = inputDate => {
     return date.format('YYYY/MM/DD');
   }
 };
+
+/**
+ * 延迟执行
+ * @param {number} ms 延迟时间，单位毫秒
+ * @returns {Promise} 延迟执行完成的 Promise
+ */
+export const delay = (ms = 1000) =>
+  new Promise(resolve => setTimeout(resolve, ms));

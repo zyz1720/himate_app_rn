@@ -19,5 +19,13 @@
   "apply": "Friend Request",
   "remarks": "Friend Remarks",
   "refuse_tips": "Are you sure you want to refuse this friend request?",
-  "delete_tips": "Are you sure you want to delete this friend request record?"
+  "delete_tips": "Are you sure you want to delete this friend request record?",
+  "create_group": "Create Group",
+  "search_history": "Search Chat History",
+  "export_chat_history": "Export Chat History",
+  "clear_chat_history": "Clear Chat History",
+  "sync_chat_history": "Sync Chat History",
+  "clear_chat_history_tips": "Are you sure you want to clear chat history?",
+  "clear_success": "Clear Success",
+  "sync_success": "Sync Success"
 }

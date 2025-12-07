@@ -11,10 +11,9 @@ import {fullHeight} from '@style/index';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 /* 自定义操作按钮 */
-const CustomActions = ({userInGroupInfo, uploadIds, onExpand}) => {
+const CustomActions = ({userInGroupInfo, uploadIds, isExpand, setExpand}) => {
   const {t} = useTranslation();
   const {showToast} = useToast();
-  const [showMore, setShowMore] = useState(false);
 
   const rotate = useSharedValue('0deg');
 
@@ -25,19 +24,18 @@ const CustomActions = ({userInGroupInfo, uploadIds, onExpand}) => {
   });
 
   useEffect(() => {
-    if (showMore) {
+    if (isExpand) {
       rotate.value = withTiming('45deg');
     } else {
       rotate.value = withTiming('0deg');
     }
-  }, [showMore]);
+  }, [isExpand]);
 
   return (
     <View flexS center style={{marginBottom: fullHeight * 0.008}}>
       <TouchableOpacity
         onPress={() => {
-          setShowMore(prev => {
-            onExpand(!prev);
+          setExpand(prev => {
             if (userInGroupInfo?.member_status === 'forbidden') {
               showToast(t('chat.msg_mute_error'), 'error');
               return false;

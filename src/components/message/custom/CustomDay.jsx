@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
 });
 
 /* 自定义时间 */
-export const CustomDay = props => {
+const CustomDay = props => {
   return (
     <Day
       {...props}
@@ -19,3 +19,5 @@ export const CustomDay = props => {
     />
   );
 };
+
+export default CustomDay;

@@ -31,5 +31,6 @@
     "send_tips": "Release to send",
     "cancel_tips": "Release to cancel",
     "to_search_result": "Scrolling to search result...",
-    "socket_error": "socket not connected"
+    "socket_error": "socket not connected",
+    "empty_msg": "Please enter content!"
 }

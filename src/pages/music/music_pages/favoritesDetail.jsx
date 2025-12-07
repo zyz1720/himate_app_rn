@@ -151,10 +151,10 @@ const FavoritesDetail = ({navigation, route}) => {
       <FavoriteModal
         visible={detailModalVisible}
         onClose={() => setDetailModalVisible(false)}
-        backgroundImg={envConfig.STATIC_URL + favoritesInfo?.favorites_cover}
+        backgroundImg={favoritesInfo?.favorites_cover}
         title={favoritesInfo?.favorites_name}
         remarks={favoritesInfo?.favorites_remarks}
-        userAvatar={envConfig.STATIC_URL + favoritesInfo?.user?.user_avatar}
+        userAvatar={favoritesInfo?.user?.user_avatar}
         userName={favoritesInfo?.user?.user_name}
       />
       {loading ? <FullScreenLoading /> : null}

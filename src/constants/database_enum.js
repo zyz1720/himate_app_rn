@@ -6,7 +6,7 @@ export const GroupRoleEnum = {
 
 export const MemberStatusEnum = {
   forbidden: 'forbidden',
-  member: 'member',
+  normal: 'normal',
 };
 
 export const ChatTypeEnum = {

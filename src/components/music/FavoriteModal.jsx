@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
 } from 'react-native-ui-lib';
 import {fullHeight, statusBarHeight} from '@style/index';
+import {useConfigStore} from '@store/configStore';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
 const styles = StyleSheet.create({
@@ -46,6 +47,8 @@ const FavoriteModal = React.memo(props => {
     userName = '',
   } = props;
 
+  const {envConfig} = useConfigStore();
+
   return (
     <Modal
       animationType="fade"
@@ -62,7 +65,7 @@ const FavoriteModal = React.memo(props => {
           style={styles.listBackImage}
           source={
             backgroundImg
-              ? {uri: backgroundImg}
+              ? {uri: envConfig.STATIC_URL + backgroundImg}
               : require('@assets/images/user_bg.jpg')
           }
           resizeMode="cover">
@@ -72,7 +75,7 @@ const FavoriteModal = React.memo(props => {
           <ScrollView>
             <View flexS center marginT-20>
               <Image
-                source={{uri: backgroundImg}}
+                source={{uri: envConfig.STATIC_URL + backgroundImg}}
                 errorSource={require('@assets/images/favorites_cover.jpg')}
                 style={styles.image}
               />
@@ -81,7 +84,7 @@ const FavoriteModal = React.memo(props => {
               <Avatar
                 size={26}
                 source={{
-                  uri: userAvatar,
+                  uri: envConfig.STATIC_URL + userAvatar,
                 }}
               />
               <Text text70 marginL-6 white>

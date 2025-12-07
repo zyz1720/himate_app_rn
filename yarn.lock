@@ -9310,6 +9310,11 @@ react-native-sound@^0.11.2:
   resolved "https://registry.yarnpkg.com/react-native-sound/-/react-native-sound-0.11.2.tgz#e542dc5b9e16ab4b3ac7e6eaddb1fc8d98da9038"
   integrity sha512-LmGc8lgOK3qecYMVQpyHvww/C+wgT6sWeMpVbOe4NCRGC2yKd4fo4U0KBUo9PO7AqKESO3I/2GZg1/C0+bwiiA==
 
+react-native-sse@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/react-native-sse/-/react-native-sse-1.2.1.tgz#d7d063173bf5f3cd2cb6978141ec5d57591dff4b"
+  integrity sha512-zejanlScF+IB9tYnbdry0MT34qjBXbiV/E72qGz33W/tX1bx8MXsbB4lxiuPETc9v/008vYZ60yjIstW22VlVg==
+
 react-native-storage@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/react-native-storage/-/react-native-storage-1.0.1.tgz#2c493875ff76ec301987c951a8302f3a54381241"

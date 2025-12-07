@@ -16,6 +16,7 @@ import ChatHistory from '@pages/message/msg_pages/chatHistory';
 import CreateGroup from '@pages/group/createGroup';
 import GroupInfo from '@pages/group/groupInfo';
 import GroupList from '@pages/group/groupList';
+import GroupMembers from '@pages/group/groupMembers';
 import SearchMsg from '@pages/message/msg_pages/searchMsg';
 import ChatMsg from '@pages/user/user_pages/chatMsg';
 import DataManager from '@pages/user/user_pages/dataManager';
@@ -176,6 +177,13 @@ function StackScreen() {
             component={GroupList}
             options={{
               title: t('screen.GroupList'),
+            }}
+          />
+          <Stack.Screen
+            name="GroupMembers"
+            component={GroupMembers}
+            options={{
+              title: t('screen.GroupMembers'),
             }}
           />
         </Stack.Group>

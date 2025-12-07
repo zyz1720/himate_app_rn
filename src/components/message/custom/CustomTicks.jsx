@@ -4,9 +4,10 @@ import {Colors, Text, View} from 'react-native-ui-lib';
 import {useTranslation} from 'react-i18next';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
-/* 自定义时间 */
+/* 自定义消息状态 */
 const CustomTicks = ({message, uploadIds, nowUploadId, uploadProgress}) => {
   const {client_msg_id, status, msg_type} = message;
+
   const {t} = useTranslation();
   if (status === 'failed') {
     return (
@@ -28,7 +29,8 @@ const CustomTicks = ({message, uploadIds, nowUploadId, uploadProgress}) => {
         <View flexG row center marginT-4>
           <ActivityIndicator color={Colors.primary} size={14} />
           <Text marginL-4 grey30 text100L>
-            {t('chat.msg_sending')}{uploadProgress.toFixed(0)}%
+            {t('chat.msg_sending')}
+            {uploadProgress.toFixed(0)}%
           </Text>
         </View>
       );

@@ -8,19 +8,29 @@ import {
   Colors,
   TextField,
   Button,
-  ExpandableSection,
   TouchableOpacity,
   Avatar,
 } from 'react-native-ui-lib';
 import {useToast} from '@components/common/useToast';
 import {getGroupDetail, editGroup, deleteGroup} from '@api/group';
-import {editGroupMember, exitGroup} from '@api/group_member';
+import {
+  editGroupMember,
+  getSelfGroupMember,
+  exitGroup,
+} from '@api/group_member';
 import {uploadFile} from '@utils/system/file_utils';
-import {formatMsg, setLocalMsg} from '@utils/system/chat_utils';
-import {getSessionDetail} from '@api/session';
+import {formatCloudMsgToLocal} from '@utils/system/chat_utils';
+import {getSessionsMessages} from '@api/session';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
-import {GroupRoleEnum, MemberStatusEnum} from '@const/database_enum';
+import {
+  GroupRoleEnum,
+  MemberStatusEnum,
+  FileUseTypeEnum,
+} from '@const/database_enum';
+import {deleteLocalMessages, setLocalMessages} from '@utils/realm/useChatMsg';
+import {delay} from '@utils/common/time_utils';
+import {useIsFocused} from '@react-navigation/native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FullScreenLoading from '@components/common/FullScreenLoading';
 import BaseDialog from '@components/common/BaseDialog';
@@ -28,8 +38,10 @@ import ListItem from '@components/common/ListItem';
 import ImgPicker from '@components/form/ImgPicker';
 
 const GroupInfo = ({navigation, route}) => {
-  const {groupId, sessionId} = route.params || {};
+  const {groupId, session_id} = route.params || {};
   const {t} = useTranslation();
+  const isFocused = useIsFocused();
+
   const {envConfig} = useConfigStore();
 
   const {showToast} = useToast();
@@ -38,14 +50,13 @@ const GroupInfo = ({navigation, route}) => {
   const [refreshing, setRefreshing] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
 
-  const [avatarUri, setAvatarUri] = useState('');
+  const [avatarUri, setAvatarUri] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
 
   const [isVisible, setIsVisible] = useState(false);
   const [nickname, setNickname] = useState('');
-  const [groupRole, setGroupRole] = useState(GroupRoleEnum.member);
-  const [oneselfMemberId, setOneselfMemberId] = useState(null);
-  const [allMemberIds, setAllMemberIds] = useState([]);
+  const [memberRole, setMemberRole] = useState(GroupRoleEnum.member);
+  const [allMemberUserIds, setAllMemberUserIds] = useState([]);
 
   const [showAvatarSave, setShowAvatarSave] = useState(false);
   const [showNameSave, setShowNameSave] = useState(false);
@@ -54,15 +65,16 @@ const GroupInfo = ({navigation, route}) => {
   const [clearVisible, setClearVisible] = useState(false);
   const [deleteVisible, setDeleteVisible] = useState(false);
 
-
-
   // 初始化数据
   const dataInit = async id => {
     try {
       setRefreshing(true);
-      const res = await getGroupDetail({id, current: 1, pageSize: 12});
+      const res = await getGroupDetail(id);
+      console.log('getGroupDetail', id, res.data);
       if (res.code === 0) {
-        const {group_avatar} = res.data;
+        const {group_avatar, members} = res.data;
+        const userIds = members.map(item => item.user_id);
+        setAllMemberUserIds(userIds);
         setGroupInfo({...res.data});
         setAvatarUri(envConfig.STATIC_URL + group_avatar);
       }
@@ -73,41 +85,56 @@ const GroupInfo = ({navigation, route}) => {
     }
   };
 
+  // 获取自己在群中的信息
+  const getSelfGroupMemberInfo = async _session_id => {
+    try {
+      const res = await getSelfGroupMember(_session_id);
+      if (res.code === 0) {
+        const {member_role, member_remarks} = res.data;
+        setMemberRole(member_role);
+        setNickname(member_remarks);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   // 处理数据
   const [isCleanCache, setIsCleanCache] = useState(false);
-  const handleData = async () => {
-    const keys = Object.keys(groupInfo);
-
-    for (let i = 0; i < keys.length; i++) {
-      const key = keys[i];
-      const element = groupInfo[key];
-      if (element === null || element === '') {
-        showToast(t('empty.input'), 'error');
+  const uploadImg = async fileInfo => {
+    try {
+      const res = await uploadFile(fileInfo.file, {
+        form: {
+          file_type: fileInfo.type,
+          use_type: FileUseTypeEnum.group,
+        },
+      });
+      const upRes = JSON.parse(res.text());
+      if (upRes.code === 0) {
+        return upRes.data.file_key;
+      } else {
+        showToast(upRes.message, 'error');
         return false;
       }
+    } catch (error) {
+      console.error(error);
+      return false;
+    } finally {
+      setIsCleanCache(true);
     }
+  };
+
+  const handleData = async () => {
+    let updateGroupInfo = {...groupInfo};
 
     if (avatarFile) {
-      try {
-        const res = await uploadFile(avatarFile, () => {}, {
-          file_type: 'image',
-          use_type: 'group',
-        });
-        const uploadRes = JSON.parse(res.text());
-        if (uploadRes.code === 0) {
-          const avatar = uploadRes.data.file_key;
-          setGroupInfo({...groupInfo, group_avatar: avatar});
-          return true;
-        }
-        showToast(uploadRes.message, 'error');
-      } catch (error) {
-        console.error(error);
+      const avatarKey = await uploadImg(avatarFile);
+      if (!avatarKey) {
         return false;
-      } finally {
-        setIsCleanCache(true);
       }
+      updateGroupInfo = {...updateGroupInfo, group_avatar: avatarKey};
     }
-    return true;
+    return updateGroupInfo;
   };
 
   // 提交修改
@@ -116,11 +143,11 @@ const GroupInfo = ({navigation, route}) => {
     try {
       setUploading(true);
       // 处理数据
-      const valid = await handleData();
-      if (!valid) {
+      const updateGroupInfo = await handleData();
+      if (!updateGroupInfo) {
         return;
       }
-      const res = await editGroup(groupId, groupInfo);
+      const res = await editGroup(groupId, updateGroupInfo);
       if (res.code === 0) {
         dataInit(groupId);
       }
@@ -132,19 +159,11 @@ const GroupInfo = ({navigation, route}) => {
     }
   };
 
-  /* 清空聊天记录 */
-  const clearChatHistory = sessionId => {
-    // function deleteMsg(SID) {
-    //   const toDelete = realm
-    //     .objects('ChatMsg')
-    //     .filtered('session_id == $0', SID);
-    //   realm.write(() => {
-    //     realm.delete(toDelete);
-    //   });
-    // }
-    // deleteMsg(sessionId);
-    // showToast('清除成功', 'success');
-    // navigation.navigate('Msg');
+  /* 清空历史消息 */
+  const clearChatHistory = _session_id => {
+    deleteLocalMessages(_session_id);
+    showToast(t('mate.clear_success'), 'success');
+    navigation.navigate('Msg');
   };
 
   // 解散群组
@@ -183,8 +202,7 @@ const GroupInfo = ({navigation, route}) => {
   const editGroupMemberInfo = async () => {
     try {
       setUploading(true);
-      const res = await editGroupMember({
-        id: oneselfMemberId,
+      const res = await editGroupMember(groupId, {
         member_remarks: nickname,
       });
       if (res.code === 0) {
@@ -199,80 +217,48 @@ const GroupInfo = ({navigation, route}) => {
   };
 
   // 同步聊天记录
-  const getCouldChatHistory = async () => {
+  const [loadingAll, setLoadingAll] = useState(false);
+
+  const getCouldChatHistory = async current => {
     try {
-      setRefreshing(true);
-      const res = await getSessionDetail(sessionId);
+      setLoadingAll(true);
+      const res = await getSessionsMessages(session_id, {
+        current: current,
+        pageSize: 100,
+      });
       if (res.code === 0) {
         const newList = [];
-        res.data.msgs.forEach(item => {
-          newList.push(formatMsg(item));
+        const list = res.data.list || [];
+        list.forEach(item => {
+          newList.push(formatCloudMsgToLocal(item, session_id));
         });
-        setLocalMsg(newList);
-        navigation.navigate('Msg');
-        showToast(t('group.async_success'), 'success');
-        return;
+        setLocalMessages(newList);
+        if (list.length < 100) {
+          showToast(t('mate.sync_success'), 'success');
+          navigation.navigate('Msg');
+          return;
+        }
+        await delay();
+        getCouldChatHistory(current + 1);
       }
-      showToast(res.message, 'error');
+      return;
     } catch (error) {
       console.error(error);
+      return;
     } finally {
-      setRefreshing(false);
+      setLoadingAll(false);
     }
   };
 
   useEffect(() => {
-    if (groupId) {
+    if (groupId && isFocused) {
       dataInit(groupId);
     }
-  }, [groupId]);
+    if (session_id && isFocused) {
+      getSelfGroupMemberInfo(session_id);
+    }
+  }, [isFocused, groupId, session_id]);
 
-  const [isExpand, setIsExpand] = useState(false);
-
-  const renderMembers = () => {
-    return groupInfo?.members?.map(item => (
-      <View key={item.id}>
-        <TouchableOpacity
-          key={item.id}
-          flexS
-          center
-          onPress={() => {
-            navigation.navigate('MateInfo', {
-              userId: item.member_uid,
-            });
-          }}>
-          <Avatar
-            source={{
-              uri: envConfig.STATIC_URL + item.member_avatar,
-            }}
-            imageStyle={
-              item.member_status === MemberStatusEnum.forbidden
-                ? styles.avatarOpacity
-                : styles.avatarNormal
-            }
-            ribbonLabel={
-              item.member_role === GroupRoleEnum.owner
-                ? t('group.owner')
-                : item.member_role === GroupRoleEnum.admin
-                ? t('group.admin')
-                : null
-            }
-            ribbonStyle={{
-              backgroundColor:
-                item.member_role === GroupRoleEnum.owner
-                  ? Colors.primary
-                  : item.member_role === GroupRoleEnum.admin
-                  ? Colors.yellow30
-                  : null,
-            }}
-          />
-          <Text text90L numberOfLines={1} style={styles.maxWidth60}>
-            {item.member_remark}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    ));
-  };
   return (
     <>
       <ScrollView
@@ -295,7 +281,7 @@ const GroupInfo = ({navigation, route}) => {
             center
             padding-16
             onPress={() => {
-              if (groupRole !== GroupRoleEnum.member) {
+              if (memberRole !== GroupRoleEnum.member) {
                 setShowPicker(true);
               }
             }}>
@@ -316,10 +302,17 @@ const GroupInfo = ({navigation, route}) => {
                 size={Button.sizes.small}
                 borderRadius={8}
                 backgroundColor={Colors.primary}
-                onPress={() => submitData()}
+                onPress={async () => {
+                  await submitData();
+                  setShowAvatarSave(false);
+                }}
               />
             </View>
-            <Image source={{uri: avatarUri}} style={styles.image} />
+            <Image
+              source={{uri: avatarUri}}
+              errorSource={require('@assets/images/empty.jpg')}
+              style={styles.image}
+            />
             <FontAwesome name="angle-right" color={Colors.grey50} size={26} />
           </Card>
           <Card enableShadow={false} flexS marginT-16 padding-16>
@@ -327,7 +320,7 @@ const GroupInfo = ({navigation, route}) => {
               <TextField
                 label={t('group.name')}
                 text70
-                readonly={groupRole === GroupRoleEnum.member}
+                readonly={memberRole === GroupRoleEnum.member}
                 enableErrors={showNameSave}
                 style={styles.input}
                 placeholder={t('group.input_name')}
@@ -350,21 +343,23 @@ const GroupInfo = ({navigation, route}) => {
                   size={Button.sizes.xSmall}
                   borderRadius={8}
                   backgroundColor={Colors.primary}
-                  onPress={() => submitData()}
+                  onPress={async () => {
+                    await submitData();
+                    setShowNameSave(false);
+                  }}
                 />
               </View>
             </View>
-            <View flexG row spread centerV marginT-16>
+            <View flexG centerV marginT-16>
               <TextField
                 label={t('group.introduce')}
                 text80
                 grey30
                 multiline
                 numberOfLines={3}
-                readonly={groupRole === GroupRoleEnum.member}
+                readonly={memberRole === GroupRoleEnum.member}
                 helperText={t('group.max_introduce_length')}
                 enableErrors={showIntroduceSave}
-                style={styles.input}
                 placeholder={t('group.input_introduce')}
                 placeholderTextColor={Colors.grey50}
                 validate={[value => value.length !== 0]}
@@ -378,7 +373,7 @@ const GroupInfo = ({navigation, route}) => {
                 }}
               />
               <View
-                marginB-20
+                right
                 style={
                   showIntroduceSave ? styles.displayFlex : styles.displayNone
                 }>
@@ -387,7 +382,10 @@ const GroupInfo = ({navigation, route}) => {
                   size={Button.sizes.xSmall}
                   borderRadius={8}
                   backgroundColor={Colors.primary}
-                  onPress={() => submitData()}
+                  onPress={async () => {
+                    await submitData();
+                    setShowIntroduceSave(false);
+                  }}
                 />
               </View>
             </View>
@@ -411,7 +409,7 @@ const GroupInfo = ({navigation, route}) => {
               iconColor={Colors.grey40}
               onConfirm={() => {
                 navigation.navigate('SearchMsg', {
-                  sessionId: sessionId,
+                  session_id: session_id,
                 });
               }}
             />
@@ -422,7 +420,7 @@ const GroupInfo = ({navigation, route}) => {
               iconSize={20}
               onConfirm={() => {
                 navigation.navigate('ChatMsg', {
-                  sessionId: sessionId,
+                  session_id: session_id,
                 });
               }}
             />
@@ -434,60 +432,6 @@ const GroupInfo = ({navigation, route}) => {
                 setClearVisible(true);
               }}
             />
-          </Card>
-
-          <Card enableShadow={false} marginT-16>
-            <ExpandableSection
-              expanded={isExpand}
-              backgroundColor={Colors.white}
-              sectionHeader={
-                <View>
-                  <ListItem
-                    itemName={t('group.invite_member')}
-                    iconName={'plus-circle'}
-                    iconColor={Colors.blue40}
-                    onConfirm={() => {
-                      navigation.navigate('CreateGroup', {
-                        groupId: groupId,
-                        existMemberIds: allMemberIds,
-                      });
-                    }}
-                  />
-                  <ListItem
-                    itemName={t('group.member_count', {
-                      count: groupInfo?.members?.length,
-                    })}
-                    iconName={'group'}
-                    iconSize={20}
-                    iconColor={Colors.primary}
-                    isBottomLine={true}
-                    onConfirm={() => {
-                      setIsExpand(prev => !prev);
-                    }}
-                  />
-                </View>
-              }
-              children={
-                <>
-                  {groupRole !== GroupRoleEnum.member ? (
-                    <View flexS>
-                      <Text text90L grey30 center>
-                        <FontAwesome
-                          name="info-circle"
-                          color={Colors.success}
-                          size={14}
-                        />
-                        &nbsp;{t('group.long_press_operation')}
-                      </Text>
-                    </View>
-                  ) : null}
-                  <View style={styles.membersGrid}>{renderMembers()}</View>
-                </>
-              }
-              onPress={() => {}}
-            />
-          </Card>
-          <Card marginT-16 enableShadow={false}>
             <ListItem
               itemName={t('group.sync_msg')}
               iconName={'cloud-download'}
@@ -498,7 +442,37 @@ const GroupInfo = ({navigation, route}) => {
               }}
             />
           </Card>
-          {groupRole === GroupRoleEnum.owner ? (
+
+          <Card enableShadow={false} marginT-16>
+            <ListItem
+              itemName={t('group.invite_member')}
+              iconName={'plus-circle'}
+              iconColor={Colors.blue40}
+              onConfirm={() => {
+                navigation.navigate('CreateGroup', {
+                  groupId: groupId,
+                  excludeIds: allMemberUserIds,
+                });
+              }}
+            />
+            <ListItem
+              itemName={t('group.member_count', {
+                count: groupInfo?.members?.length,
+              })}
+              iconName={'group'}
+              iconSize={20}
+              iconColor={Colors.primary}
+              isBottomLine={true}
+              onConfirm={() => {
+                navigation.navigate('GroupMembers', {
+                  groupId: groupId,
+                  memberRole: memberRole,
+                  excludeIds: allMemberUserIds,
+                });
+              }}
+            />
+          </Card>
+          {memberRole === GroupRoleEnum.owner ? (
             <Button
               bg-white
               marginT-16
@@ -553,7 +527,7 @@ const GroupInfo = ({navigation, route}) => {
       <BaseDialog
         title={true}
         onConfirm={() => {
-          clearChatHistory();
+          clearChatHistory(session_id);
         }}
         visible={clearVisible}
         setVisible={setClearVisible}
@@ -579,6 +553,7 @@ const GroupInfo = ({navigation, route}) => {
         }
       />
       {uploading ? <FullScreenLoading Message={t('common.modifying')} /> : null}
+      {loadingAll ? <FullScreenLoading message={t('common.syncing')} /> : null}
     </>
   );
 };
@@ -598,15 +573,6 @@ const styles = StyleSheet.create({
     columnGap: 38,
     rowGap: 12,
     padding: 16,
-  },
-  avatarOpacity: {
-    opacity: 0.2,
-  },
-  avatarNormal: {
-    opacity: 1,
-  },
-  maxWidth60: {
-    maxWidth: 60,
   },
   flex1: {
     flex: 1,

@@ -30,7 +30,10 @@ const BaseDialog = props => {
     <Dialog
       visible={visible}
       useSafeArea={true}
-      onDismiss={() => setVisible(false)}
+      onDismiss={() => {
+        setVisible(false)
+        onCancel();
+      }}
       width={width}
       panDirection={PanningProvider.Directions.DOWN}>
       <Card flexS padding-16>

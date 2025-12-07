@@ -24,7 +24,7 @@ import {
   formatFileSize,
 } from '@utils/system/file_utils';
 import {formatDateTime} from '@utils/common/time_utils';
-import {formatMsg, matchMsgInfo} from '@utils/system/chat_utils';
+import {formatCloudMsg, matchMsgInfo} from '@utils/system/chat_utils';
 import {FileTypeEnum, FileUseTypeEnum} from '@const/database_enum';
 import {usePermissionStore} from '@store/permissionStore';
 import {useConfigStore} from '@store/configStore';
@@ -148,10 +148,6 @@ const DataManager = ({navigation}) => {
       showToast(t('empty.select'), 'warning');
       return;
     }
-    console.log({
-      ids: selectedFileIds,
-    });
-
     const fileDelRes = await delFiles({
       ids: selectedFileIds,
     });
@@ -229,7 +225,7 @@ const DataManager = ({navigation}) => {
       const imgs = [];
       fileList.forEach((item, index) => {
         if (item.file_type === FileTypeEnum.image) {
-          imgs.push(item.file_key);
+          imgs.push(envConfig.STATIC_URL + item.file_key);
         }
         if (item.id === file.id) {
           setInitialIndex(index);
@@ -281,7 +277,7 @@ const DataManager = ({navigation}) => {
             onValueChange={value => {
               if (value) {
                 setSelectedFileIds(prevItem => {
-                  const newItem = [...prevItem, item.id];
+                  const newItem = [...new Set([...prevItem, item.id])];
                   return newItem;
                 });
               } else {
@@ -342,7 +338,7 @@ const DataManager = ({navigation}) => {
             onValueChange={value => {
               if (value) {
                 setSelectedMsgIds(prevItem => {
-                  const newItem = [...prevItem, item.id];
+                  const newItem = [...new Set([...prevItem, item.id])];
                   return newItem;
                 });
               } else {
@@ -356,7 +352,7 @@ const DataManager = ({navigation}) => {
         ) : null}
         <View width={isMultiSelect ? '92%' : '100%'}>
           <Text numberOfLines={1} ellipsizeMode={'middle'}>
-            {formatMsg(item).text}
+            {formatCloudMsg(item).text}
           </Text>
           <View row spread>
             <Text text90L grey30>
@@ -631,7 +627,7 @@ const DataManager = ({navigation}) => {
           setPreviewImgUris(null);
           setVideoVisible(!videoVisible);
         }}
-        onPress={() => setVideoVisible(false)}
+        onPressClose={() => setVideoVisible(false)}
         onError={e => {
           showToast(t('common.video_load_failed'), 'error');
           console.log(e);

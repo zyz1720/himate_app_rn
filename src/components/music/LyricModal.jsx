@@ -94,7 +94,7 @@ const LyricModal = React.memo(props => {
   const {t} = useTranslation();
   const {envConfig} = useConfigStore();
   const {playingMusic} = useMusicStore();
-  const {musicExtra = {}} = playingMusic;
+  const musicExtra = playingMusic?.musicExtra;
 
   // 屏幕变化监听
   const {width, height} = useWindowDimensions();
@@ -108,18 +108,25 @@ const LyricModal = React.memo(props => {
   // 颜色计算 - 只在相关依赖变化时执行
   useEffect(() => {
     if (musicExtra?.music_cover) {
-      getColors(envConfig.STATIC_URL + musicExtra.music_cover, {
-        fallback: Colors.black,
-        cache: true, // 启用缓存
-      }).then(res => {
-        const platform = res.platform;
-        const colorValue =
-          platform === 'android' ? res.average : res.background;
-        const num = getWhitenessScore(colorValue);
-        Colors.loadColors({
-          lyricColor: num > 76 ? Colors.grey10 : Colors.white,
+      getColors(
+        (envConfig.STATIC_URL + musicExtra.music_cover).replace(/\\/g, '/'),
+        {
+          fallback: Colors.black,
+          cache: true, // 启用缓存
+        },
+      )
+        .then(res => {
+          const platform = res.platform;
+          const colorValue =
+            platform === 'android' ? res.average : res.background;
+          const num = getWhitenessScore(colorValue);
+          Colors.loadColors({
+            lyricColor: num > 76 ? Colors.grey10 : Colors.white,
+          });
+        })
+        .catch(error => {
+          console.error('error', error);
         });
-      });
     }
   }, [musicExtra?.music_cover]);
 

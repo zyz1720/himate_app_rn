@@ -1,6 +1,7 @@
 import {getMusicDetail} from '@api/music';
 import {create} from 'zustand';
 import {persist, createJSONStorage} from 'zustand/middleware';
+import {isEmptyObject} from '@utils/common/object_utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const defaultState = {
@@ -12,15 +13,21 @@ const defaultState = {
   randomNum: {min: 0, max: 1}, // 随机数范围
   isRandomPlay: false, // 是否随机播放
   switchCount: 0, // 切换次数
+  playPosition: 0, // 播放位置
+  isMusicResumePlay: false, // 是否恢复播放
+  isMusicPaused: false, // 是否暂停
 };
 
 export const useMusicStore = create(
   persist(
-    set => ({
+    (set) => ({
       ...defaultState,
       setPlayingMusic: music => {
+        if (!music || isEmptyObject(music)) {
+          return set({playingMusic: {}});
+        }
         if (typeof music?.id === 'string') {
-          return set({playingMusic: music || {}});
+          return set({playingMusic: music});
         }
         getMusicDetail(music?.id).then(res => {
           res.code === 0 && set({playingMusic: res.data || {}});
@@ -67,6 +74,9 @@ export const useMusicStore = create(
       setRandomNum: (min = 0, max = 1) => set({randomNum: {min, max}}),
       setIsRandomPlay: flag => set({isRandomPlay: flag ?? false}),
       setSwitchCount: count => set({switchCount: count || 0}),
+      setPlayPosition: position => set({playPosition: position || 0}),
+      setIsMusicResumePlay: flag => set({isMusicResumePlay: flag ?? false}),
+      setIsMusicPaused: flag => set({isMusicPaused: flag ?? false}),
     }),
     {
       name: 'music-storage',

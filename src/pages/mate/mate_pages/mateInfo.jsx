@@ -15,6 +15,7 @@ import {getUserDetail} from '@api/user';
 import {addMate, editMateRemarks, deleteMate, getIsMate} from '@api/mate';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
+import {ChatTypeEnum} from '@const/database_enum';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import BaseDialog from '@components/common/BaseDialog';
 import ImgModal from '@components/common/ImgModal';
@@ -154,7 +155,7 @@ const MateInfo = ({navigation, route}) => {
             <TouchableOpacity
               onPress={() => {
                 setAvatarVisible(true);
-                setAvatarUri(otherUserInfo?.user_avatar);
+                setAvatarUri(envConfig.STATIC_URL + otherUserInfo?.user_avatar);
               }}>
               <Image
                 source={{
@@ -230,8 +231,9 @@ const MateInfo = ({navigation, route}) => {
             onPress={() => {
               navigation.navigate('Chat', {
                 session_id: mateInfo.mate_id,
+                userId: userId,
                 session_name: mateRemarks,
-                chat_type: 'private',
+                chat_type: ChatTypeEnum.private,
               });
             }}
           />

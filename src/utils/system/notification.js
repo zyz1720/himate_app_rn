@@ -50,9 +50,14 @@ export async function onDisplayRealMsg(data) {
   });
 }
 
-/* 取消系统通知 */
-export const cancelNotification = async session_id => {
-  await notifee.deleteChannel(session_id);
+/* 删除系统通知渠道 */
+export const deleteChannel = async channelId => {
+  await notifee.deleteChannel(channelId);
+};
+
+/* 取消通知 */
+export const cancelNotification = async notificationId => {
+  await notifee.cancelNotification(notificationId);
 };
 
 /* 播放系统声音 */

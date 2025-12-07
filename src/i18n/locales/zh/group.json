@@ -6,7 +6,7 @@
   "mate": "个好友",
   "delete_success": "群组已解散",
   "exit_success": "已退出该群组",
-  "delete_member_success": "已踢出该群成员",
+  "delete_member_success": "已踢出{{num}}个群成员",
   "async_success": "同步成功",
   "owner": "群主",
   "admin": "管理员",
@@ -36,5 +36,12 @@
   "delete_member_confirm": "您确定要踢出这个群成员吗？",
   "group_owner": "创建的群组",
   "group_admin": "管理的群组",
-  "group_member": "加入的群组"
+  "group_member": "加入的群组",
+  "join": "加入",
+  "remove": "移除",
+  "mute": "禁言",
+  "unmute": "解禁",
+  "set_admin": "设置管理员",
+  "unset_admin": "取消管理员",
+   "forbidden": "已被禁言"
 }

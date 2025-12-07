@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
 });
 
 /* 自定义加载更多 */
-export const CustomSend = props => {
+const CustomSend = props => {
   const {t} = useTranslation();
   return (
     <Send
@@ -32,3 +32,5 @@ export const CustomSend = props => {
     />
   );
 };
+
+export default CustomSend;

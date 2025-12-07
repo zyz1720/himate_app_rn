@@ -5,7 +5,6 @@ import {fullWidth} from '@style/index';
 import {useTranslation} from 'react-i18next';
 import {useToast} from '@components/common/useToast';
 import {downloadFile} from '@utils/system/file_utils';
-import {useConfigStore} from '@store/configStore';
 import ImageViewer from 'react-native-image-zoom-viewer';
 
 const ImgModal = props => {
@@ -17,7 +16,6 @@ const ImgModal = props => {
   } = props;
   const {t} = useTranslation();
   const {showToast} = useToast();
-  const {envConfig} = useConfigStore();
 
   const onSave = async url => {
     showToast(t('component.image_saving'), 'success');
@@ -42,7 +40,7 @@ const ImgModal = props => {
     <Modal visible={visible} animationType="fade" transparent={true}>
       <ImageViewer
         index={initialIndex}
-        imageUrls={uris.map(item => ({url: envConfig.STATIC_URL + item}))}
+        imageUrls={uris.map(item => ({url: item}))}
         onClick={onClose}
         menuContext={{
           saveToLocal: t('component.save_to_album'),

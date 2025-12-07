@@ -8,7 +8,7 @@ const FullScreenLoading = ({message}) => {
     <LoaderScreen
       message={message || t('common.loading')}
       color={Colors.primary}
-      backgroundColor={Colors.white9}
+      backgroundColor={Colors.white4}
       overlay={true}
       messageStyle={{color: Colors.primary}}
     />

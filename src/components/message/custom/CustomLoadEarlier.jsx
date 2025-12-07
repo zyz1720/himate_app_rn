@@ -4,7 +4,7 @@ import {Colors} from 'react-native-ui-lib';
 import {useTranslation} from 'react-i18next';
 
 /* 自定义加载更多 */
-export const CustomLoadEarlier = props => {
+const CustomLoadEarlier = props => {
   const {t} = useTranslation();
   return (
     <LoadEarlier
@@ -18,3 +18,5 @@ export const CustomLoadEarlier = props => {
     />
   );
 };
+
+export default CustomLoadEarlier;

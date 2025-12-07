@@ -2,11 +2,12 @@ import React from 'react';
 import {Bubble} from 'react-native-gifted-chat';
 import {Colors} from 'react-native-ui-lib';
 
-/* 自定义时间 */
-export const CustomBubble = props => {
+/* 自定义消息气泡 */
+const CustomBubble = props => {
   const isText =
     !props.currentMessage?.msg_type ||
     props.currentMessage?.msg_type === 'text';
+
   return (
     <Bubble
       {...props}
@@ -25,3 +26,5 @@ export const CustomBubble = props => {
     />
   );
 };
+
+export default CustomBubble;

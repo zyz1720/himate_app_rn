@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {FlatList} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {FlatList, RefreshControl} from 'react-native';
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {GroupRoleEnum} from '@const/database_enum';
 import {getGroupList} from '@api/group';
 import {useTranslation} from 'react-i18next';
 import {useConfigStore} from '@store/configStore';
-import FullScreenLoading from '@components/common/FullScreenLoading';
+import {ChatTypeEnum} from '@const/database_enum';
 import BaseTopBar from '@components/common/BaseTopBar';
 import dayjs from 'dayjs';
 
@@ -22,6 +22,74 @@ const GroupList = ({navigation}) => {
 
   // 群聊列表
   const [focusedIndex, setFocusedIndex] = useState(0);
+
+  const {list, loading, onEndReached, refreshData} =
+    useInfiniteScroll(getGroupList);
+
+  const renderGroupItem = ({item}) => (
+    <TouchableOpacity
+      key={item.id}
+      padding-10
+      flexS
+      backgroundColor={Colors.white}
+      spread
+      row
+      centerV
+      onPress={() => {
+        navigation.navigate('Chat', {
+          session_id: item.group_id,
+          session_name: item.group_name,
+          chat_type: ChatTypeEnum.group,
+          groupId: item.id,
+        });
+      }}>
+      <View flexS row centerV>
+        <Avatar
+          source={
+            item?.group_avatar
+              ? {uri: envConfig.STATIC_URL + item.group_avatar}
+              : require('@assets/images/empty.jpg')
+          }
+        />
+        <View marginL-10>
+          <Text text70>{item.group_name}</Text>
+        </View>
+      </View>
+      <View>
+        <Text grey40 text90L>
+          {dayjs(item.create_time).format('YYYY/MM/DD')}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const listScreen = (
+    <FlatList
+      refreshControl={
+        <RefreshControl
+          refreshing={loading}
+          colors={[Colors.primary]}
+          onRefresh={() => {
+            refreshData({member_role: routes[focusedIndex].key});
+          }}
+        />
+      }
+      data={list}
+      renderItem={renderGroupItem}
+      keyExtractor={(_, index) => index.toString()}
+      onEndReached={onEndReached}
+      showsVerticalScrollIndicator={false}
+      onEndReachedThreshold={0.8}
+      ListFooterComponent={<View marginB-200 />}
+      ListEmptyComponent={
+        <View marginT-16 center>
+          <Text text90L grey40>
+            {t('empty.group')}
+          </Text>
+        </View>
+      }
+    />
+  );
 
   /* 顶部导航栏 */
   const routes = [
@@ -42,71 +110,22 @@ const GroupList = ({navigation}) => {
     },
   ];
 
-  const {list, loading, onEndReached, refreshData} =
-    useInfiniteScroll(getGroupList);
-
-  const renderGroupItem = ({item}) => (
-    <TouchableOpacity
-      key={item.id}
-      padding-10
-      flexS
-      backgroundColor={Colors.white}
-      spread
-      row
-      centerV
-      onPress={() => {
-        navigation.navigate('Chat', {
-          session_id: item.group_id,
-          session_name: item.group_name,
-          chat_type: 'group',
-        });
-      }}>
-      <View flexS row centerV>
-        <Avatar source={{uri: envConfig.STATIC_URL + item.group_avatar}} />
-        <View marginL-10>
-          <Text text70>{item.group_name}</Text>
-        </View>
-      </View>
-      <View>
-        <Text grey40 text90L>
-          {dayjs(item.create_time).format('YYYY/MM/DD')}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
-
-  const listScreen = (
-    <FlatList
-      data={list}
-      renderItem={renderGroupItem}
-      keyExtractor={(item, index) => item?.id + index}
-      onEndReached={onEndReached}
-      ListEmptyComponent={
-        <View marginT-16 center>
-          <Text text90L grey40>
-            {t('empty.group')}
-          </Text>
-        </View>
-      }
-    />
-  );
+  useEffect(() => {
+    refreshData({member_role: routes[focusedIndex].key});
+  }, [focusedIndex]);
 
   return (
     <>
-      {loading ? (
-        <FullScreenLoading />
-      ) : (
-        <BaseTopBar
-          routes={routes}
-          focusIndex={focusedIndex}
-          onChange={index => {
-            setFocusedIndex(index);
-            refreshData({
-              member_role: routes[index].key,
-            });
-          }}
-        />
-      )}
+      <BaseTopBar
+        routes={routes}
+        focusIndex={focusedIndex}
+        onChange={index => {
+          setFocusedIndex(index);
+          refreshData({
+            member_role: routes[index].key,
+          });
+        }}
+      />
     </>
   );
 };

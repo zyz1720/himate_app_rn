@@ -14,7 +14,9 @@ const styles = StyleSheet.create({
 });
 
 /* 自定义加载更多 */
-const CustomInputToolbar = ({props, showActions}) => {
+const CustomInputToolbar = props => {
+  const {showActions = false} = props;
+
   return (
     <InputToolbar
       {...props}

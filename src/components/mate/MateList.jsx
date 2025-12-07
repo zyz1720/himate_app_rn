@@ -21,6 +21,7 @@ const MateList = props => {
     onConfirm = () => {},
     allowSelect = false,
     onSelectChange = () => {},
+    initialSelectIds = [],
     excludeIds = [],
     onEndReached = () => {},
     loading = false,
@@ -124,7 +125,7 @@ const MateList = props => {
     handleData();
   }, [originalList]);
 
-  const [selectedItem, setSelectedItem] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(initialSelectIds);
 
   const renderItem = ({item}) => {
     return allowSelect ? (
@@ -134,12 +135,15 @@ const MateList = props => {
           color={Colors.primary}
           size={20}
           borderRadius={10}
-          value={selectedItem.includes(item.theOther.id)}
+          value={
+            selectedItem.includes(item.theOther.id) ||
+            excludeIds.includes(item.theOther.id)
+          }
           disabled={excludeIds.includes(item.theOther.id)}
           onValueChange={value => {
             if (value) {
               setSelectedItem(prevItem => {
-                const newItem = [...prevItem, item.theOther.id];
+                const newItem = [...new Set([...prevItem, item.theOther.id])];
                 onSelectChange(newItem);
                 return newItem;
               });

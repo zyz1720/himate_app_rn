@@ -329,7 +329,7 @@ const MusicList = props => {
           onValueChange={value => {
             if (value) {
               setSelectedIds(prevItem => {
-                const newItem = [...prevItem, item.id];
+                const newItem = [...new Set([...prevItem, item.id])];
                 return newItem;
               });
             } else {
@@ -625,7 +625,7 @@ const MusicList = props => {
                     onValueChange={value => {
                       if (value) {
                         setSelectedFavoriteIds(prevItem => {
-                          const newItem = [...prevItem, item.id];
+                          const newItem = [...new Set([...prevItem, item.id])];
                           return newItem;
                         });
                       } else {

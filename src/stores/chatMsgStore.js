@@ -18,6 +18,11 @@ export const useChatMsgStore = create(
         set(state => {
           if (!state.notRemindSessionIds.includes(sessionId)) {
             state.notRemindSessionIds.push(sessionId);
+          } else {
+            const index = state.notRemindSessionIds.indexOf(sessionId);
+            if (index !== -1) {
+              state.notRemindSessionIds.splice(index, 1);
+            }
           }
           return state;
         }),

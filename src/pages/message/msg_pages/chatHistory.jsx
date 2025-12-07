@@ -1,47 +1,59 @@
 import React, {useState} from 'react';
 import {View, Card, Colors} from 'react-native-ui-lib';
 import {useToast} from '@components/common/useToast';
-import {getSessionDetail} from '@api/session';
-import {formatMsg, setLocalMsg} from '@utils/system/chat_utils';
+import {getSessionsMessages} from '@api/session';
+import {formatCloudMsgToLocal} from '@utils/system/chat_utils';
+import {delay} from '@utils/common/time_utils';
+import {deleteLocalMessages, setLocalMessages} from '@utils/realm/useChatMsg';
+import {useTranslation} from 'react-i18next';
 import ListItem from '@components/common/ListItem';
 import BaseDialog from '@components/common/BaseDialog';
 import FullScreenLoading from '@components/common/FullScreenLoading';
 
 const ChatHistory = ({navigation, route}) => {
+  const {session_id, userId} = route.params || {};
+
   const {showToast} = useToast();
-  const {session_id, to_uid} = route.params || {};
+  const {t} = useTranslation();
 
   /* 清空历史消息 */
-  const clearChatHistory = se_id => {
-    // const toDelete = realm
-    //   .objects('ChatMsg')
-    //   .filtered('session_id == $0', se_id);
-    // realm.write(() => {
-    //   realm.delete(toDelete);
-    //   showToast('清除成功', 'success');
-    //   navigation.navigate('Msg');
-    // });
+  const clearChatHistory = _session_id => {
+    deleteLocalMessages(_session_id);
+    showToast(t('mate.clear_success'), 'success');
+    navigation.navigate('Msg');
   };
 
   /* 获取历史消息 */
-  const [loading, setLoading] = useState(false);
-  const getCouldChatHistory = async () => {
+  const [loadingAll, setLoadingAll] = useState(false);
+
+  const getCouldChatHistory = async current => {
     try {
-      setLoading(true);
-      const res = await getSessionDetail({session_id, msg_status: 'read'});
-      if (res.success) {
-        const newlist = [];
-        res.data.msgs.forEach(item => {
-          newlist.push(formatMsg(item));
+      setLoadingAll(true);
+      const res = await getSessionsMessages(session_id, {
+        current: current,
+        pageSize: 100,
+      });
+      if (res.code === 0) {
+        const newList = [];
+        const list = res.data.list || [];
+        list.forEach(item => {
+          newList.push(formatCloudMsgToLocal(item, session_id));
         });
-        // setLocalMsg(realm, newlist);
-        navigation.navigate('Msg');
+        setLocalMessages(newList);
+        if (list.length < 100) {
+          showToast(t('mate.sync_success'), 'success');
+          navigation.navigate('Msg');
+          return;
+        }
+        await delay();
+        getCouldChatHistory(current + 1);
       }
-      setLoading(false);
-      showToast(res.message, res.success ? 'success' : 'error');
+      return;
     } catch (error) {
-      setLoading(false);
       console.error(error);
+      return;
+    } finally {
+      setLoadingAll(false);
     }
   };
 
@@ -51,14 +63,14 @@ const ChatHistory = ({navigation, route}) => {
     <View flexG paddingH-16 paddingT-16>
       <Card enableShadow={false}>
         <ListItem
-          itemName={'创建群聊'}
+          itemName={t('mate.create_group')}
           iconName={'group'}
           iconSize={20}
           iconColor={Colors.primary}
           onConfirm={() => {
             navigation.navigate('CreateGroup', {
-              userId: to_uid,
-              is_create: true,
+              initialSelectIds: [userId],
+              isCreate: true,
             });
           }}
         />
@@ -66,7 +78,7 @@ const ChatHistory = ({navigation, route}) => {
 
       <Card marginT-16 enableShadow={false}>
         <ListItem
-          itemName={'查找历史消息'}
+          itemName={t('mate.search_history')}
           iconName={'search'}
           iconSize={20}
           iconColor={Colors.grey40}
@@ -77,7 +89,7 @@ const ChatHistory = ({navigation, route}) => {
           }}
         />
         <ListItem
-          itemName={'导出聊天记录'}
+          itemName={t('mate.export_chat_history')}
           iconName={'download'}
           iconColor={Colors.cyan30}
           iconSize={20}
@@ -88,7 +100,7 @@ const ChatHistory = ({navigation, route}) => {
           }}
         />
         <ListItem
-          itemName={'清空历史消息'}
+          itemName={t('mate.clear_chat_history')}
           iconName={'remove'}
           iconColor={Colors.error}
           onConfirm={() => {
@@ -98,12 +110,12 @@ const ChatHistory = ({navigation, route}) => {
       </Card>
       <Card marginT-16 enableShadow={false}>
         <ListItem
-          itemName={'从云端同步消息'}
+          itemName={t('mate.sync_chat_history')}
           iconName={'cloud-download'}
           iconSize={20}
           iconColor={Colors.blue30}
           onConfirm={() => {
-            getCouldChatHistory();
+            getCouldChatHistory(1);
           }}
         />
       </Card>
@@ -114,9 +126,9 @@ const ChatHistory = ({navigation, route}) => {
         }}
         visible={clearVisible}
         setVisible={setClearVisible}
-        description={'您确定要清除历史消息吗？'}
+        description={t('mate.clear_chat_history_tips')}
       />
-      {loading ? <FullScreenLoading Message="同步中..." /> : null}
+      {loadingAll ? <FullScreenLoading message={t('common.syncing')} /> : null}
     </View>
   );
 };

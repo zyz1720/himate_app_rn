@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Colors, Text, Button} from 'react-native-ui-lib';
 import {getMateList} from '@api/mate';
 import {useToast} from '@components/common/useToast';
@@ -9,14 +9,21 @@ import {useTranslation} from 'react-i18next';
 import MateList from '@components/mate/MateList';
 
 const CreateGroup = ({navigation, route}) => {
+  const {
+    groupId,
+    excludeIds = [],
+    initialSelectIds = [],
+    isCreate,
+  } = route.params || {};
+
   const {showToast} = useToast();
   const {t} = useTranslation();
-  const {groupId, excludeIds, isCreate} = route.params || {};
 
-  const {list, onEndReached} = useInfiniteScroll(getMateList);
+  const {list, loading, onEndReached, refreshData} =
+    useInfiniteScroll(getMateList);
 
   /* 创建群聊 */
-  const [selectIds, setSelectIds] = useState([]);
+  const [selectIds, setSelectIds] = useState(initialSelectIds);
   const handleCreateGroup = async () => {
     if (isCreate && selectIds.length < 2) {
       showToast(t('group.at_least_two'), 'warning');
@@ -32,8 +39,7 @@ const CreateGroup = ({navigation, route}) => {
         }
         showToast(res.message, 'error');
       } else {
-        const res = await addGroupMember({
-          groupId: groupId,
+        const res = await addGroupMember(groupId, {
           ids: selectIds,
         });
         if (res.code === 0) {
@@ -47,6 +53,10 @@ const CreateGroup = ({navigation, route}) => {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    refreshData();
+  }, []);
 
   return (
     <View>
@@ -70,10 +80,12 @@ const CreateGroup = ({navigation, route}) => {
       </View>
       <MateList
         originalList={list}
-        height={'92%'}
+        loading={loading}
         allowSelect={true}
+        initialSelectIds={initialSelectIds}
         excludeIds={excludeIds}
         onSelectChange={value => {
+          console.log('onSelectChange', value);
           setSelectIds(value);
         }}
         onEndReached={onEndReached}

@@ -9,12 +9,12 @@ import {
   TouchableOpacity,
   Badge,
 } from 'react-native-ui-lib';
-import {getUserSessions} from '@api/session';
+import {getUserSessions, getSessionsMessages} from '@api/session';
 import {useToast} from '@components/common/useToast';
 import {
   setLocalMsg,
   decryptMsg,
-  formatMsg,
+  formatCloudMsg,
   showMediaType,
 } from '@utils/system/chat_utils';
 import {
@@ -59,7 +59,7 @@ const Msg = ({navigation}) => {
     if (isFocused) {
       refreshData();
     }
-    return subscription.remove();
+    return () => subscription.remove();
   }, [isFocused]);
 
   /* 强制显示提醒 */
@@ -107,6 +107,7 @@ const Msg = ({navigation}) => {
               : Colors.warning,
             onPress: () => {
               setNotRemindSessionIds(item.id);
+              refreshData();
             },
           },
           {
@@ -124,62 +125,74 @@ const Msg = ({navigation}) => {
             readListMsg(item);
           },
         }}>
-        <TouchableOpacity
-          centerV
-          row
-          padding-s4
-          bg-white
-          onPress={() => {
-            navigation.navigate('Chat', {
-              primaryId: item.id,
-              session_id: item.session_id,
-              session_name: item.session_name,
-              chat_type: item.chat_type,
-            });
-          }}>
-          <Avatar
-            source={{
-              uri: envConfig.STATIC_URL + item.session_avatar,
-            }}
-          />
-          <View marginL-12>
-            <View flexG row centerV spread width={'92%'}>
-              <Text text70BL>{item.session_name}</Text>
-              <View flexS row centerV>
-                <Badge
-                  marginR-6
-                  label={item.unread_count}
-                  backgroundColor={
-                    notRemindSessionIds.includes(item.id)
-                      ? Colors.grey50
-                      : Colors.error
-                  }
-                  size={16}
-                />
-                {notRemindSessionIds.includes(item.id) ? (
-                  <Feather name="bell-off" color={Colors.grey40} size={16} />
-                ) : null}
+        <View bg-white>
+          <TouchableOpacity
+            centerV
+            row
+            padding-s4
+            onPress={() => {
+              navigation.navigate('Chat', {
+                primaryId: item.id,
+                session_id: item.session_id,
+                session_name: item.sessionName,
+                chat_type: item.chat_type,
+                userId: item.userId,
+                groupId: item.groupId,
+              });
+              getSessionsMessages(item.session_id, {}).then(res => {
+                console.log('getSessionsMessages', res.data.list);
+              });
+            }}>
+            <Avatar
+              source={
+                item?.sessionAvatar
+                  ? {
+                      uri: envConfig.STATIC_URL + item.sessionAvatar,
+                    }
+                  : require('@assets/images/empty.jpg')
+              }
+            />
+            <View marginL-12>
+              <View flexG row centerV spread width={'92%'}>
+                <Text text70BL>{item.sessionName}</Text>
+                <View flexS row centerV>
+                  {item.unreadCount > 0 ? (
+                    <Badge
+                      marginR-6
+                      label={item.unreadCount}
+                      backgroundColor={
+                        notRemindSessionIds.includes(item.id)
+                          ? Colors.grey50
+                          : Colors.error
+                      }
+                      size={16}
+                    />
+                  ) : null}
+                  {notRemindSessionIds.includes(item.id) ? (
+                    <Feather name="bell-off" color={Colors.grey40} size={16} />
+                  ) : null}
+                </View>
+              </View>
+              <View flexG row centerV spread width={'92%'}>
+                <Text text80 numberOfLines={1} grey30 style={{width: '70%'}}>
+                  {remindSessions.includes(item.id) ? (
+                    <Text text80 red40>
+                      {t('chat.reminder')}
+                    </Text>
+                  ) : null}
+                  {showMediaType(
+                    item.lastMsg.content,
+                    item.lastMsg.msg_type,
+                    item.lastMsg?.msg_secret,
+                  )}
+                </Text>
+                <Text text90L grey40>
+                  {formatDateTime(item.update_time)}
+                </Text>
               </View>
             </View>
-            <View flexG row centerV spread width={'92%'}>
-              <Text text80 numberOfLines={1} grey30 style={{width: '70%'}}>
-                {remindSessions.includes(item.id) ? (
-                  <Text text80 red40>
-                    {t('chat.reminder')}
-                  </Text>
-                ) : null}
-                {showMediaType(
-                  item.lastMsg.content,
-                  item.lastMsg.msg_type,
-                  item.lastMsg?.msg_secret,
-                )}
-              </Text>
-              <Text text90L grey40>
-                {formatDateTime(item.update_time)}
-              </Text>
-            </View>
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+        </View>
       </Drawer>
     );
   };

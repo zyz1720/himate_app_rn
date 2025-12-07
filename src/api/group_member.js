@@ -21,8 +21,8 @@ export const editGroupMemberAuth = (groupId, data) =>
   instance.put(`app/group-member/auth/${groupId}`, data);
 
 // 踢出群成员
-export const deleteGroupMember = (groupId, data) =>
-  instance.delete(`app/group-member/remove/${groupId}`, data);
+export const deleteGroupMembers = (groupId, data) =>
+  instance.delete(`app/group-member/remove/${groupId}`, {data});
 
 // 退出群聊
 export const exitGroup = groupId =>

@@ -1,5 +1,5 @@
+import React, {useState, useEffect} from 'react';
 import {StyleSheet} from 'react-native';
-import React from 'react';
 import {
   Colors,
   TouchableOpacity,
@@ -7,51 +7,128 @@ import {
   Slider,
   Text,
 } from 'react-native-ui-lib';
+import {useAudioPlayer} from '@utils/hooks/useAudioPlayer';
+import {useMusicStore} from '@store/musicStore';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 const AudioMsg = props => {
   const {
-    message = {},
-    onPress = () => {},
+    currentMessage = {},
     onLongPress = () => {},
-    nowReadyAudioId = null,
-    audioPlayProgress = {},
-    audioIsPlaying = false,
-    onPause = () => {},
-    onPlay = () => {},
-    onValueChange = () => {},
+    nowPlayAudioId = null,
+    setNowPlayAudioId = () => {},
   } = props;
 
-  const {duration = 10, currentPosition = 0} = audioPlayProgress;
+  const {
+    addPlayBackListener,
+    startPlayer,
+    pausePlayer,
+    resumePlayer,
+    stopPlayer,
+    seekToPlayer,
+  } = useAudioPlayer();
+  const {setIsMusicResumePlay, setIsMusicPaused} = useMusicStore();
+
+  const [curPosition, setCurPosition] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
+
+  const [audioIsPlaying, setAudioIsPlaying] = useState(false);
+
+  // 停止播放
+  const stopPlay = async () => {
+    setNowPlayAudioId(null);
+    setCurPosition(0);
+    setAudioDuration(0);
+    setAudioIsPlaying(false);
+    await stopPlayer();
+  };
+
+  // 恢复播放
+  const resumePlay = async () => {
+    setAudioIsPlaying(true);
+    await resumePlayer();
+  };
+
+  // 暂停播放
+  const pausePlay = async () => {
+    setAudioIsPlaying(false);
+    await pausePlayer();
+  };
+
+  // 开始播放
+  const startPlay = async () => {
+    setIsMusicPaused(true);
+    await stopPlay();
+    await startPlayer(currentMessage.audio);
+    setNowPlayAudioId(currentMessage._id);
+    setAudioIsPlaying(true);
+  };
+
+  // 跳转播放
+  const seekToPlay = async value => {
+    const newPosition = parseInt(value, 10);
+    setCurPosition(newPosition);
+    await seekToPlayer(newPosition);
+  };
+
+  useEffect(() => {
+    if (nowPlayAudioId === currentMessage._id) {
+      addPlayBackListener(playbackMeta => {
+        const {currentPosition, duration, isFinished} = playbackMeta;
+
+        setCurPosition(currentPosition);
+
+        if (duration !== audioDuration) {
+          setAudioDuration(duration);
+        }
+
+        if (isFinished) {
+          stopPlay();
+          setIsMusicResumePlay(true);
+        }
+      });
+    }
+  }, [nowPlayAudioId, currentMessage._id, audioDuration]);
+
+  useEffect(() => {
+    return () => {
+      stopPlay();
+      setIsMusicResumePlay(true);
+    };
+  }, []);
 
   return (
     <View style={styles.audioBut}>
       <TouchableOpacity
-        onPress={onPress}
+        onPress={async () => startPlay()}
         onLongPress={onLongPress}
         row
         centerV
         paddingV-6
         paddingH-12>
-        {nowReadyAudioId === message.client_msg_id ? (
+        {nowPlayAudioId === currentMessage._id ? (
           <>
             {audioIsPlaying ? (
-              <TouchableOpacity onPress={onPause}>
+              <TouchableOpacity onPress={() => pausePlay()}>
                 <AntDesign
                   name="pausecircle"
                   color={
-                    message.user._id === 1 ? Colors.primary : Colors.grey10
+                    currentMessage.user._id === 1
+                      ? Colors.primary
+                      : Colors.grey10
                   }
                   size={20}
                 />
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity onPress={onPlay}>
+              <TouchableOpacity onPress={() => resumePlay()}>
                 <AntDesign
                   name="playcircleo"
                   color={
-                    message.user._id === 1 ? Colors.primary : Colors.grey10
+                    currentMessage.user._id === 1
+                      ? Colors.primary
+                      : Colors.grey10
                   }
                   size={20}
                 />
@@ -61,24 +138,26 @@ const AudioMsg = props => {
               <View style={styles.audioProgress}>
                 <Slider
                   thumbStyle={styles.audioThumb}
-                  value={currentPosition}
+                  value={curPosition}
                   minimumValue={0}
-                  maximumValue={duration}
+                  maximumValue={audioDuration || 100}
                   minimumTrackTintColor={Colors.primary}
                   onValueChange={value => {
-                    onValueChange(value);
+                    seekToPlay(value);
                   }}
                 />
               </View>
               <Text marginL-4 grey30 text90L>
-                {Math.round(duration / 1000)}s
+                {Math.round(audioDuration / 1000)}s
               </Text>
             </View>
           </>
         ) : (
           <FontAwesome
             name="volume-down"
-            color={message.user._id === 1 ? Colors.primary : Colors.grey10}
+            color={
+              currentMessage.user._id === 1 ? Colors.primary : Colors.grey10
+            }
             size={24}
           />
         )}
