@@ -37,7 +37,7 @@ import AudioMsg from '@components/message/media/AudioMsg';
 import 'dayjs/locale/zh-cn';
 
 const Chat = React.memo(({navigation, route}) => {
-  const {session_id, primaryId, searchMsg_cid} = route.params;
+  const {session_id, primaryId, search_msg_cid} = route.params;
 
   const {t} = useTranslation();
   const {userInfo} = useUserStore();
@@ -412,7 +412,7 @@ const Chat = React.memo(({navigation, route}) => {
             uploadProgress={uploadProgress}
           />
         )}
-        renderSend={props => <CustomSend {...props} />}
+        renderSend={props => <CustomSend {...props} label={t('chat.send')} />}
         renderTime={() => {}}
         renderActions={() => (
           <CustomActions

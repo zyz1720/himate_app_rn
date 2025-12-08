@@ -199,9 +199,10 @@ const GroupMembers = ({navigation, route}) => {
               }}
             />
           ) : null}
-          <View row flexG centerV spread>
+          <View row flexS centerV spread>
             <View row flexS centerV>
               <Avatar
+                size={46}
                 onPress={() => {
                   navigation.navigate('MateInfo', {
                     userId: item?.user?.id,

@@ -2,15 +2,15 @@ import React from 'react';
 import {StyleSheet} from 'react-native';
 import {Send} from 'react-native-gifted-chat';
 import {Colors} from 'react-native-ui-lib';
-import {useTranslation} from 'react-i18next';
 import {fullHeight} from '@style/index';
 
 const styles = StyleSheet.create({
   containerStyle: {
     backgroundColor: Colors.primary,
     borderRadius: 8,
-    margin: 8,
-    height: 30,
+    marginHorizontal: 8,
+    marginBottom: 8,
+    height: 32,
   },
   textStyle: {
     color: Colors.white,
@@ -22,12 +22,11 @@ const styles = StyleSheet.create({
 
 /* 自定义加载更多 */
 const CustomSend = props => {
-  const {t} = useTranslation();
   return (
     <Send
       {...props}
       containerStyle={styles.containerStyle}
-      label={t('chat.send')}
+      label={props.label}
       textStyle={styles.textStyle}
     />
   );

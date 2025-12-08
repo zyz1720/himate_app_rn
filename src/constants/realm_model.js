@@ -1,5 +1,23 @@
 import Realm from 'realm';
 
+export class SessionInfo extends Realm.Object {
+  static schema = {
+    name: 'session_info',
+    primaryKey: 'id',
+    properties: {
+      id: 'int',
+      session_id: 'string',
+      session_name: 'string',
+      session_avatar: 'string?',
+      chat_type: 'string',
+      groupId: 'int?',
+      userId: 'int?',
+      created_at: 'date',
+      updated_at: 'date',
+    },
+  };
+}
+
 export class ChatMsg extends Realm.Object {
   static schema = {
     name: 'chat_msg',
@@ -17,6 +35,7 @@ export class ChatMsg extends Realm.Object {
       msg_type: 'string',
       chat_type: 'string',
       msg_secret: 'string?',
+      decrypted_content: 'string?',
       create_time: 'string',
       status: 'string',
     },

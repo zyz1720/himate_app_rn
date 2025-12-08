@@ -11,95 +11,43 @@ import {
 import {showMediaType} from '@utils/system/chat_utils';
 import {fullHeight, fullWidth} from '@style/index';
 import {useConfigStore} from '@store/configStore';
+import {
+  searchLocalMessagesById,
+  searchLocalMessages,
+} from '@utils/realm/useChatMsg';
+import {getLocalSession} from '@utils/realm/useSessionInfo';
+import {deepClone} from '@utils/common/object_utils';
+import {useTranslation} from 'react-i18next';
 import dayjs from 'dayjs';
 
 const SearchMsg = ({navigation, route}) => {
   const {session_id} = route.params || {};
   const {envConfig} = useConfigStore();
-
-  useEffect(() => {
-    if (keyword && session_id) {
-      getMsgList(keyword, session_id);
-    }
-  }, [keyword, session_id]);
+  const {t} = useTranslation();
 
   // 群聊列表
-  const [msgList, setMsgList] = useState([]);
+  const [localMessages, setLocalMessages] = useState([]);
 
   /* 查询历史记录 */
-  const getMsgList = async (keyword, sessionId) => {
-    // if (!keyword || keyword.trim() === '') {
-    //   return [];
-    // }
-    // const localUses = realm
-    //   .objects('UsersInfo')
-    //   .filtered('remark CONTAINS $0', keyword.trim())
-    //   .toJSON();
-    // const userMsgs = [];
-    // localUses.forEach(item => {
-    //   const local_msgs = realm.objects('ChatMsg');
-    //   let user_msg = [];
-    //   if (sessionId) {
-    //     user_msg = local_msgs
-    //       .filtered(
-    //         'send_uid == $0 && session_id == $1',
-    //         item.userId,
-    //         sessionId,
-    //       )
-    //       .sorted('createdAt', true)
-    //       .toJSON();
-    //   } else {
-    //     user_msg = local_msgs
-    //       .filtered('send_uid == $0', item.userId)
-    //       .sorted('createdAt', true)
-    //       .toJSON();
-    //   }
-    //   userMsgs.push(...user_msg);
-    // });
-    // const localMsgs = realm.objects('ChatMsg');
-    // let Msgs = [];
-    // if (sessionId && keyword) {
-    //   Msgs = localMsgs
-    //     .filtered(
-    //       'session_id == $0 && text CONTAINS $1 && msg_type == $2',
-    //       sessionId,
-    //       keyword.trim(),
-    //       'text',
-    //     )
-    //     .sorted('createdAt', true)
-    //     .toJSON();
-    // } else {
-    //   Msgs = localMsgs
-    //     .filtered('text CONTAINS $0 && msg_type == $1', keyword.trim(), 'text')
-    //     .sorted('createdAt', true)
-    //     .toJSON();
-    // }
-    // const items = [...userMsgs, ...Msgs];
-    // return items.reduce((acc, item) => {
-    //   if (!acc.some(accItem => accItem.clientMsg_id === item.clientMsg_id)) {
-    //     acc.push(item);
-    //   }
-    //   return acc;
-    // }, []);
-  };
-
-  /* 获取匹配头像备注信息 */
-  const matchInfoList = [];
-
-  /* 为消息匹配头像备注信息 */
-  const matchAvatarAndRemark = (list, userId, sessionId) => {
-    const info = list.find(
-      item => item.userId === userId && item.session_id === sessionId,
-    );
-    if (info) {
-      return info;
-    } else {
-      return {
-        remark: null,
-        avatar: null,
-        session_name: '',
-      };
+  const getMsgList = async keyword => {
+    if (!keyword || keyword.trim() === '') {
+      setLocalMessages([]);
+      return;
     }
+    let msgList = [];
+    if (session_id) {
+      msgList = searchLocalMessagesById(keyword, session_id);
+    } else {
+      msgList = searchLocalMessages(keyword);
+    }
+    const needList = msgList.map(item => {
+      const newItem = deepClone(item);
+      const sessionExtras = getLocalSession(item.session_id);
+      newItem.sessionExtra = sessionExtras[0] || {};
+      return newItem;
+    });
+
+    setLocalMessages(needList);
   };
 
   /* 关键词高亮样式 */
@@ -123,25 +71,9 @@ const SearchMsg = ({navigation, route}) => {
     );
   };
 
-  /* 获取聊天备注 */
-  const getChatRemark = item => {
-    const otherInfo = matchAvatarAndRemark(
-      matchInfoList,
-      item.send_uid,
-      item.session_id,
-    );
-    if (item.chat_type === 'group') {
-      return otherInfo.session_name;
-    }
-    if (item.chat_type === 'personal') {
-      return otherInfo.remark;
-    }
-  };
-
   const renderMsgItem = ({item}) => {
     return (
       <TouchableOpacity
-        key={item._id}
         padding-10
         flexS
         backgroundColor={Colors.white}
@@ -151,51 +83,37 @@ const SearchMsg = ({navigation, route}) => {
         marginB-1
         onPress={() => {
           navigation.navigate('Chat', {
-            searchMsg_cid: item.clientMsg_id,
+            search_msg_cid: item.client_msg_id,
             primaryId: item.session_primary_id,
             session_id: item.session_id,
-            session_name: getChatRemark(item),
+            session_name: item.sessionExtra?.session_name,
             chat_type: item.chat_type,
+            userId: item.sessionExtra?.userId,
+            groupId: item.sessionExtra?.groupId,
           });
         }}>
         <View flexS row centerV>
           <Avatar
-            source={{
-              uri: matchAvatarAndRemark(
-                matchInfoList,
-                item.send_uid,
-                item.session_id,
-              )?.avatar
-                ? envConfig.STATIC_URL +
-                  matchAvatarAndRemark(
-                    matchInfoList,
-                    item.send_uid,
-                    item.session_id,
-                  )?.avatar
-                : envConfig.STATIC_URL + 'default_empty.png',
-            }}
+            source={
+              item.sessionExtra?.session_avatar
+                ? {uri: envConfig.STATIC_URL + item.sessionExtra.session_avatar}
+                : require('@assets/images/empty.jpg')
+            }
           />
           <View marginL-10 width={fullWidth * 0.78}>
             <View flexS row spread>
               <Text text80BO grey30>
-                {setHighlightStyle(
-                  matchAvatarAndRemark(
-                    matchInfoList,
-                    item.send_uid,
-                    item.session_id,
-                  ).remark,
-                  keyword,
-                )}
+                {setHighlightStyle(item.sessionExtra?.session_name, keyword)}
               </Text>
               <Text grey40 text90L>
-                {dayjs(item.createdAt).format('YYYY/MM/DD HH:mm:ss')}
+                {dayjs(item.create_time).format('YYYY/MM/DD HH:mm:ss')}
               </Text>
             </View>
             <View>
               <Text text70 numberOfLines={3}>
                 {item.msg_type !== 'text'
-                  ? showMediaType(item.text, item.msg_type, item?.msg_secret)
-                  : setHighlightStyle(item.text, keyword)}
+                  ? showMediaType(item.content, item.msg_type, item?.msg_secret)
+                  : setHighlightStyle(item.decrypted_content, keyword)}
               </Text>
             </View>
           </View>
@@ -204,36 +122,42 @@ const SearchMsg = ({navigation, route}) => {
     );
   };
 
+  useEffect(() => {
+    if (keyword) {
+      getMsgList(keyword);
+    }
+  }, [keyword]);
+
   return (
     <View>
       <View padding-12 flexS width={'100%'}>
         <TextField
           containerStyle={styles.input}
-          placeholder={'请输入聊天记录关键字/昵称'}
+          placeholder={t('chat.search_placeholder')}
           value={keyword}
           onChangeText={value => {
             setKeyword(value);
-            setMsgList(getMsgList(value, session_id)._j);
+            getMsgList(value);
           }}
         />
       </View>
       <View height={fullHeight * 0.9}>
         <FlatList
-          data={msgList}
+          data={localMessages}
           renderItem={renderMsgItem}
-          keyExtractor={(item, index) => item + index}
+          keyExtractor={(_, index) => index.toString()}
           ListEmptyComponent={
-            <View marginT-16 center>
+            <View marginT-16 paddingB-120 center>
               <Text text90L grey40>
-                没有搜索到相关聊天记录~
+                {t('chat.empty_search_result')}
               </Text>
             </View>
           }
           ListFooterComponent={
-            msgList.length > 10 ? (
+            localMessages.length > 10 ? (
               <View marginB-80 padding-12 center>
                 <Text text90L grey40>
-                  已经到底啦 ~
+                  {t('common.footer')}
                 </Text>
               </View>
             ) : null

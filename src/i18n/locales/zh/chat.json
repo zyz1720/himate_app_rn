@@ -32,5 +32,7 @@
     "cancel_tips": "松手后取消发送",
     "to_search_result": "正在尝试跳转到搜索结果",
     "socket_error": "socket 未连接",
-    "empty_msg": "请输入内容!"
+    "empty_msg": "请输入内容!",
+    "search_placeholder": "请输入聊天记录关键字/昵称",
+    "empty_search_result": "没有搜索到相关聊天记录~"
 }

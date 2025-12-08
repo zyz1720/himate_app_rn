@@ -32,5 +32,7 @@
     "cancel_tips": "Release to cancel",
     "to_search_result": "Scrolling to search result...",
     "socket_error": "socket not connected",
-    "empty_msg": "Please enter content!"
+    "empty_msg": "Please enter content!",
+    "search_placeholder": "Search for chat records or nicknames",
+    "empty_search_result": "No related chat records found~"
 }

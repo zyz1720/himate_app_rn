@@ -34,7 +34,7 @@ const CreateGroup = ({navigation, route}) => {
         const res = await addGroup({ids: selectIds});
         if (res.code === 0) {
           showToast(t('group.create_group_success'), 'success');
-          navigation.goBack();
+          navigation.navigate('GroupList');
           return;
         }
         showToast(res.message, 'error');

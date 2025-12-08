@@ -8,8 +8,6 @@ import {
   Colors,
   TextField,
   Button,
-  TouchableOpacity,
-  Avatar,
 } from 'react-native-ui-lib';
 import {useToast} from '@components/common/useToast';
 import {getGroupDetail, editGroup, deleteGroup} from '@api/group';
@@ -23,11 +21,7 @@ import {formatCloudMsgToLocal} from '@utils/system/chat_utils';
 import {getSessionsMessages} from '@api/session';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
-import {
-  GroupRoleEnum,
-  MemberStatusEnum,
-  FileUseTypeEnum,
-} from '@const/database_enum';
+import {GroupRoleEnum, FileUseTypeEnum} from '@const/database_enum';
 import {deleteLocalMessages, setLocalMessages} from '@utils/realm/useChatMsg';
 import {delay} from '@utils/common/time_utils';
 import {useIsFocused} from '@react-navigation/native';

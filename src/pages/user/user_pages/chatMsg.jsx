@@ -1,10 +1,10 @@
 import React, {useState} from 'react';
 import {View, Button, TextField, Card, Colors, Text} from 'react-native-ui-lib';
 import {useToast} from '@components/common/useToast';
-import {useRealm} from '@realm/react';
 import {encryptAES, decryptAES} from '@utils/system/crypto_utils';
 import {writeJSONFile, readJSONFile} from '@utils/system/file_utils';
 import {setLocalMsg} from '@utils/system/chat_utils';
+import {getLocalMessages} from '@utils/realm/useChatMsg';
 import {usePermissionStore} from '@store/permissionStore';
 import {useTranslation} from 'react-i18next';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -17,7 +17,6 @@ const ChatMsg = ({route}) => {
   const {session_id} = route.params || {};
   const {showToast} = useToast();
   const {t} = useTranslation();
-  const realm = useRealm();
   const {accessFolder, setAccessFolder} = usePermissionStore();
 
   const [hideFlag, setHideFlag] = useState(true);
@@ -27,7 +26,7 @@ const ChatMsg = ({route}) => {
   /* 导出聊天记录 */
   const [handlerType, setHandlerType] = useState('export');
   const exportChatMsgText = async () => {
-    let localMsgs = realm.objects('ChatMsg');
+    let localMsgs = getLocalMessages();
     if (session_id) {
       localMsgs = localMsgs.filtered('session_id == $0', session_id);
     }

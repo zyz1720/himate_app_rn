@@ -28,6 +28,7 @@ import {useConfigStore} from '@store/configStore';
 import {useChatMsgStore} from '@store/chatMsgStore';
 import {useTranslation} from 'react-i18next';
 import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
+import {setLocalSession} from '@utils/realm/useSessionInfo';
 import Feather from 'react-native-vector-icons/Feather';
 
 const Msg = ({navigation}) => {
@@ -93,20 +94,21 @@ const Msg = ({navigation}) => {
 
   /* 列表元素 */
   const renderSessionItem = ({item}) => {
+    const {session = {}, sessionExtra = {}} = item || {};
     return (
       <Drawer
         disableHaptic={true}
         itemsMinWidth={80}
         rightItems={[
           {
-            text: notRemindSessionIds.includes(item.id)
+            text: notRemindSessionIds.includes(session.id)
               ? t('chat.reminder_restored')
               : t('chat.mute'),
-            background: notRemindSessionIds.includes(item.id)
+            background: notRemindSessionIds.includes(session.id)
               ? Colors.success
               : Colors.warning,
             onPress: () => {
-              setNotRemindSessionIds(item.id);
+              setNotRemindSessionIds(session.id);
               refreshData();
             },
           },
@@ -114,7 +116,7 @@ const Msg = ({navigation}) => {
             text: t('common.delete'),
             background: Colors.error,
             onPress: () => {
-              setDeleteIds(item.id);
+              setDeleteIds(session.id);
             },
           },
         ]}
@@ -122,7 +124,7 @@ const Msg = ({navigation}) => {
           text: t('chat.read'),
           background: Colors.primary,
           onPress: () => {
-            readListMsg(item);
+            readListMsg(session);
           },
         }}>
         <View bg-white>
@@ -132,62 +134,65 @@ const Msg = ({navigation}) => {
             padding-s4
             onPress={() => {
               navigation.navigate('Chat', {
-                primaryId: item.id,
-                session_id: item.session_id,
-                session_name: item.sessionName,
-                chat_type: item.chat_type,
-                userId: item.userId,
-                groupId: item.groupId,
+                primaryId: session.id,
+                session_id: session.session_id,
+                session_name: sessionExtra.session_name,
+                chat_type: session.chat_type,
+                userId: sessionExtra.userId,
+                groupId: sessionExtra.groupId,
               });
-              getSessionsMessages(item.session_id, {}).then(res => {
+              getSessionsMessages(session.session_id, {}).then(res => {
                 console.log('getSessionsMessages', res.data.list);
               });
             }}>
             <Avatar
               source={
-                item?.sessionAvatar
+                sessionExtra?.session_avatar
                   ? {
-                      uri: envConfig.STATIC_URL + item.sessionAvatar,
+                      uri: envConfig.STATIC_URL + sessionExtra.session_avatar,
                     }
                   : require('@assets/images/empty.jpg')
               }
             />
             <View marginL-12>
               <View flexG row centerV spread width={'92%'}>
-                <Text text70BL>{item.sessionName}</Text>
+                <Text text70BL>{sessionExtra.session_name}</Text>
                 <View flexS row centerV>
-                  {item.unreadCount > 0 ? (
+                  {sessionExtra.unread_count > 0 ? (
                     <Badge
                       marginR-6
-                      label={item.unreadCount}
+                      label={sessionExtra.unread_count}
                       backgroundColor={
-                        notRemindSessionIds.includes(item.id)
+                        notRemindSessionIds.includes(session.id)
                           ? Colors.grey50
                           : Colors.error
                       }
                       size={16}
                     />
                   ) : null}
-                  {notRemindSessionIds.includes(item.id) ? (
+                  {notRemindSessionIds.includes(session.id) ? (
                     <Feather name="bell-off" color={Colors.grey40} size={16} />
                   ) : null}
                 </View>
               </View>
               <View flexG row centerV spread width={'92%'}>
                 <Text text80 numberOfLines={1} grey30 style={{width: '70%'}}>
-                  {remindSessions.includes(item.id) ? (
+                  {remindSessions.includes(session.id) ? (
                     <Text text80 red40>
                       {t('chat.reminder')}
                     </Text>
                   ) : null}
+                  {sessionExtra?.lastSenderRemarks
+                    ? sessionExtra.lastSenderRemarks + ': '
+                    : null}
                   {showMediaType(
-                    item.lastMsg.content,
-                    item.lastMsg.msg_type,
-                    item.lastMsg?.msg_secret,
+                    session.lastMsg.content,
+                    session.lastMsg.msg_type,
+                    session.lastMsg?.msg_secret,
                   )}
                 </Text>
                 <Text text90L grey40>
-                  {formatDateTime(item.update_time)}
+                  {formatDateTime(session.update_time)}
                 </Text>
               </View>
             </View>
@@ -196,6 +201,10 @@ const Msg = ({navigation}) => {
       </Drawer>
     );
   };
+
+  useEffect(() => {
+    setLocalSession(list);
+  }, [list]);
 
   return (
     <View>
