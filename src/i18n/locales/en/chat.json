@@ -34,5 +34,8 @@
     "socket_error": "socket not connected",
     "empty_msg": "Please enter content!",
     "search_placeholder": "Search for chat records or nicknames",
-    "empty_search_result": "No related chat records found~"
+    "empty_search_result": "No related chat records found~",
+    "encrypted": "Encrypted message",
+    "unknown_user": "Unknown user",
+    "empty_chat": "No chat records"
 }

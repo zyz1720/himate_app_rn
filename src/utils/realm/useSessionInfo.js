@@ -44,6 +44,20 @@ export const getLocalSession = session_id => {
     return sessionExtras;
   } catch (error) {
     console.error('查询本地会话失败', error);
-    return [];
+    return [{}];
+  }
+};
+
+/* 查询本地会话 */
+export const getLocalSessionById = id => {
+  try {
+    const sessionExtras = realm
+      .objects('session_info')
+      .filtered('id == $0', id)
+      .toJSON();
+    return sessionExtras;
+  } catch (error) {
+    console.error('查询本地会话失败', error);
+    return [{}];
   }
 };

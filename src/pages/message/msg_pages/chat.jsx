@@ -143,6 +143,19 @@ const Chat = React.memo(({navigation, route}) => {
     }
   };
 
+  // 已读消息
+  const readMessage = message => {
+    try {
+      socket.emit('read-message', message, res => {
+        if (res.code === 0) {
+          console.log('readMessage', res);
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   // 接受消息
   const acceptMessage = _session_id => {
     if (!isConnected) {
@@ -154,11 +167,11 @@ const Chat = React.memo(({navigation, route}) => {
         if (res.code === 0) {
           socket.on('message', data => {
             console.log('acceptMessage', data);
-
             const msg = formatCloudMsgToLocal(data, _session_id);
             const tmpMsgs = formatLocalMsgToTmp([msg]);
             setLocalMessages([msg]);
             appendTmpMessage(tmpMsgs);
+            readMessage({messageId: msg.id, session_id: _session_id});
           });
         }
       });
@@ -227,6 +240,9 @@ const Chat = React.memo(({navigation, route}) => {
         : ChatTypeEnum.group,
       sender_id: userInfo?.id,
       sender_avatar: userInfo?.user_avatar,
+      sender_remarks: isEmptyObject(userInGroupInfo)
+        ? userInfo?.user_name
+        : userInGroupInfo?.member_remarks,
       status: status,
     });
     setLocalMessages([localMsg]);

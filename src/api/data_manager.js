@@ -10,4 +10,4 @@ export const delFiles = data => instance.delete('app/file/batch', {data});
 export const getUserMsgs = params => instance.get('app/message', {params});
 
 // 删除多条消息
-export const delUserMsgs = data => instance.delete('app/message', {data});
+export const delUserMsgs = data => instance.delete('app/message/batch', {data});

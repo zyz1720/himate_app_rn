@@ -9,7 +9,7 @@ export const setLocalMessages = messages => {
   if (notSaveMsg) {
     return;
   }
-  if (messages?.length === 0) {
+  if (!messages || messages?.length === 0) {
     return;
   }
 
@@ -26,7 +26,7 @@ export const setLocalMessages = messages => {
         const cloneMsg = deepClone(message);
         cloneMsg.decrypted_content = decryptMsg(
           cloneMsg.content,
-          cloneMsg.msg_secret,
+          cloneMsg?.msg_secret,
         );
         realm.write(() => {
           realm.create('chat_msg', cloneMsg);
@@ -41,11 +41,22 @@ export const setLocalMessages = messages => {
 /* 查询本地消息 */
 export const getLocalMessages = session_id => {
   try {
-    const localMsgs = realm.objects('chat_msg');
-    const list = localMsgs
+    const list = realm
+      .objects('chat_msg')
       .filtered('session_id == $0', session_id)
       .sorted('create_time', true)
       .toJSON();
+    return list;
+  } catch (error) {
+    console.error('查询本地消息失败', error);
+    return [];
+  }
+};
+
+/* 获取所有本地消息 */
+export const getAllLocalMessages = () => {
+  try {
+    const list = realm.objects('chat_msg').toJSON();
     return list;
   } catch (error) {
     console.error('查询本地消息失败', error);
@@ -64,6 +75,18 @@ export const deleteLocalMessages = session_id => {
     });
   } catch (error) {
     console.error('删除本地消息失败', error);
+  }
+};
+
+/* 清空本地消息 */
+export const clearLocalMessages = () => {
+  try {
+    const msgs = realm.objects('chat_msg');
+    realm.write(() => {
+      realm.delete(msgs);
+    });
+  } catch (error) {
+    console.error('清空本地消息失败', error);
   }
 };
 

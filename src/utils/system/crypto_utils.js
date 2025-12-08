@@ -1,5 +1,6 @@
 import {Buffer} from 'buffer';
-import {createRandomLetters} from '@utils/common/string_utils';
+import {createRandomLetters, reverseString} from '@utils/common/string_utils';
+import {createRandomNumber} from '@utils/common/number_utils';
 import QuickCrypto from 'react-native-quick-crypto';
 
 /**
@@ -61,15 +62,13 @@ export const decryptAES = (encryptedData, iv, secretKey) => {
  * @returns {string} 生成的秘钥库
  */
 export const generateSecretKey = msgSecret => {
-  const secretHash = QuickCrypto.createHash('sha256').update(String(msgSecret));
-  const secretReHash = QuickCrypto.createHash('sha256').update(
-    String(msgSecret.split('').reverse().join('')),
+  const secretHash = QuickCrypto.createHash('sha512').update(String(msgSecret));
+  const secretReHash = QuickCrypto.createHash('sha512').update(
+    String(reverseString(msgSecret)),
   );
-  const secretKey1 = secretHash.digest('base64');
-  const secretKey2 = secretHash.digest('hex');
-  const secretKey3 = secretReHash.digest('base64');
-  const secretKey4 = secretReHash.digest('hex');
-  return secretKey1 + secretKey2 + secretKey3 + secretKey4;
+  const secretKey = secretHash.digest('hex');
+  const secretReKey = secretReHash.digest('hex');
+  return secretKey + secretReKey;
 };
 
 /**
@@ -78,33 +77,73 @@ export const generateSecretKey = msgSecret => {
  * @returns {Object} {secret, trueSecret} 随机秘钥位置和真正的秘钥
  */
 export const createRandomSecretKey = secretStr => {
-  const indexList = [];
-  const secretList = [];
-  for (let i = 0; i < 8; i++) {
-    const index = Math.floor(Math.random() * (secretStr.length - 1));
-    indexList.push(
-      index,
-      createRandomLetters(Math.floor(Math.random() * 4) + 1),
-    );
-    secretList.push(secretStr.charAt(index));
+  const is = [];
+  const ss = [];
+  const i1 = () => Math.floor(Math.random() * 9) + 1;
+  const i2 = () => Math.floor(Math.random() * 90) + 10;
+  const i3 = () => Math.floor(Math.random() * (256 - 100 + 1)) + 100;
+  for (let i = 0; i < 7; i++) {
+    if (i === 0) {
+      const _i3 = i3();
+      is.push(_i3);
+      ss.push(secretStr.charAt(_i3));
+    }
+    if (i === 1) {
+      const _i1 = i1();
+      is.push(_i1);
+      ss.push(secretStr.charAt(_i1));
+    }
+    if (i === 2) {
+      const _i2 = i2();
+      is.push(_i2);
+      ss.push(secretStr.charAt(_i2));
+    }
+    if (i === 3) {
+      const _i1 = i1();
+      is.push(_i1);
+      ss.push(secretStr.charAt(_i1));
+    }
+    if (i === 4) {
+      const _i3 = i3();
+      is.push(_i3);
+      ss.push(secretStr.charAt(_i3));
+    }
+    if (i === 5) {
+      const _i2 = i2();
+      is.push(_i2);
+      ss.push(secretStr.charAt(_i2));
+    }
+    if (i === 6) {
+      const _i3 = i3();
+      is.push(_i3);
+      ss.push(secretStr.charAt(_i3));
+    }
   }
   return {
-    secret: indexList.join(''),
-    trueSecret: secretList.join(''),
+    secret: is.join(''),
+    trueSecret: ss.join(''),
   };
 };
 
 /**
  * 获取真正的秘钥函数
- * @param {string} secret 随机秘钥位置
- * @param {string} secretStr 秘钥字符串
+ * @param {string} s 随机秘钥位置
+ * @param {string} ss 秘钥字符串
  * @returns {string} 真正的秘钥
  */
-export const getTrueSecretKey = (secret, secretStr) => {
-  const indexList = secret.match(/\d+/g);
-  const secretList = [];
-  indexList.forEach((index, i) => {
-    secretList.push(secretStr.charAt(index));
+export const getTrueSecretKey = (s, ss) => {
+  const is = [
+    s.substring(0, 3),
+    s.substring(3, 4),
+    s.substring(4, 6),
+    s.substring(6, 7),
+    s.substring(7, 10),
+    s.substring(10, 12),
+    s.substring(12, 15),
+  ];
+  const sl = [];
+  is.forEach(i => {
+    sl.push(ss.charAt(i));
   });
-  return secretList.join('');
+  return sl.join('');
 };

@@ -61,31 +61,45 @@ export const createTmpMessage = (options = {}) => {
 
 /* 加密消息 */
 export const encryptMsg = _content => {
-  const {msgSecretKey} = useConfigStore.getState();
-
-  const {secret, trueSecret} = createRandomSecretKey(msgSecretKey);
-  const content = JSON.stringify(encryptAES(_content, trueSecret));
-  return {
-    content,
-    secret,
-  };
+  try {
+    const {msgSecretKey} = useConfigStore.getState();
+    const {secret, trueSecret} = createRandomSecretKey(msgSecretKey);
+    const content = JSON.stringify(encryptAES(_content, trueSecret));
+    return {
+      content,
+      secret,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      content: _content,
+      secret: null,
+    };
+  }
 };
 
 /* 解密消息 */
 export const decryptMsg = (content, secret) => {
   const {msgSecretKey} = useConfigStore.getState();
-
-  if (secret) {
-    const {iv, encryptedData} = JSON.parse(content);
-    const trueSecret = getTrueSecretKey(secret, msgSecretKey);
-    return decryptAES(encryptedData, iv, trueSecret);
-  } else {
-    return content;
+  try {
+    if (secret && content) {
+      const {iv, encryptedData} = JSON.parse(content);
+      const trueSecret = getTrueSecretKey(secret, msgSecretKey);
+      return decryptAES(encryptedData, iv, trueSecret);
+    } else {
+      return content || '';
+    }
+  } catch (error) {
+    console.error(error);
+    return '';
   }
 };
 
 /* 格式化消息类型 */
 export const showMediaType = (content, type, secret) => {
+  if (!content) {
+    return `[${i18n.t('chat.empty_chat')}]`;
+  }
   const msgTypeMap = {
     text: decryptMsg(content, secret),
     image: `[${i18n.t('chat.msg_type_image')}]`,
@@ -113,8 +127,14 @@ export const formatCloudMsgToLocal = (data, session_id) => {
 /* 格式化临时消息为本地消息 */
 export const formatTmpMsgToLocal = (message, options = {}) => {
   const {_id, createdAt, text, user, msg_type} = message || {};
-  const {session_id, chat_type, sender_id, sender_avatar, status} =
-    options || {};
+  const {
+    session_id,
+    chat_type,
+    sender_id,
+    sender_avatar,
+    sender_remarks,
+    status,
+  } = options || {};
   return {
     id: -createRandomNumber(11),
     session_id: session_id,
@@ -122,7 +142,7 @@ export const formatTmpMsgToLocal = (message, options = {}) => {
     client_msg_id: _id,
     sender_id: sender_id,
     sender_avatar: sender_avatar,
-    sender_remarks: user?.name,
+    sender_remarks: user?.name || sender_remarks,
     sender_ip: 'localhost',
     content: text,
     msg_type: msg_type || 'text',
@@ -142,6 +162,7 @@ export const formatLocalMsgToTmp = messages => {
       client_msg_id,
       msg_type,
       content,
+      decrypted_content,
       msg_secret,
       create_time,
       sender_id,
@@ -149,7 +170,9 @@ export const formatLocalMsgToTmp = messages => {
       sender_avatar,
       status,
     } = msg;
-    const text = msg_secret ? decryptMsg(content, msg_secret) : content;
+    const text =
+      decrypted_content ||
+      (msg_secret ? decryptMsg(content, msg_secret) : content);
     const message = {
       _id: client_msg_id,
       text: text,
@@ -238,7 +261,6 @@ export const getLocalMsg = (realm, session_id) => {
     count: list.length,
   };
 };
-
 
 /* 写入本地用户信息 */
 export const addOrUpdateLocalUser = (realm, users) => {

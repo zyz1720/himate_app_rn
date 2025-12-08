@@ -24,7 +24,8 @@ import {
   formatFileSize,
 } from '@utils/system/file_utils';
 import {formatDateTime} from '@utils/common/time_utils';
-import {formatCloudMsg, matchMsgInfo} from '@utils/system/chat_utils';
+import {showMediaType} from '@utils/system/chat_utils';
+import {getLocalSessionById} from '@utils/realm/useSessionInfo';
 import {FileTypeEnum, FileUseTypeEnum} from '@const/database_enum';
 import {usePermissionStore} from '@store/permissionStore';
 import {useConfigStore} from '@store/configStore';
@@ -92,6 +93,7 @@ const DataManager = ({navigation}) => {
       setProgress(0);
       if (upRes.code === 0) {
         showToast(t('common.upload_file_success', {index: i + 1}), 'success');
+        refreshFileList({use_type: routes[focusedIndex].key});
       } else {
         showToast(t('common.upload_file_failed', {index: i + 1}), 'error');
         continue;
@@ -203,7 +205,10 @@ const DataManager = ({navigation}) => {
     return (
       <View
         center
-        style={styles.fileIcon}
+        width={50}
+        height={50}
+        br20
+        marginR-12
         backgroundColor={getFileColor(getFileExt(name))}>
         {type === 'video' ? (
           <FontAwesome name="file-video-o" color={Colors.white} size={32} />
@@ -322,7 +327,7 @@ const DataManager = ({navigation}) => {
         padding-12
         row
         centerV
-        style={styles.msgItem}
+        bg-white
         onLongPress={() => {
           Vibration.vibrate(50);
           Clipboard.setString(item.content);
@@ -352,18 +357,26 @@ const DataManager = ({navigation}) => {
         ) : null}
         <View width={isMultiSelect ? '92%' : '100%'}>
           <Text numberOfLines={1} ellipsizeMode={'middle'}>
-            {formatCloudMsg(item).text}
+            {showMediaType(item.content, item.msg_type, item?.msg_secret)}
           </Text>
           <View row spread>
             <Text text90L grey30>
-              {t('chat.send_to', {name: matchMsgInfo(item)})}
+              {t('chat.send_to', {
+                name:
+                  getLocalSessionById(item.session_primary_id)[0]
+                    ?.session_name || t('chat.unknown_user'),
+              })}
             </Text>
           </View>
           <View row marginT-6 spread>
             <View row>
               <Badge
                 backgroundColor={Colors.blue50}
-                label={t('chat.chat_type_' + item.chat_type)}
+                label={t(
+                  'chat.chat_type_' +
+                    getLocalSessionById(item.session_primary_id)[0]
+                      ?.chat_type || '',
+                )}
               />
               <View marginL-6>
                 <Badge
@@ -562,11 +575,7 @@ const DataManager = ({navigation}) => {
             </View>
           ) : (
             <TouchableOpacity center onPress={() => setIsMultiSelect(true)}>
-              <AntDesign
-                name="bars"
-                color={Colors.grey40}
-                size={24}
-              />
+              <AntDesign name="bars" color={Colors.grey40} size={24} />
             </TouchableOpacity>
           )}
         </View>
@@ -646,15 +655,5 @@ const DataManager = ({navigation}) => {
 
 const styles = StyleSheet.create({
   image: {width: 50, height: 50, borderRadius: 4, marginRight: 12},
-  fileIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 4,
-    marginRight: 12,
-  },
-  msgItem: {
-    borderBottomWidth: 1,
-    borderColor: Colors.grey60,
-  },
 });
 export default DataManager;

@@ -3,7 +3,8 @@
     "reminder_restored": "恢复提醒",
     "read": "已读",
     "mute": "勿扰",
-    "send_to": "发送给 {{name}}",
+    "send_to": "发送到 {{name}}",
+    "chat_type_undefined": "未知类型",
     "chat_type_private": "私聊",
     "chat_type_group": "群聊",
     "msg_type_text": "文本",
@@ -34,5 +35,8 @@
     "socket_error": "socket 未连接",
     "empty_msg": "请输入内容!",
     "search_placeholder": "请输入聊天记录关键字/昵称",
-    "empty_search_result": "没有搜索到相关聊天记录~"
+    "empty_search_result": "没有搜索到相关聊天记录~",
+    "encrypted": "加密消息",
+    "unknown_user": "未知用户",
+    "empty_chat": "暂无聊天记录"
 }

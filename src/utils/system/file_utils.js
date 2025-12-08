@@ -344,7 +344,7 @@ export const writeJSONFile = async (jsonData, fileName) => {
       .writeFile(writeDest, jsonString, 'utf8')
       .then(() => {
         resolve(true);
-        // console.log('文件写入成功:', path);
+        console.log('文件写入成功:', path);
       })
       .catch(error => {
         console.log('文件写入失败:', error);

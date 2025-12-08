@@ -186,8 +186,8 @@ const Msg = ({navigation}) => {
                     ? sessionExtra.lastSenderRemarks + ': '
                     : null}
                   {showMediaType(
-                    session.lastMsg.content,
-                    session.lastMsg.msg_type,
+                    session.lastMsg?.content,
+                    session.lastMsg?.msg_type,
                     session.lastMsg?.msg_secret,
                   )}
                 </Text>

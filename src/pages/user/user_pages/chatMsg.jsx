@@ -3,8 +3,12 @@ import {View, Button, TextField, Card, Colors, Text} from 'react-native-ui-lib';
 import {useToast} from '@components/common/useToast';
 import {encryptAES, decryptAES} from '@utils/system/crypto_utils';
 import {writeJSONFile, readJSONFile} from '@utils/system/file_utils';
-import {setLocalMsg} from '@utils/system/chat_utils';
-import {getLocalMessages} from '@utils/realm/useChatMsg';
+import {
+  setLocalMessages,
+  clearLocalMessages,
+  getLocalMessages,
+  getAllLocalMessages,
+} from '@utils/realm/useChatMsg';
 import {usePermissionStore} from '@store/permissionStore';
 import {useTranslation} from 'react-i18next';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -26,16 +30,16 @@ const ChatMsg = ({route}) => {
   /* 导出聊天记录 */
   const [handlerType, setHandlerType] = useState('export');
   const exportChatMsgText = async () => {
-    let localMsgs = getLocalMessages();
+    let localMsgs = [];
     if (session_id) {
-      localMsgs = localMsgs.filtered('session_id == $0', session_id);
+      localMsgs = getLocalMessages(session_id);
+    } else {
+      localMsgs = getAllLocalMessages();
     }
-    const newList = localMsgs.toJSON();
-    const exportData = encryptAES(newList, msgSecret);
-    // console.log(exportData);
+    const exportData = encryptAES(localMsgs, msgSecret);
     const writeRes = await writeJSONFile(
       exportData,
-      `chatHistory_${Date.now()}.json`,
+      `chat_history_${Date.now()}.json`,
     );
     if (writeRes) {
       showToast(t('user.export_chat_success'), 'success');
@@ -63,7 +67,7 @@ const ChatMsg = ({route}) => {
     let successCount = 0;
     for (let i = 0; i < importFile.length; i++) {
       const magData = await readJSONFile(importFile[i].uri);
-      if (!magData?.encryptedData && !magData?.iv) {
+      if (!magData?.encryptedData || !magData?.iv) {
         showToast(t('user.chat_file_error'), 'error');
         continue;
       }
@@ -72,7 +76,7 @@ const ChatMsg = ({route}) => {
         showToast(t('user.chat_secret_error'), 'error');
         continue;
       }
-      setLocalMsg(realm, msgList);
+      setLocalMessages(msgList);
       successCount += 1;
     }
     if (successCount > 0) {
@@ -85,13 +89,6 @@ const ChatMsg = ({route}) => {
 
   /* 清空聊天记录 */
   const [clearMsgVisible, setClearMsgVisible] = useState(false);
-  const clearChatMsg = () => {
-    const toDelete = realm.objects('ChatMsg');
-    realm.write(() => {
-      realm.delete(toDelete);
-      showToast(t('user.clear_chat_success'), 'success');
-    });
-  };
 
   return (
     <>
@@ -201,7 +198,10 @@ const ChatMsg = ({route}) => {
       />
       <BaseDialog
         title={true}
-        onConfirm={clearChatMsg}
+        onConfirm={() => {
+          clearLocalMessages();
+          showToast(t('user.clear_chat_success'), 'success');
+        }}
         visible={clearMsgVisible}
         setVisible={setClearMsgVisible}
         description={t('user.clear_chat_confirm')}
