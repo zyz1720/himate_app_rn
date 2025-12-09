@@ -39,6 +39,7 @@ export const useSocketStore = create(set => ({
     socketInstance.on('connect_error', res => {
       set({isConnected: false, socket: null});
       console.log('socket error', res);
+      socketInstance.disconnect();
       socketTimer = setInterval(() => {
         socketInstance.connect();
       }, 30000);

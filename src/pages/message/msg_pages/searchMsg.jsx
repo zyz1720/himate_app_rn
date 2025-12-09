@@ -103,7 +103,10 @@ const SearchMsg = ({navigation, route}) => {
           <View marginL-10 width={fullWidth * 0.78}>
             <View flexS row spread>
               <Text text80BO grey30>
-                {setHighlightStyle(item.sessionExtra?.session_name, keyword)}
+                {setHighlightStyle(
+                  item.sessionExtra?.session_name || t('chat.unknown_user'),
+                  keyword,
+                )}
               </Text>
               <Text grey40 text90L>
                 {dayjs(item.create_time).format('YYYY/MM/DD HH:mm:ss')}
