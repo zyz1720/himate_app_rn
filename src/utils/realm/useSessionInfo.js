@@ -1,6 +1,6 @@
 import {realm} from './index';
 import {deepClone} from '@utils/common/object_utils';
-
+import {showMessageText} from '@utils/system/chat_utils';
 /* 写入本地会话 */
 export const setLocalSession = sessions => {
   if (!sessions || sessions.length === 0) {
@@ -11,6 +11,11 @@ export const setLocalSession = sessions => {
     for (let i = 0; i < sessions.length; i++) {
       const {session, sessionExtra} = sessions[i];
       const sessionInfo = deepClone({...session, ...sessionExtra});
+      sessionInfo.last_msg_content = showMessageText(
+        sessionInfo.lastMsg?.content,
+        sessionInfo.lastMsg?.msg_type,
+        sessionInfo.lastMsg?.msg_secret,
+      );
       const existSession = realm.objectForPrimaryKey(
         'session_info',
         sessionInfo.id,

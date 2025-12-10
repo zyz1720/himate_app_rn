@@ -62,16 +62,16 @@ const Chat = React.memo(({navigation, route}) => {
 
   const [showActions, setShowActions] = useState(false);
   // 获取自己在群中的信息
-  const getSelfGroupMemberInfo = useCallback(async () => {
+  const getSelfGroupMemberInfo = async _session_id => {
     try {
-      const res = await getSelfGroupMember(session_id);
+      const res = await getSelfGroupMember(_session_id);
       if (res.code === 0) {
         setUserInGroupInfo(res.data);
       }
     } catch (error) {
       console.error(error);
     }
-  }, [session_id]);
+  };
 
   /* 自定义长按消息 */
   const onLongPress = (context, currentMessage) => {
@@ -132,6 +132,17 @@ const Chat = React.memo(({navigation, route}) => {
     }
   };
 
+  // 加入房间
+  const joinRoom = _session_id => {
+    try {
+      socket.emit('join-room', _session_id, res => {
+        console.log('join-room', res);
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   // 离开房间
   const leaveRoom = _session_id => {
     try {
@@ -144,9 +155,9 @@ const Chat = React.memo(({navigation, route}) => {
   };
 
   // 已读消息
-  const readMessage = message => {
+  const readMessage = data => {
     try {
-      socket.emit('read-message', message, res => {
+      socket.emit('read-message', data, res => {
         if (res.code === 0) {
           console.log('readMessage', res);
         }
@@ -158,22 +169,15 @@ const Chat = React.memo(({navigation, route}) => {
 
   // 接受消息
   const acceptMessage = _session_id => {
-    if (!isConnected) {
-      showToast(t('chat.socket_error'), 'error');
-      return;
-    }
     try {
-      socket.emit('join-room', _session_id, res => {
-        if (res.code === 0) {
-          socket.on('message', data => {
-            console.log('acceptMessage', data);
-            const msg = formatCloudMsgToLocal(data, _session_id);
-            const tmpMsgs = formatLocalMsgToTmp([msg]);
-            setLocalMessages([msg]);
-            appendTmpMessage(tmpMsgs);
-            readMessage({messageId: msg.id, session_id: _session_id});
-          });
-        }
+      socket.on('message', data => {
+        console.log('acceptMessage', data);
+
+        const msgs = formatCloudMsgToLocal(data, _session_id);
+        const tmpMsgs = formatLocalMsgToTmp(msgs);
+        setLocalMessages(msgs);
+        appendTmpMessage(tmpMsgs);
+        readMessage({ids: msgs.map(msg => msg.id), session_id: _session_id});
       });
     } catch (error) {
       console.error(error);
@@ -291,8 +295,8 @@ const Chat = React.memo(({navigation, route}) => {
         }
         const data = await sendMessage(handleMsg.text, handleMsg.msg_type);
         if (data) {
-          const msg = formatCloudMsgToLocal(data, session_id);
-          setLocalMessages([msg]);
+          const msgs = formatCloudMsgToLocal([data], session_id);
+          setLocalMessages(msgs);
         } else {
           updateTmpMessage(message, 'failed');
         }
@@ -373,14 +377,21 @@ const Chat = React.memo(({navigation, route}) => {
   }, [searchIndex]);
 
   useEffect(() => {
-    acceptMessage(session_id);
-    getLocalMsgList(session_id);
-    return () => leaveRoom(session_id);
+    if (session_id) {
+      getLocalMsgList(session_id);
+      getSelfGroupMemberInfo(session_id);
+    }
   }, [session_id]);
 
   useEffect(() => {
-    getSelfGroupMemberInfo();
-  }, []);
+    if (isConnected && session_id) {
+      joinRoom(session_id);
+      acceptMessage(session_id);
+      return () => leaveRoom(session_id);
+    }
+  }, [session_id, isConnected]);
+
+  useEffect(() => {}, []);
 
   return (
     <>

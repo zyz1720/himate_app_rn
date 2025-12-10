@@ -221,11 +221,8 @@ const GroupInfo = ({navigation, route}) => {
         pageSize: 100,
       });
       if (res.code === 0) {
-        const newList = [];
         const list = res.data.list || [];
-        list.forEach(item => {
-          newList.push(formatCloudMsgToLocal(item, session_id));
-        });
+        const newList = formatCloudMsgToLocal(list, session_id);
         setLocalMessages(newList);
         if (list.length < 100) {
           showToast(t('mate.sync_success'), 'success');

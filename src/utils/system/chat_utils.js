@@ -1,6 +1,4 @@
-import {deepClone} from '@utils/common/object_utils';
 import {useConfigStore} from '@store/configStore';
-import {useSettingStore} from '@store/settingStore';
 import {useUserStore} from '@store/userStore';
 import {
   getTrueSecretKey,
@@ -96,7 +94,7 @@ export const decryptMsg = (content, secret) => {
 };
 
 /* 格式化消息类型 */
-export const showMediaType = (content, type, secret) => {
+export const showMessageText = (content, type, secret) => {
   if (!content) {
     return `[${i18n.t('chat.empty_chat')}]`;
   }
@@ -112,16 +110,18 @@ export const showMediaType = (content, type, secret) => {
 };
 
 /* 格式化云端消息为本地消息 */
-export const formatCloudMsgToLocal = (data, session_id) => {
-  const {message, senderInfo} = data || {};
-  return {
-    session_id: session_id,
-    sender_avatar: senderInfo?.avatar,
-    sender_remarks: senderInfo?.remarks,
-    chat_type: senderInfo?.chat_type,
-    status: 'ok',
-    ...message,
-  };
+export const formatCloudMsgToLocal = (list = [], session_id) => {
+  return list.map(item => {
+    const {message, senderInfo} = item || {};
+    return {
+      session_id: session_id,
+      sender_avatar: senderInfo?.avatar,
+      sender_remarks: senderInfo?.remarks,
+      chat_type: senderInfo?.chat_type,
+      status: 'ok',
+      ...message,
+    };
+  });
 };
 
 /* 格式化临时消息为本地消息 */
@@ -153,7 +153,7 @@ export const formatTmpMsgToLocal = (message, options = {}) => {
 };
 
 /* 格式化本地消息为临时消息 */
-export const formatLocalMsgToTmp = messages => {
+export const formatLocalMsgToTmp = (messages = []) => {
   const {userInfo} = useUserStore.getState();
   const {envConfig} = useConfigStore.getState();
 
@@ -202,94 +202,6 @@ export const formatLocalMsgToTmp = messages => {
     }
     return message;
   });
-};
-
-/* 格式化加入会话的用户信息 */
-export const formatJoinUser = (
-  userId,
-  remark,
-  avatar,
-  session_id,
-  session_name = '',
-) => {
-  return {
-    _id: userId + session_id,
-    userId,
-    remark,
-    avatar,
-    session_id,
-    session_name,
-  };
-};
-
-/* 写入本地消息 */
-const {notSaveMsg} = useSettingStore.getState();
-export const setLocalMsg = async (realm, msgs) => {
-  if (notSaveMsg) {
-    return;
-  }
-  if (msgs?.length === 0) {
-    return;
-  }
-  try {
-    const msglist = deepClone(msgs);
-    for (let i = 0; i < msglist.length; i++) {
-      const element = msglist[i];
-      const msg = realm.objectForPrimaryKey('ChatMsg', element.clientMsg_id);
-      if (msg) {
-        continue;
-      } else {
-        realm.write(() => {
-          realm.create('ChatMsg', element);
-        });
-      }
-    }
-  } catch (error) {
-    console.error('写入本地消息失败', error);
-  }
-};
-
-/* 查询本地消息 */
-export const getLocalMsg = (realm, session_id) => {
-  const localMsgs = realm.objects('ChatMsg');
-  const list = localMsgs
-    .filtered('session_id == $0', session_id)
-    .sorted('createdAt', true)
-    .toJSON();
-  return {
-    list,
-    count: list.length,
-  };
-};
-
-/* 写入本地用户信息 */
-export const addOrUpdateLocalUser = (realm, users) => {
-  if (users.length === 0) {
-    return;
-  }
-  const userList = deepClone(users);
-  for (let i = 0; i < userList.length; i++) {
-    const element = userList[i];
-    const user = realm
-      .objects('users_info')
-      .filtered(
-        'userId == $0 && session_id == $1',
-        element.userId,
-        element.session_id,
-      );
-    if (user.length > 0) {
-      realm.write(() => {
-        for (const ele of user) {
-          ele.avatar = element.avatar;
-          ele.remark = element.remark;
-        }
-      });
-    } else {
-      realm.write(() => {
-        realm.create('users_info', element);
-      });
-    }
-  }
 };
 
 /* 处理文件类消息 */

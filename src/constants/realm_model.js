@@ -12,6 +12,8 @@ export class SessionInfo extends Realm.Object {
       chat_type: 'string',
       groupId: 'int?',
       userId: 'int?',
+      unread_count: 'int?',
+      last_msg_content: 'string?',
       created_at: 'date',
       updated_at: 'date',
     },

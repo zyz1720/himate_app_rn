@@ -1,5 +1,5 @@
 import notifee, {AndroidImportance} from '@notifee/react-native';
-import {showMediaType} from './chat_utils';
+import {showMessageText} from './chat_utils';
 import {name as appName} from '@root/app.json';
 import {useSettingStore} from '@store/settingStore';
 import {useConfigStore} from '@store/configStore';
@@ -35,7 +35,7 @@ export async function onDisplayRealMsg(data) {
 
   await notifee.displayNotification({
     title: session_name + unReadText,
-    body: showMediaType(msgdata, msg_type, msg_secret),
+    body: showMessageText(msgdata, msg_type, msg_secret),
     android: {
       channelId,
       importance: AndroidImportance.HIGH,

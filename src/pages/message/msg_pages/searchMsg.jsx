@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   TextField,
 } from 'react-native-ui-lib';
-import {showMediaType} from '@utils/system/chat_utils';
+import {showMessageText} from '@utils/system/chat_utils';
 import {fullHeight, fullWidth} from '@style/index';
 import {useConfigStore} from '@store/configStore';
 import {
@@ -115,7 +115,7 @@ const SearchMsg = ({navigation, route}) => {
             <View>
               <Text text70 numberOfLines={3}>
                 {item.msg_type !== 'text'
-                  ? showMediaType(item.content, item.msg_type, item?.msg_secret)
+                  ? showMessageText(item.content, item.msg_type, item?.msg_secret)
                   : setHighlightStyle(item.decrypted_content, keyword)}
               </Text>
             </View>

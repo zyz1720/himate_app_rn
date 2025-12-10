@@ -4,12 +4,9 @@ import {deepClone} from '@utils/common/object_utils';
 import {useSettingStore} from '@store/settingStore';
 
 /* 写入本地消息 */
-export const setLocalMessages = messages => {
+export const setLocalMessages = (messages = []) => {
   const {notSaveMsg} = useSettingStore.getState();
   if (notSaveMsg) {
-    return;
-  }
-  if (!messages || messages?.length === 0) {
     return;
   }
 

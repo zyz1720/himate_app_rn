@@ -9,13 +9,12 @@ import {
   TouchableOpacity,
   Badge,
 } from 'react-native-ui-lib';
-import {getUserSessions, getSessionsMessages} from '@api/session';
+import {getUserSessions} from '@api/session';
 import {useToast} from '@components/common/useToast';
 import {
-  setLocalMsg,
   decryptMsg,
   formatCloudMsg,
-  showMediaType,
+  showMessageText,
 } from '@utils/system/chat_utils';
 import {
   onDisplayRealMsg,
@@ -34,8 +33,7 @@ import Feather from 'react-native-vector-icons/Feather';
 const Msg = ({navigation}) => {
   const isFocused = useIsFocused();
   const {envConfig, msgSecretKey} = useConfigStore();
-  const {notRemindSessionIds, setNotRemindSessionIds, deleteIds, setDeleteIds} =
-    useChatMsgStore();
+  const {notRemindSessionIds, setNotRemindSessionIds} = useChatMsgStore();
   const {showToast} = useToast();
   const {t} = useTranslation();
 
@@ -115,9 +113,7 @@ const Msg = ({navigation}) => {
           {
             text: t('common.delete'),
             background: Colors.error,
-            onPress: () => {
-              setDeleteIds(session.id);
-            },
+            onPress: () => {},
           },
         ]}
         leftItem={{
@@ -141,9 +137,6 @@ const Msg = ({navigation}) => {
                 userId: sessionExtra.userId,
                 groupId: sessionExtra.groupId,
               });
-              getSessionsMessages(session.session_id, {}).then(res => {
-                console.log('getSessionsMessages', res.data.list);
-              });
             }}>
             <Avatar
               source={
@@ -158,10 +151,10 @@ const Msg = ({navigation}) => {
               <View flexG row centerV spread width={'92%'}>
                 <Text text70BL>{sessionExtra.session_name}</Text>
                 <View flexS row centerV>
-                  {sessionExtra.unread_count > 0 ? (
+                  {session?.unread_count ? (
                     <Badge
                       marginR-6
-                      label={sessionExtra.unread_count}
+                      label={session.unread_count}
                       backgroundColor={
                         notRemindSessionIds.includes(session.id)
                           ? Colors.grey50
@@ -185,7 +178,7 @@ const Msg = ({navigation}) => {
                   {sessionExtra?.lastSenderRemarks
                     ? sessionExtra.lastSenderRemarks + ': '
                     : null}
-                  {showMediaType(
+                  {showMessageText(
                     session.lastMsg?.content,
                     session.lastMsg?.msg_type,
                     session.lastMsg?.msg_secret,
@@ -216,7 +209,7 @@ const Msg = ({navigation}) => {
             onRefresh={onRefresh}
           />
         }
-        data={list.filter(item => !deleteIds.includes(item.id))}
+        data={list}
         keyExtractor={(item, index) => `${item?.id}-${index}`}
         onEndReached={onEndReached}
         renderItem={renderSessionItem}

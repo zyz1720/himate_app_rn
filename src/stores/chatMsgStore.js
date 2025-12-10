@@ -3,7 +3,7 @@ import {persist, createJSONStorage} from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const defaultState = {
-  deleteIds: [], // 暂时删除的会话id列表
+  
   notRemindSessionIds: [], // 不用提醒的会话id列表
 };
 
@@ -11,7 +11,6 @@ export const useChatMsgStore = create(
   persist(
     set => ({
       ...defaultState,
-      setDeleteIds: id => set(state => ({deleteIds: [...state.deleteIds, id]})),
       setNotRemindSessionIds: sessionId =>
         set(state => {
           if (!state.notRemindSessionIds.includes(sessionId)) {

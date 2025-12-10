@@ -24,7 +24,7 @@ import {
   formatFileSize,
 } from '@utils/system/file_utils';
 import {formatDateTime} from '@utils/common/time_utils';
-import {showMediaType} from '@utils/system/chat_utils';
+import {showMessageText} from '@utils/system/chat_utils';
 import {getLocalSessionById} from '@utils/realm/useSessionInfo';
 import {FileTypeEnum, FileUseTypeEnum} from '@const/database_enum';
 import {usePermissionStore} from '@store/permissionStore';
@@ -357,7 +357,7 @@ const DataManager = ({navigation}) => {
         ) : null}
         <View width={isMultiSelect ? '92%' : '100%'}>
           <Text numberOfLines={1} ellipsizeMode={'middle'}>
-            {showMediaType(item.content, item.msg_type, item?.msg_secret)}
+            {showMessageText(item.content, item.msg_type, item?.msg_secret)}
           </Text>
           <View row spread>
             <Text text90L grey30>
