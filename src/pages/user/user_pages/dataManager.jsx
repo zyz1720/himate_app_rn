@@ -357,7 +357,7 @@ const DataManager = ({navigation}) => {
         ) : null}
         <View width={isMultiSelect ? '92%' : '100%'}>
           <Text numberOfLines={1} ellipsizeMode={'middle'}>
-            {showMessageText(item.content, item.msg_type, item?.msg_secret)}
+            {showMessageText(item)}
           </Text>
           <View row spread>
             <Text text90L grey30>

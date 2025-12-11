@@ -35,7 +35,6 @@ const ChatHistory = ({navigation, route}) => {
       });
       if (res.code === 0) {
         const list = res.data.list;
-        console.log('getCouldChatHistory', list);
         if (list.length === 0) {
           showToast(t('empty.chat'), 'warning');
           navigation.navigate('Msg');
@@ -52,9 +51,13 @@ const ChatHistory = ({navigation, route}) => {
         await delay();
         return getCouldChatHistory(current + 1);
       }
+      setLoadingAll(false);
+      showToast(t('mate.sync_failed'), 'error');
       return;
     } catch (error) {
       console.error(error);
+      setLoadingAll(false);
+      showToast(t('mate.sync_failed'), 'error');
       return;
     }
   };

@@ -1,23 +1,24 @@
 import notifee, {AndroidImportance} from '@notifee/react-native';
-import {showMessageText} from './chat_utils';
 import {name as appName} from '@root/app.json';
 import {useSettingStore} from '@store/settingStore';
 import {useConfigStore} from '@store/configStore';
+import {useChatMsgStore} from '@store/chatMsgStore';
+import {formatSessionToNotification} from './chat_utils';
+import i18n from 'i18next';
 import Sound from 'react-native-sound';
 
 /* 系统消息通知 */
-export async function onDisplayRealMsg(data) {
+export const onDisplayRealMsg = async message => {
   const {envConfig} = useConfigStore.getState();
 
   const {
     session_name,
     session_avatar,
     session_id,
-    msg_type,
-    session,
-    msgdata,
-    msg_secret,
-  } = data;
+    unread_count,
+    text,
+    lastSenderRemarks,
+  } = message;
 
   await notifee.deleteChannel(session_id);
 
@@ -31,11 +32,13 @@ export async function onDisplayRealMsg(data) {
 
   // Display a notification
   const unReadText =
-    session.unread_count > 0 ? `(${session.unread_count + 1}条未读)` : '';
+    unread_count > 0
+      ? `(${i18n.t('chat.unread_count', {count: unread_count})})`
+      : '';
 
   await notifee.displayNotification({
     title: session_name + unReadText,
-    body: showMessageText(msgdata, msg_type, msg_secret),
+    body: (lastSenderRemarks || '') + text,
     android: {
       channelId,
       importance: AndroidImportance.HIGH,
@@ -48,7 +51,20 @@ export async function onDisplayRealMsg(data) {
       },
     },
   });
-}
+};
+
+// 批量处理通知
+export const batchDisplayMsgNotifications = async messages => {
+  const {notRemindSessionIds} = useChatMsgStore.getState();
+  const toBeDisplayedMsgs = formatSessionToNotification(messages);
+  for (const msg of toBeDisplayedMsgs) {
+    if (notRemindSessionIds.includes(msg.session_id)) {
+      continue;
+    }
+    await onDisplayRealMsg(msg);
+    await playSystemSound();
+  }
+};
 
 /* 删除系统通知渠道 */
 export const deleteChannel = async channelId => {
@@ -61,7 +77,7 @@ export const cancelNotification = async notificationId => {
 };
 
 /* 播放系统声音 */
-export async function playSystemSound(sound_name) {
+export const playSystemSound = async sound_name => {
   const {ringtone} = useSettingStore.getState();
   const sound = new Sound(sound_name || ringtone, Sound.MAIN_BUNDLE, error => {
     if (error) {
@@ -77,4 +93,4 @@ export async function playSystemSound(sound_name) {
       }
     });
   });
-}
+};

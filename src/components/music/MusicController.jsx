@@ -217,6 +217,17 @@ const MusicCtrlProvider = React.memo(props => {
     }
   }, [audioIsPlaying, playingMusic, isLoading]);
 
+  // 播放或暂停
+  const pauseTrack = useCallback(async () => {
+    if (isEmptyObject(playingMusic)) {
+      return;
+    }
+    if (audioIsPlaying || isLoading) {
+      await pausePlayer();
+      setAudioIsPlaying(false);
+    }
+  }, [audioIsPlaying, playingMusic, isLoading]);
+
   // 下一首
   const nextTrack = useCallback(() => {
     if (isRandomPlay) {
@@ -362,7 +373,7 @@ const MusicCtrlProvider = React.memo(props => {
 
   useEffect(() => {
     if (isMusicPaused) {
-      playOrPauseTrack();
+      pauseTrack();
     }
   }, [isMusicPaused]);
 

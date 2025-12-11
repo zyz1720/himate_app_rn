@@ -35,16 +35,19 @@ import {
   setLocalSession,
   getLocalSessions,
   deleteLocalSession,
+  resetUnreadCount,
 } from '@utils/realm/useSessionInfo';
 import {delay} from '@utils/common/time_utils';
+import {useIsFocused} from '@react-navigation/native';
 import Feather from 'react-native-vector-icons/Feather';
 
 const Msg = ({navigation}) => {
   const {envConfig, msgSecretKey} = useConfigStore();
-  const {notRemindSessionIds, setNotRemindSessionIds, cloudSessions} =
+  const {notRemindSessionIds, setNotRemindSessionIds, updateKey} =
     useChatMsgStore();
   const {showToast} = useToast();
   const {t} = useTranslation();
+  const isFocused = useIsFocused();
 
   const {list, onEndReached, loading, onRefresh, refreshData} =
     useInfiniteScroll(getUserSessions);
@@ -52,7 +55,7 @@ const Msg = ({navigation}) => {
   const [sessions, setSessions] = useState([]);
 
   // 获取本地会话
-  const processLocalSessions = () => {
+  const refreshLocalSessions = () => {
     const localSessions = getLocalSessions();
     const tmpSessions = formatLocalSessionToTmp(localSessions);
     setSessions(tmpSessions);
@@ -82,15 +85,13 @@ const Msg = ({navigation}) => {
         await delay();
         return readSessionAllUnreadMsgs(current + 1, session_id);
       }
+      showToast(res.message, 'error');
       return;
     } catch (error) {
       console.error(error);
       return;
     }
   };
-
-  /* 本地确认收到消息 */
-  const readListMsg = async sessionInfo => {};
 
   // 监听应用状态
   const appState = useRef(AppState.currentState);
@@ -130,18 +131,20 @@ const Msg = ({navigation}) => {
   };
 
   useEffect(() => {
-    console.log('cloudSessions', cloudSessions);
-
-    processLocalSessions();
+    refreshLocalSessions();
     return () => subscription.remove();
-  }, [cloudSessions]);
+  }, [updateKey]);
 
   useEffect(() => {
-    console.log('setLocalSession', list);
-
     setLocalSession(list);
-    processLocalSessions();
+    refreshLocalSessions();
   }, [list]);
+
+  useEffect(() => {
+    if (isFocused) {
+      refreshLocalSessions();
+    }
+  }, [isFocused]);
 
   /* 列表元素 */
   const renderSessionItem = ({item}) => {
@@ -160,7 +163,7 @@ const Msg = ({navigation}) => {
               : Colors.warning,
             onPress: () => {
               setNotRemindSessionIds(session.id);
-              refreshData();
+              refreshLocalSessions();
             },
           },
           {
@@ -168,7 +171,7 @@ const Msg = ({navigation}) => {
             background: Colors.error,
             onPress: () => {
               deleteLocalSession(session.session_id);
-              processLocalSessions();
+              refreshLocalSessions();
             },
           },
         ]}
@@ -176,6 +179,8 @@ const Msg = ({navigation}) => {
           text: t('chat.read'),
           background: Colors.primary,
           onPress: () => {
+            resetUnreadCount(session.session_id);
+            refreshLocalSessions();
             readSessionAllUnreadMsgs(1, session.session_id);
           },
         }}>
@@ -235,11 +240,7 @@ const Msg = ({navigation}) => {
                     ? sessionExtra.lastSenderRemarks + ': '
                     : null}
                   {session?.last_msg_content ||
-                    showMessageText(
-                      session.lastMsg?.content,
-                      session.lastMsg?.msg_type,
-                      session.lastMsg?.msg_secret,
-                    )}
+                    showMessageText(session.lastMsg)}
                 </Text>
                 <Text text90L grey40>
                   {formatDateTime(session.update_time)}

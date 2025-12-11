@@ -37,5 +37,7 @@
     "empty_search_result": "No related chat records found~",
     "encrypted": "Encrypted message",
     "unknown_user": "Unknown user",
-    "empty_chat": "No chat records"
+    "empty_chat": "No chat records",
+    "read_msg_error": "Failed to read message",
+    "unread_count": "{{count}} unread messages"
 }

@@ -9,9 +9,6 @@ export const setLocalMessages = (messages = []) => {
   if (notSaveMsg) {
     return;
   }
-
-  console.log('setLocalMessages', messages);
-
   try {
     for (let i = 0; i < messages.length; i++) {
       const message = messages[i];

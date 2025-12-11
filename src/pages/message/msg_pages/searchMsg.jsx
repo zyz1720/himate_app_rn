@@ -115,7 +115,7 @@ const SearchMsg = ({navigation, route}) => {
             <View>
               <Text text70 numberOfLines={3}>
                 {item.msg_type !== 'text'
-                  ? showMessageText(item.content, item.msg_type, item?.msg_secret)
+                  ? showMessageText(item)
                   : setHighlightStyle(item.decrypted_content, keyword)}
               </Text>
             </View>

@@ -27,5 +27,6 @@
   "sync_chat_history": "Sync Chat History",
   "clear_chat_history_tips": "Are you sure you want to clear chat history?",
   "clear_success": "Clear Success",
-  "sync_success": "Sync Success"
+  "sync_success": "Sync Success",
+  "sync_failed": "Sync Failed"
 }

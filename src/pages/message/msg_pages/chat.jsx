@@ -1,4 +1,4 @@
-import React, {useEffect, useCallback, useState, useRef} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {Vibration} from 'react-native';
 import {View} from 'react-native-ui-lib';
 import {GiftedChat, Message} from 'react-native-gifted-chat';
@@ -11,9 +11,13 @@ import {
   formatLocalMsgToTmp,
   formatTmpMsgToLocal,
   createTmpMessage,
-  handleMessage,
+  processMessage,
 } from '@utils/system/chat_utils';
 import {setLocalMessages, getLocalMessages} from '@utils/realm/useChatMsg';
+import {
+  resetUnreadCount,
+  updateSessionLastMsg,
+} from '@utils/realm/useSessionInfo';
 import {useConfigStore} from '@store/configStore';
 import {useUserStore} from '@store/userStore';
 import {useSettingStore} from '@store/settingStore';
@@ -177,6 +181,7 @@ const Chat = React.memo(({navigation, route}) => {
         const tmpMsgs = formatLocalMsgToTmp(msgs);
         setLocalMessages(msgs);
         appendTmpMessage(tmpMsgs);
+        updateSessionLastMsg(_session_id, msgs[msgs.length - 1]);
         readMessage({ids: msgs.map(msg => msg.id), session_id: _session_id});
       });
     } catch (error) {
@@ -283,7 +288,7 @@ const Chat = React.memo(({navigation, route}) => {
     appendTmpMessage(messages);
     for (const message of messages) {
       try {
-        const handleMsg = await handleMessage(message, {
+        const handleMsg = await processMessage(message, {
           onProgress: setUploadProgress,
           setUploadId: setNowUploadId,
           setUploadIds: setUploadIds,
@@ -296,6 +301,7 @@ const Chat = React.memo(({navigation, route}) => {
         const data = await sendMessage(handleMsg.text, handleMsg.msg_type);
         if (data) {
           const msgs = formatCloudMsgToLocal([data], session_id);
+          updateSessionLastMsg(session_id, msgs[0]);
           setLocalMessages(msgs);
         } else {
           updateTmpMessage(message, 'failed');
@@ -380,6 +386,7 @@ const Chat = React.memo(({navigation, route}) => {
     if (session_id) {
       getLocalMsgList(session_id);
       getSelfGroupMemberInfo(session_id);
+      resetUnreadCount(session_id);
     }
   }, [session_id]);
 
@@ -390,8 +397,6 @@ const Chat = React.memo(({navigation, route}) => {
       return () => leaveRoom(session_id);
     }
   }, [session_id, isConnected]);
-
-  useEffect(() => {}, []);
 
   return (
     <>

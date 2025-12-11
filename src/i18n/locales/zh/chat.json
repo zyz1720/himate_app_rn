@@ -38,5 +38,7 @@
     "empty_search_result": "没有搜索到相关聊天记录~",
     "encrypted": "加密消息",
     "unknown_user": "未知用户",
-    "empty_chat": "暂无聊天记录"
+    "empty_chat": "暂无聊天记录",
+    "read_msg_error": "已读消息失败",
+    "unread_count": "{{count}}条未读"
 }

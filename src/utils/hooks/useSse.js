@@ -3,13 +3,14 @@ import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
 import {useChatMsgStore} from '@store/chatMsgStore';
 import {setLocalSession} from '@utils/realm/useSessionInfo';
+import {batchDisplayMsgNotifications} from '@utils/system/notification';
 import EventSource from 'react-native-sse';
 
 export const useSse = path => {
   const {token_type, access_token} = useUserStore();
   const {envConfig} = useConfigStore();
   const [isConnected, setIsConnected] = useState(false);
-  const {setCloudSessions} = useChatMsgStore();
+  const {setCloudSessions, setUpdateKey} = useChatMsgStore();
   let sseInstanceRef = useRef(null);
   let sseTimer = useRef(null);
 
@@ -52,12 +53,15 @@ export const useSse = path => {
     /* 监听消息 */
     sseInstanceRef.current.addEventListener('message', event => {
       try {
-        const data = JSON.parse(event.data);
-        console.log('SSE message', data);
+        const result = JSON.parse(event.data);
+        console.log('SSE message', result.data);
 
-        if (Array.isArray(data)) {
-          setCloudSessions(data);
-          setLocalSession(data);
+        if (Array.isArray(result?.data)) {
+          const list = result.data;
+          setUpdateKey();
+          setCloudSessions(list);
+          setLocalSession(list);
+          batchDisplayMsgNotifications(list);
         }
       } catch (error) {
         console.log('SSE message parse error', error);

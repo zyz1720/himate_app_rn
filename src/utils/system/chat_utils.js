@@ -94,19 +94,20 @@ export const decryptMsg = (content, secret) => {
 };
 
 /* 格式化消息类型 */
-export const showMessageText = (content, type, secret) => {
+export const showMessageText = message => {
+  const {content, msg_type, msg_secret} = message || {};
   if (!content) {
     return `[${i18n.t('chat.empty_chat')}]`;
   }
   const msgTypeMap = {
-    text: decryptMsg(content, secret),
+    text: msg_secret && content ? decryptMsg(content, msg_secret) : content,
     image: `[${i18n.t('chat.msg_type_image')}]`,
     video: `[${i18n.t('chat.msg_type_video')}]`,
     audio: `[${i18n.t('chat.msg_type_audio')}]`,
     file: `[${i18n.t('chat.msg_type_file')}]`,
     other: `[${i18n.t('chat.msg_type_other')}]`,
   };
-  return msgTypeMap[type] || '';
+  return msgTypeMap[msg_type] || '';
 };
 
 /* 格式化云端消息为本地消息 */
@@ -204,8 +205,8 @@ export const formatLocalMsgToTmp = (messages = []) => {
   });
 };
 
-/* 处理文件类消息 */
-export const handleMessage = async (
+/* 处理消息 */
+export const processMessage = async (
   message,
   {onProgress = () => {}, setUploadId = () => {}, setUploadIds = () => {}},
 ) => {
@@ -247,7 +248,7 @@ export const handleMessage = async (
   }
 };
 
-/* 处理文件类消息 */
+/* 格式化本地会话为临时会话 */
 export const formatLocalSessionToTmp = (sessions = []) => {
   return sessions.map(session => {
     const {
@@ -281,6 +282,23 @@ export const formatLocalSessionToTmp = (sessions = []) => {
         userId,
         lastSenderRemarks,
       },
+    };
+  });
+};
+
+/* 格式化临时会话为本地会话 */
+export const formatSessionToNotification = (sessions = []) => {
+  return sessions.map(item => {
+    const {session_id, unread_count, lastMsg} = item?.session || {};
+    const {session_avatar, session_name, lastSenderRemarks} =
+      item?.sessionExtra || {};
+    return {
+      session_name: session_name || '',
+      session_avatar: session_avatar || '',
+      session_id: session_id || '',
+      unread_count: unread_count || 0,
+      text: showMessageText(lastMsg) || '',
+      lastSenderRemarks: lastSenderRemarks || '',
     };
   });
 };

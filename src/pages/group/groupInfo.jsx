@@ -212,32 +212,40 @@ const GroupInfo = ({navigation, route}) => {
 
   // 同步聊天记录
   const [loadingAll, setLoadingAll] = useState(false);
-
+  const pageSize = 100;
   const getCouldChatHistory = async current => {
     try {
       setLoadingAll(true);
       const res = await getSessionMessages(session_id, {
         current: current,
-        pageSize: 100,
+        pageSize: pageSize,
       });
       if (res.code === 0) {
-        const list = res.data.list || [];
+        const list = res.data.list;
+        if (list.length === 0) {
+          showToast(t('empty.chat'), 'warning');
+          navigation.navigate('Msg');
+          return;
+        }
         const newList = formatCloudMsgToLocal(list, session_id);
         setLocalMessages(newList);
-        if (list.length < 100) {
+        if (list.length < pageSize) {
           showToast(t('mate.sync_success'), 'success');
+          setLoadingAll(false);
           navigation.navigate('Msg');
           return;
         }
         await delay();
-        getCouldChatHistory(current + 1);
+        return getCouldChatHistory(current + 1);
       }
+      setLoadingAll(false);
+      showToast(t('mate.sync_failed'), 'error');
       return;
     } catch (error) {
       console.error(error);
-      return;
-    } finally {
       setLoadingAll(false);
+      showToast(t('mate.sync_failed'), 'error');
+      return;
     }
   };
 
