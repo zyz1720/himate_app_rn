@@ -36,7 +36,7 @@ export const checkPermissions = async () => {
       ];
     }
     const statuses = await checkMultiple(permissions);
-    const notificationStatus = await checkNotifications();
+    const {status: notificationStatus} = await checkNotifications();
     if (Platform.OS === 'android') {
       permissionObj.accessCamera =
         statuses[PERMISSIONS.ANDROID.CAMERA] === 'granted';
@@ -154,7 +154,7 @@ export const requestNotifyPermission = async () => {
       return false;
     }
     if (Platform.OS === 'android') {
-      const status = await requestNotifications();
+      const {status} = await requestNotifications();
       if (status !== 'granted') {
         openSettings().catch(() => console.warn('打开设置失败'));
       }

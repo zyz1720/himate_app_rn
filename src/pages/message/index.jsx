@@ -16,16 +16,9 @@ import {
 } from '@api/session';
 import {useToast} from '@components/common/useToast';
 import {
-  decryptMsg,
-  formatCloudMsg,
   showMessageText,
   formatLocalSessionToTmp,
 } from '@utils/system/chat_utils';
-import {
-  onDisplayRealMsg,
-  cancelNotification,
-  playSystemSound,
-} from '@utils/system/notification';
 import {formatDateTime} from '@utils/common/time_utils';
 import {useConfigStore} from '@store/configStore';
 import {useChatMsgStore} from '@store/chatMsgStore';
@@ -42,14 +35,14 @@ import {useIsFocused} from '@react-navigation/native';
 import Feather from 'react-native-vector-icons/Feather';
 
 const Msg = ({navigation}) => {
-  const {envConfig, msgSecretKey} = useConfigStore();
+  const {envConfig} = useConfigStore();
   const {notRemindSessionIds, setNotRemindSessionIds, updateKey} =
     useChatMsgStore();
   const {showToast} = useToast();
   const {t} = useTranslation();
   const isFocused = useIsFocused();
 
-  const {list, onEndReached, loading, onRefresh, refreshData} =
+  const {list, onEndReached, loading, onRefresh} =
     useInfiniteScroll(getUserSessions);
 
   const [sessions, setSessions] = useState([]);
@@ -132,7 +125,6 @@ const Msg = ({navigation}) => {
 
   useEffect(() => {
     refreshLocalSessions();
-    return () => subscription.remove();
   }, [updateKey]);
 
   useEffect(() => {
@@ -144,6 +136,7 @@ const Msg = ({navigation}) => {
     if (isFocused) {
       refreshLocalSessions();
     }
+    return () => subscription.remove();
   }, [isFocused]);
 
   /* 列表元素 */

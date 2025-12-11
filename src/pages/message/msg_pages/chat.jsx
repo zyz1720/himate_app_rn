@@ -5,6 +5,7 @@ import {GiftedChat, Message} from 'react-native-gifted-chat';
 import {useSocketStore} from '@store/socketStore';
 import {useToast} from '@components/common/useToast';
 import {isEmptyObject} from '@utils/common/object_utils';
+import {getNewElementsWithSet} from '@utils/common/array_utils';
 import {
   encryptMsg,
   formatCloudMsgToLocal,
@@ -21,6 +22,7 @@ import {
 import {useConfigStore} from '@store/configStore';
 import {useUserStore} from '@store/userStore';
 import {useSettingStore} from '@store/settingStore';
+import {useChatMsgStore} from '@store/chatMsgStore';
 import {getSelfGroupMember} from '@api/group_member';
 import {MemberStatusEnum, ChatTypeEnum} from '@const/database_enum';
 import {useTranslation} from 'react-i18next';
@@ -44,27 +46,26 @@ const Chat = React.memo(({navigation, route}) => {
   const {session_id, primaryId, search_msg_cid} = route.params;
 
   const {t} = useTranslation();
-  const {userInfo} = useUserStore();
-  const {envConfig, msgSecretKey} = useConfigStore();
-  const {isEncryptMsg} = useSettingStore();
   const {showToast} = useToast();
+
+  const {userInfo} = useUserStore();
+  const {envConfig} = useConfigStore();
+  const {isEncryptMsg} = useSettingStore();
   const {socket, isConnected} = useSocketStore();
+  const {setNowJoinSession, removeNowJoinSession, setUpdateKey} =
+    useChatMsgStore();
 
   const [chatMessages, setChatMessages] = useState([]);
   const [content, setContent] = useState('');
-
   const [userInGroupInfo, setUserInGroupInfo] = useState({});
-
   const [localMsgCount, setLocalMsgCount] = useState(0);
   const [msgsLoading, setMsgsLoading] = useState(false);
-
   const [uploadIds, setUploadIds] = useState([]);
   const [nowUploadId, setNowUploadId] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
-
   const [nowPlayAudioId, setNowPlayAudioId] = useState(null);
-
   const [showActions, setShowActions] = useState(false);
+
   // 获取自己在群中的信息
   const getSelfGroupMemberInfo = async _session_id => {
     try {
@@ -132,7 +133,7 @@ const Chat = React.memo(({navigation, route}) => {
   const onLongPressAvatar = User => {
     if (!isEmptyObject(userInGroupInfo)) {
       Vibration.vibrate(50);
-      setContent(prev => prev + `@${User.user_name} `);
+      setContent(prev => prev + `@${User.name} `);
     }
   };
 
@@ -181,8 +182,8 @@ const Chat = React.memo(({navigation, route}) => {
         const tmpMsgs = formatLocalMsgToTmp(msgs);
         setLocalMessages(msgs);
         appendTmpMessage(tmpMsgs);
-        updateSessionLastMsg(_session_id, msgs[msgs.length - 1]);
-        readMessage({ids: msgs.map(msg => msg.id), session_id: _session_id});
+        const msgIds = msgs.map(msg => msg.id);
+        readMessage({ids: msgIds, session_id: _session_id});
       });
     } catch (error) {
       console.error(error);
@@ -332,8 +333,7 @@ const Chat = React.memo(({navigation, route}) => {
   /* 获取本地消息 */
   const getLocalMsgList = _session_id => {
     const localMsgList = getLocalMessages(_session_id);
-    console.log('getLocalMsgList', localMsgList);
-
+    // console.log('getLocalMsgList', localMsgList);
     const tmpMsgList = formatLocalMsgToTmp(localMsgList);
     appendTmpMessage(tmpMsgList);
   };
@@ -387,6 +387,12 @@ const Chat = React.memo(({navigation, route}) => {
       getLocalMsgList(session_id);
       getSelfGroupMemberInfo(session_id);
       resetUnreadCount(session_id);
+      setNowJoinSession(session_id);
+
+      return () => {
+        resetUnreadCount(session_id).then(() => setUpdateKey());
+        removeNowJoinSession(session_id);
+      };
     }
   }, [session_id]);
 

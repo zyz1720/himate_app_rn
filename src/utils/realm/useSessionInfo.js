@@ -14,19 +14,23 @@ export const setLocalSession = (sessions = []) => {
         'session_info',
         sessionInfo.id,
       );
+
       if (existSession) {
         delete sessionInfo.id;
-        if (isLatest) {
-          sessionInfo.unread_count = existSession?.unread_count || 0 + 1;
-        }
         realm.write(() => {
           Object.assign(existSession, sessionInfo);
+          if (isLatest) {
+            existSession.unread_count = (existSession?.unread_count || 0) + 1;
+          }
           existSession.updated_at = new Date();
         });
       } else {
         realm.write(() => {
           sessionInfo.created_at = new Date();
           sessionInfo.updated_at = new Date();
+          if (isLatest) {
+            sessionInfo.unread_count = 1;
+          }
           realm.create('session_info', sessionInfo);
         });
       }
@@ -92,33 +96,41 @@ export const deleteLocalSession = session_id => {
 
 /* 重置会话的已读消息数 */
 export const resetUnreadCount = session_id => {
-  try {
-    const existSession = realm.objects('session_info', session_id);
-    realm.write(() => {
-      existSession.forEach(item => {
-        item.unread_count = 0;
+  return new Promise((resolve, reject) => {
+    try {
+      const existSession = realm
+        .objects('session_info')
+        .find(sessionObj => sessionObj.session_id === session_id);
+      realm.write(() => {
+        existSession.unread_count = 0;
+        resolve(true);
       });
-    });
-  } catch (error) {
-    console.error('删除本地会话失败', error);
-  }
+    } catch (error) {
+      console.error('删除本地会话失败', error);
+      reject(error);
+    }
+  });
 };
 
 /* 更新会话的最后一条消息 */
 export const updateSessionLastMsg = (session_id, lastMsg = {}) => {
-  try {
-    const lastMsgContent = showMessageText(lastMsg);
-    if (isEmptyString(lastMsgContent)) {
-      return;
-    }
-    const existSession = realm.objects('session_info', session_id);
-    realm.write(() => {
-      existSession.forEach(item => {
-        item.last_msg_content = lastMsgContent;
-        item.updated_at = new Date();
+  return new Promise((resolve, reject) => {
+    try {
+      const lastMsgContent = showMessageText(lastMsg);
+      if (isEmptyString(lastMsgContent)) {
+        resolve(true);
+      }
+      const existSession = realm
+        .objects('session_info')
+        .find(sessionObj => sessionObj.session_id === session_id);
+      realm.write(() => {
+        existSession.last_msg_content = lastMsgContent;
+        existSession.updated_at = new Date();
+        resolve(true);
       });
-    });
-  } catch (error) {
-    console.error('删除本地会话失败', error);
-  }
+    } catch (error) {
+      console.error('删除本地会话失败', error);
+      reject(error);
+    }
+  });
 };

@@ -38,13 +38,13 @@ export const onDisplayRealMsg = async message => {
 
   await notifee.displayNotification({
     title: session_name + unReadText,
-    body: (lastSenderRemarks || '') + text,
+    body: (lastSenderRemarks ? lastSenderRemarks + ': ' : '') + text,
     android: {
       channelId,
       importance: AndroidImportance.HIGH,
       timestamp: Date.now(), // 8 minutes ago
       showTimestamp: true,
-      largeIcon: envConfig?.STATIC_URL + session_avatar,
+      largeIcon: envConfig.STATIC_URL + session_avatar,
       pressAction: {
         id: session_id,
         mainComponent: appName,
@@ -55,13 +55,16 @@ export const onDisplayRealMsg = async message => {
 
 // 批量处理通知
 export const batchDisplayMsgNotifications = async messages => {
-  const {notRemindSessionIds} = useChatMsgStore.getState();
+  const {notRemindSessionIds, nowJoinSessions} = useChatMsgStore.getState();
   const toBeDisplayedMsgs = formatSessionToNotification(messages);
-  for (const msg of toBeDisplayedMsgs) {
-    if (notRemindSessionIds.includes(msg.session_id)) {
+  for (const item of toBeDisplayedMsgs) {
+    if (
+      notRemindSessionIds.includes(item.id) ||
+      nowJoinSessions.includes(item.session_id)
+    ) {
       continue;
     }
-    await onDisplayRealMsg(msg);
+    await onDisplayRealMsg(item);
     await playSystemSound();
   }
 };

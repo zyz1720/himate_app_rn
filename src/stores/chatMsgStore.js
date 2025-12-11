@@ -7,6 +7,7 @@ const defaultState = {
   updateKey: 'update_key', // 更新key，用于刷新会话列表
   cloudSessions: [], // 云端会话列表
   notRemindSessionIds: [], // 不用提醒的会话id列表
+  nowJoinSessions: [], // 现在加入的会话session_id
 };
 
 export const useChatMsgStore = create(
@@ -48,6 +49,21 @@ export const useChatMsgStore = create(
             if (index !== -1) {
               state.notRemindSessionIds.splice(index, 1);
             }
+          }
+          return state;
+        }),
+      setNowJoinSession: session_id =>
+        set(state => {
+          if (!state.nowJoinSessions.includes(session_id)) {
+            state.nowJoinSessions.push(session_id);
+          }
+          return state;
+        }),
+      removeNowJoinSession: session_id =>
+        set(state => {
+          const index = state.nowJoinSessions.indexOf(session_id);
+          if (index !== -1) {
+            state.nowJoinSessions.splice(index, 1);
           }
           return state;
         }),

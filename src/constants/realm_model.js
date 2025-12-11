@@ -15,6 +15,7 @@ export class SessionInfo extends Realm.Object {
       unread_count: 'int?',
       lastSenderRemarks: 'string?',
       last_msg_content: 'string?',
+      update_time: 'string',
       created_at: 'date',
       updated_at: 'date',
     },

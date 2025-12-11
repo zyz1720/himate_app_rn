@@ -50,6 +50,11 @@ export const useSocketStore = create(set => ({
       set({isConnected: false, socket: null});
       console.log('socket disconnected');
     });
+
+    /* 监听错误 */
+    socketInstance.on('error', error => {
+      console.log('socket error', error);
+    });
   },
 
   socketDisconnect: () => {

@@ -262,6 +262,7 @@ export const formatLocalSessionToTmp = (sessions = []) => {
       unread_count,
       last_msg_content,
       lastSenderRemarks,
+      update_time,
       created_at,
       updated_at,
     } = session || {};
@@ -271,6 +272,7 @@ export const formatLocalSessionToTmp = (sessions = []) => {
         session_id,
         chat_type,
         unread_count,
+        update_time,
         created_at,
         updated_at,
         last_msg_content,
@@ -286,19 +288,20 @@ export const formatLocalSessionToTmp = (sessions = []) => {
   });
 };
 
-/* 格式化临时会话为本地会话 */
+/* 格式化会话为通知 */
 export const formatSessionToNotification = (sessions = []) => {
   return sessions.map(item => {
-    const {session_id, unread_count, lastMsg} = item?.session || {};
+    const {id, session_id, unread_count, lastMsg} = item?.session || {};
     const {session_avatar, session_name, lastSenderRemarks} =
       item?.sessionExtra || {};
     return {
+      id: id,
       session_name: session_name || '',
       session_avatar: session_avatar || '',
-      session_id: session_id || '',
+      session_id: session_id,
       unread_count: unread_count || 0,
-      text: showMessageText(lastMsg) || '',
-      lastSenderRemarks: lastSenderRemarks || '',
+      text: showMessageText(lastMsg),
+      lastSenderRemarks: lastSenderRemarks,
     };
   });
 };
