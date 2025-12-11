@@ -18,7 +18,7 @@ import {
 } from '@api/group_member';
 import {uploadFile} from '@utils/system/file_utils';
 import {formatCloudMsgToLocal} from '@utils/system/chat_utils';
-import {getSessionsMessages} from '@api/session';
+import {getSessionMessages} from '@api/session';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
 import {GroupRoleEnum, FileUseTypeEnum} from '@const/database_enum';
@@ -216,7 +216,7 @@ const GroupInfo = ({navigation, route}) => {
   const getCouldChatHistory = async current => {
     try {
       setLoadingAll(true);
-      const res = await getSessionsMessages(session_id, {
+      const res = await getSessionMessages(session_id, {
         current: current,
         pageSize: 100,
       });

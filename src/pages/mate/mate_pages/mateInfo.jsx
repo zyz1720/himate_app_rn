@@ -172,11 +172,11 @@ const MateInfo = ({navigation, route}) => {
                 </Text>
               ) : null}
               <Text white text70BO numberOfLines={1}>
-                {t('user.user_name')}: {otherUserInfo?.user_name}
+                {t('user.user_name')}: {otherUserInfo?.user_name || '-'}
               </Text>
               <View width={166}>
                 <Text white text80 numberOfLines={1}>
-                  {t('user.account')}: {otherUserInfo?.self_account}
+                  {t('user.account')}: {otherUserInfo?.self_account || '-'}
                 </Text>
               </View>
               <View flexS row marginT-4>
@@ -201,7 +201,8 @@ const MateInfo = ({navigation, route}) => {
                     />
                   ) : null}
                   <Text marginL-4 white text90>
-                    {otherUserInfo?.age + t('user.age_num')}
+                    {otherUserInfo?.age || '-'}
+                    {t('user.age_num')}
                   </Text>
                 </View>
               </View>

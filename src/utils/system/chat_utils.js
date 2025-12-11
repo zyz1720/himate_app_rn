@@ -246,3 +246,41 @@ export const handleMessage = async (
     }
   }
 };
+
+/* 处理文件类消息 */
+export const formatLocalSessionToTmp = (sessions = []) => {
+  return sessions.map(session => {
+    const {
+      id,
+      session_id,
+      session_name,
+      session_avatar,
+      chat_type,
+      groupId,
+      userId,
+      unread_count,
+      last_msg_content,
+      lastSenderRemarks,
+      created_at,
+      updated_at,
+    } = session || {};
+    return {
+      session: {
+        id,
+        session_id,
+        chat_type,
+        unread_count,
+        created_at,
+        updated_at,
+        last_msg_content,
+      },
+      sessionExtra: {
+        session_name,
+        session_avatar,
+        groupId,
+        userId,
+        lastSenderRemarks,
+      },
+    };
+  });
+};

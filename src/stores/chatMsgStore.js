@@ -3,7 +3,8 @@ import {persist, createJSONStorage} from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const defaultState = {
-  
+  cloudSession: {}, // 云端会话
+  cloudSessions: [], // 云端会话列表
   notRemindSessionIds: [], // 不用提醒的会话id列表
 };
 
@@ -11,6 +12,32 @@ export const useChatMsgStore = create(
   persist(
     set => ({
       ...defaultState,
+      setCloudSession: session => set({cloudSession: session}),
+      setCloudSessions: (data = []) =>
+        set(state => {
+          data.forEach(sessionWithExtra => {
+            const {session} = sessionWithExtra;
+            const index = state.cloudSessions.findIndex(
+              item => item.session.id === session.id,
+            );
+            if (index !== -1) {
+              state.cloudSessions[index] = sessionWithExtra;
+            } else {
+              state.cloudSessions.unshift(sessionWithExtra);
+            }
+          });
+          return state;
+        }),
+      removeCloudSession: sessionId =>
+        set(state => {
+          const index = state.cloudSessions.findIndex(
+            item => item.id === sessionId,
+          );
+          if (index !== -1) {
+            state.cloudSessions.splice(index, 1);
+          }
+          return state;
+        }),
       setNotRemindSessionIds: sessionId =>
         set(state => {
           if (!state.notRemindSessionIds.includes(sessionId)) {

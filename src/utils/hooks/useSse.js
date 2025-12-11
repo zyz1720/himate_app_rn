@@ -1,12 +1,15 @@
 import {useState, useRef} from 'react';
 import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
+import {useChatMsgStore} from '@store/chatMsgStore';
+import {setLocalSession} from '@utils/realm/useSessionInfo';
 import EventSource from 'react-native-sse';
 
 export const useSse = path => {
   const {token_type, access_token} = useUserStore();
   const {envConfig} = useConfigStore();
   const [isConnected, setIsConnected] = useState(false);
+  const {setCloudSessions} = useChatMsgStore();
   let sseInstanceRef = useRef(null);
   let sseTimer = useRef(null);
 
@@ -48,7 +51,17 @@ export const useSse = path => {
 
     /* 监听消息 */
     sseInstanceRef.current.addEventListener('message', event => {
-      console.log('sse message', event);
+      try {
+        const data = JSON.parse(event.data);
+        console.log('SSE message', data);
+
+        if (Array.isArray(data)) {
+          setCloudSessions(data);
+          setLocalSession(data);
+        }
+      } catch (error) {
+        console.log('SSE message parse error', error);
+      }
     });
   };
 

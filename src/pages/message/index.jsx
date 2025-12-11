@@ -9,12 +9,17 @@ import {
   TouchableOpacity,
   Badge,
 } from 'react-native-ui-lib';
-import {getUserSessions} from '@api/session';
+import {
+  getUserSessions,
+  getSessionUnreadMsgs,
+  readSessionUnreadMsgs,
+} from '@api/session';
 import {useToast} from '@components/common/useToast';
 import {
   decryptMsg,
   formatCloudMsg,
   showMessageText,
+  formatLocalSessionToTmp,
 } from '@utils/system/chat_utils';
 import {
   onDisplayRealMsg,
@@ -22,26 +27,67 @@ import {
   playSystemSound,
 } from '@utils/system/notification';
 import {formatDateTime} from '@utils/common/time_utils';
-import {useIsFocused} from '@react-navigation/native';
 import {useConfigStore} from '@store/configStore';
 import {useChatMsgStore} from '@store/chatMsgStore';
 import {useTranslation} from 'react-i18next';
 import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
-import {setLocalSession} from '@utils/realm/useSessionInfo';
+import {
+  setLocalSession,
+  getLocalSessions,
+  deleteLocalSession,
+} from '@utils/realm/useSessionInfo';
+import {delay} from '@utils/common/time_utils';
 import Feather from 'react-native-vector-icons/Feather';
 
 const Msg = ({navigation}) => {
-  const isFocused = useIsFocused();
   const {envConfig, msgSecretKey} = useConfigStore();
-  const {notRemindSessionIds, setNotRemindSessionIds} = useChatMsgStore();
+  const {notRemindSessionIds, setNotRemindSessionIds, cloudSessions} =
+    useChatMsgStore();
   const {showToast} = useToast();
   const {t} = useTranslation();
 
   const {list, onEndReached, loading, onRefresh, refreshData} =
     useInfiniteScroll(getUserSessions);
 
+  const [sessions, setSessions] = useState([]);
+
+  // 获取本地会话
+  const processLocalSessions = () => {
+    const localSessions = getLocalSessions();
+    const tmpSessions = formatLocalSessionToTmp(localSessions);
+    setSessions(tmpSessions);
+  };
+
   /* 向服务器确认收到消息 */
-  const readMsg = async (msgId, sessionId, userId) => {};
+  const pageSize = 100;
+  const readSessionAllUnreadMsgs = async (current, session_id) => {
+    try {
+      const res = await getSessionUnreadMsgs(session_id, {
+        current: current,
+        pageSize: pageSize,
+      });
+      if (res.code === 0) {
+        const msgs = res.data.list;
+        if (msgs.length === 0) {
+          return;
+        }
+        const unreadMsgIds = msgs.map(item => item.id);
+        await readSessionUnreadMsgs({
+          session_id,
+          ids: unreadMsgIds,
+        });
+        if (msgs.length < pageSize) {
+          return;
+        }
+        await delay();
+        return readSessionAllUnreadMsgs(current + 1, session_id);
+      }
+      return;
+    } catch (error) {
+      console.error(error);
+      return;
+    }
+  };
 
   /* 本地确认收到消息 */
   const readListMsg = async sessionInfo => {};
@@ -53,13 +99,6 @@ const Msg = ({navigation}) => {
     appState.current = nextAppState;
     setAppStateVisible(appState.current);
   });
-
-  useEffect(() => {
-    if (isFocused) {
-      refreshData();
-    }
-    return () => subscription.remove();
-  }, [isFocused]);
 
   /* 强制显示提醒 */
   const [remindSessions, setRemindSessions] = useState([]);
@@ -90,6 +129,20 @@ const Msg = ({navigation}) => {
     });
   };
 
+  useEffect(() => {
+    console.log('cloudSessions', cloudSessions);
+
+    processLocalSessions();
+    return () => subscription.remove();
+  }, [cloudSessions]);
+
+  useEffect(() => {
+    console.log('setLocalSession', list);
+
+    setLocalSession(list);
+    processLocalSessions();
+  }, [list]);
+
   /* 列表元素 */
   const renderSessionItem = ({item}) => {
     const {session = {}, sessionExtra = {}} = item || {};
@@ -113,14 +166,17 @@ const Msg = ({navigation}) => {
           {
             text: t('common.delete'),
             background: Colors.error,
-            onPress: () => {},
+            onPress: () => {
+              deleteLocalSession(session.session_id);
+              processLocalSessions();
+            },
           },
         ]}
         leftItem={{
           text: t('chat.read'),
           background: Colors.primary,
           onPress: () => {
-            readListMsg(session);
+            readSessionAllUnreadMsgs(1, session.session_id);
           },
         }}>
         <View bg-white>
@@ -178,11 +234,12 @@ const Msg = ({navigation}) => {
                   {sessionExtra?.lastSenderRemarks
                     ? sessionExtra.lastSenderRemarks + ': '
                     : null}
-                  {showMessageText(
-                    session.lastMsg?.content,
-                    session.lastMsg?.msg_type,
-                    session.lastMsg?.msg_secret,
-                  )}
+                  {session?.last_msg_content ||
+                    showMessageText(
+                      session.lastMsg?.content,
+                      session.lastMsg?.msg_type,
+                      session.lastMsg?.msg_secret,
+                    )}
                 </Text>
                 <Text text90L grey40>
                   {formatDateTime(session.update_time)}
@@ -195,10 +252,6 @@ const Msg = ({navigation}) => {
     );
   };
 
-  useEffect(() => {
-    setLocalSession(list);
-  }, [list]);
-
   return (
     <View>
       <FlatList
@@ -209,8 +262,8 @@ const Msg = ({navigation}) => {
             onRefresh={onRefresh}
           />
         }
-        data={list}
-        keyExtractor={(item, index) => `${item?.id}-${index}`}
+        data={sessions}
+        keyExtractor={(_, index) => index.toString()}
         onEndReached={onEndReached}
         renderItem={renderSessionItem}
         ListFooterComponent={<View marginB-200 />}

@@ -4,6 +4,7 @@ import {getMateList, getApplyList} from '@api/mate';
 import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
 import {useIsFocused} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
+import {getLocalMates, setLocalMateInfo} from '@utils/realm/useMateInfo';
 import ListItem from '@components/common/ListItem';
 import MateList from '@components/mate/MateList';
 
@@ -11,6 +12,7 @@ const Mate = ({navigation}) => {
   const isFocused = useIsFocused();
   const {t} = useTranslation();
 
+  const [mateList, setMateList] = useState([]);
   /*   好友列表 */
   const {list, loading, onRefresh, refreshData, onEndReached} =
     useInfiniteScroll(getMateList);
@@ -34,6 +36,17 @@ const Mate = ({navigation}) => {
       refreshData();
     }
   }, [isFocused]);
+
+  useEffect(() => {
+    if (list.length) {
+      setMateList(list);
+      setLocalMateInfo(list);
+    }
+  }, [list]);
+
+  useEffect(() => {
+    setMateList(getLocalMates());
+  }, []);
 
   return (
     <View>
@@ -64,7 +77,7 @@ const Mate = ({navigation}) => {
         <MateList
           loading={loading}
           onRefresh={onRefresh}
-          originalList={list}
+          originalList={mateList}
           onEndReached={onEndReached}
           onConfirm={item => {
             navigation.navigate('MateInfo', {

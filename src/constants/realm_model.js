@@ -13,6 +13,7 @@ export class SessionInfo extends Realm.Object {
       groupId: 'int?',
       userId: 'int?',
       unread_count: 'int?',
+      lastSenderRemarks: 'string?',
       last_msg_content: 'string?',
       created_at: 'date',
       updated_at: 'date',
@@ -70,6 +71,22 @@ export class LocalMusic extends Realm.Object {
       title: 'string',
       file_key: 'string',
       created_at: 'date',
+    },
+  };
+}
+
+export class MateInfo extends Realm.Object {
+  static schema = {
+    name: 'mate_info',
+    primaryKey: 'id',
+    properties: {
+      id: 'int',
+      mate_id: 'string',
+      user_id: 'int',
+      user_avatar: 'string?',
+      remarks: 'string',
+      created_at: 'date',
+      updated_at: 'date',
     },
   };
 }

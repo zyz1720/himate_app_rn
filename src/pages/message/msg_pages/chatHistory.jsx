@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {View, Card, Colors} from 'react-native-ui-lib';
 import {useToast} from '@components/common/useToast';
-import {getSessionsMessages} from '@api/session';
+import {getSessionMessages} from '@api/session';
 import {formatCloudMsgToLocal} from '@utils/system/chat_utils';
 import {delay} from '@utils/common/time_utils';
 import {deleteLocalMessages, setLocalMessages} from '@utils/realm/useChatMsg';
@@ -25,35 +25,37 @@ const ChatHistory = ({navigation, route}) => {
 
   /* 获取历史消息 */
   const [loadingAll, setLoadingAll] = useState(false);
-
+  const pageSize = 100;
   const getCouldChatHistory = async current => {
     try {
       setLoadingAll(true);
-      const res = await getSessionsMessages(session_id, {
+      const res = await getSessionMessages(session_id, {
         current: current,
-        pageSize: 100,
+        pageSize: pageSize,
       });
       if (res.code === 0) {
-        const newList = [];
-        const list = res.data.list || [];
-        list.forEach(item => {
-          newList.push(formatCloudMsgToLocal(item, session_id));
-        });
+        const list = res.data.list;
+        console.log('getCouldChatHistory', list);
+        if (list.length === 0) {
+          showToast(t('empty.chat'), 'warning');
+          navigation.navigate('Msg');
+          return;
+        }
+        const newList = formatCloudMsgToLocal(list, session_id);
         setLocalMessages(newList);
-        if (list.length < 100) {
+        if (list.length < pageSize) {
           showToast(t('mate.sync_success'), 'success');
+          setLoadingAll(false);
           navigation.navigate('Msg');
           return;
         }
         await delay();
-        getCouldChatHistory(current + 1);
+        return getCouldChatHistory(current + 1);
       }
       return;
     } catch (error) {
       console.error(error);
       return;
-    } finally {
-      setLoadingAll(false);
     }
   };
 

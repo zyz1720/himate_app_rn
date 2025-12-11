@@ -10,6 +10,8 @@ export const setLocalMessages = (messages = []) => {
     return;
   }
 
+  console.log('setLocalMessages', messages);
+
   try {
     for (let i = 0; i < messages.length; i++) {
       const message = messages[i];
