@@ -19,6 +19,7 @@ const BaseQRCode = ({navigation}) => {
             uri: envConfig.STATIC_URL + userInfo?.user_avatar,
           }}
           imageProps={{errorSource: require('@assets/images/empty.jpg')}}
+          backgroundColor={Colors.transparent}
           size={80}
         />
         <Text text60 marginT-12>

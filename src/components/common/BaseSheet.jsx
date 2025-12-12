@@ -3,7 +3,29 @@ import {ActionSheet, Button, Colors} from 'react-native-ui-lib';
 import {StyleSheet} from 'react-native';
 import {useTranslation} from 'react-i18next';
 
-const BaseSheet = props => {
+const styles = StyleSheet.create({
+  dialogStyle: {
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  optionsStyle: {
+    width: '100%',
+    paddingHorizontal: 16,
+  },
+  buttonStyle: {
+    marginTop: 6,
+    backgroundColor: Colors.white,
+    borderBottomColor: Colors.grey80,
+  },
+  borderBottom: {
+    borderBottomWidth: 1,
+  },
+  noBorder: {
+    borderBottomWidth: 0,
+  },
+});
+
+const BaseSheet = React.memo(props => {
   const {t} = useTranslation();
   const {
     visible = false,
@@ -42,27 +64,6 @@ const BaseSheet = props => {
       ]}
     />
   );
-};
-const styles = StyleSheet.create({
-  dialogStyle: {
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
-  optionsStyle: {
-    width: '100%',
-    paddingHorizontal: 16,
-  },
-  buttonStyle: {
-    marginTop: 6,
-    backgroundColor: Colors.white,
-    borderBottomColor: Colors.grey80,
-  },
-  borderBottom: {
-    borderBottomWidth: 1,
-  },
-  noBorder: {
-    borderBottomWidth: 0,
-  },
 });
 
 export default BaseSheet;

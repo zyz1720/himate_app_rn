@@ -112,11 +112,13 @@ const NewMate = ({navigation}) => {
         }}>
         <Avatar
           source={{
-            uri: envConfig.STATIC_URL + item.user.user_avatar,
+            uri: envConfig.STATIC_URL + item?.user?.user_avatar,
           }}
+          imageProps={{errorSource: require('@assets/images/empty.jpg')}}
+          backgroundColor={Colors.transparent}
         />
         <View marginL-10>
-          <Text text80BL>{item.user.user_name}</Text>
+          <Text text80BL>{item?.user?.user_name || ''}</Text>
           <View width={190}>
             <Text text90L marginT-5 grey30>
               {item.validate_msg}
@@ -168,11 +170,13 @@ const NewMate = ({navigation}) => {
         }}>
         <Avatar
           source={{
-            uri: envConfig.STATIC_URL + item.user.user_avatar,
+            uri: envConfig.STATIC_URL + item?.user?.user_avatar,
           }}
+          imageProps={{errorSource: require('@assets/images/empty.jpg')}}
+          backgroundColor={Colors.transparent}
         />
         <View marginL-10>
-          <Text text80BL>{item.remark}</Text>
+          <Text text80BL>{item?.remark || ''}</Text>
           <View width={210}>
             <Text text90L marginT-5 grey30>
               {item.validate_msg}

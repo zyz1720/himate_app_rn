@@ -39,5 +39,9 @@
     "unknown_user": "Unknown user",
     "empty_chat": "No chat records",
     "read_msg_error": "Failed to read message",
-    "unread_count": "{{count}} unread messages"
+    "unread_count": "{{count}} unread messages",
+    "copy_content": "Copy content",
+    "cancel_send": "Cancel send",
+    "retry_send": "Retry send",
+    "message_options": "Message options"
 }

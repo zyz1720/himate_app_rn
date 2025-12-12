@@ -163,6 +163,8 @@ const MateList = props => {
             source={{
               uri: envConfig.STATIC_URL + item.theOther.user_avatar,
             }}
+            imageProps={{errorSource: require('@assets/images/empty.jpg')}}
+            backgroundColor={Colors.transparent}
             size={40}
           />
           <Text marginL-10 text70>
@@ -185,6 +187,8 @@ const MateList = props => {
             source={{
               uri: envConfig.STATIC_URL + item.theOther.user_avatar,
             }}
+            imageProps={{errorSource: require('@assets/images/empty.jpg')}}
+            backgroundColor={Colors.transparent}
             size={40}
           />
           <Text marginL-10 text70>

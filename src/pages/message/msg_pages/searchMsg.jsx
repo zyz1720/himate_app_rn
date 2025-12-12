@@ -94,11 +94,11 @@ const SearchMsg = ({navigation, route}) => {
         }}>
         <View flexS row centerV>
           <Avatar
-            source={
-              item.sessionExtra?.session_avatar
-                ? {uri: envConfig.STATIC_URL + item.sessionExtra.session_avatar}
-                : require('@assets/images/empty.jpg')
-            }
+            source={{
+              uri: envConfig.STATIC_URL + item.sessionExtra?.session_avatar,
+            }}
+            imageProps={{errorSource: require('@assets/images/empty.jpg')}}
+            backgroundColor={Colors.transparent}
           />
           <View marginL-10 width={fullWidth * 0.78}>
             <View flexS row spread>

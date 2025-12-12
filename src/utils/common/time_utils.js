@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import i18n from 'i18next';
 
 /**
  * 格式化秒数
@@ -38,10 +39,27 @@ export const formatDateTime = inputDate => {
   const date = dayjs(inputDate);
   const now = dayjs();
   const isToday = date.isSame(now, 'day');
+  const isYesterday = date.isSame(now.subtract(1, 'day'), 'day');
+  const isThisWeek = date.isSame(now, 'week');
   const isSameYear = date.isSame(now, 'year');
 
   if (isToday) {
     return date.format('HH:mm');
+  } else if (isYesterday) {
+    return i18n.t('common.yesterday');
+  } else if (isThisWeek) {
+    // 显示星期几
+    const weekday = date.day();
+    const weekdayNames = {
+      0: i18n.t('common.sunday'),
+      1: i18n.t('common.monday'),
+      2: i18n.t('common.tuesday'),
+      3: i18n.t('common.wednesday'),
+      4: i18n.t('common.thursday'),
+      5: i18n.t('common.friday'),
+      6: i18n.t('common.saturday'),
+    };
+    return weekdayNames[weekday];
   } else if (isSameYear) {
     return date.format('MM/DD HH:mm');
   } else {

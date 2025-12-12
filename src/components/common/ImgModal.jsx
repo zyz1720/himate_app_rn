@@ -7,7 +7,7 @@ import {useToast} from '@components/common/useToast';
 import {downloadFile} from '@utils/system/file_utils';
 import ImageViewer from 'react-native-image-zoom-viewer';
 
-const ImgModal = props => {
+const ImgModal = React.memo(props => {
   const {
     visible = false,
     onClose = () => {},
@@ -58,6 +58,6 @@ const ImgModal = props => {
       />
     </Modal>
   );
-};
+});
 
 export default ImgModal;

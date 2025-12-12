@@ -456,7 +456,7 @@ const GroupInfo = ({navigation, route}) => {
             />
             <ListItem
               itemName={t('group.member_count', {
-                count: groupInfo?.members?.length,
+                count: groupInfo?.members?.length || 0,
               })}
               iconName={'group'}
               iconSize={20}

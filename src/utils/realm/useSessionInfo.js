@@ -55,13 +55,13 @@ export const getLocalSession = session_id => {
   }
 };
 
-/* 查询本地会话 */
+/* 查询所有本地会话 */
 export const getLocalSessions = () => {
   try {
     const sessionExtras = realm.objects('session_info').toJSON();
     return sessionExtras;
   } catch (error) {
-    console.error('查询本地会话失败', error);
+    console.error('查询所有本地会话失败', error);
     return [];
   }
 };
@@ -101,12 +101,16 @@ export const resetUnreadCount = session_id => {
       const existSession = realm
         .objects('session_info')
         .find(sessionObj => sessionObj.session_id === session_id);
+      if (!existSession) {
+        resolve(true);
+        return;
+      }
       realm.write(() => {
         existSession.unread_count = 0;
         resolve(true);
       });
     } catch (error) {
-      console.error('删除本地会话失败', error);
+      console.error('重置会话的已读消息数失败', error);
       reject(error);
     }
   });
@@ -123,13 +127,17 @@ export const updateSessionLastMsg = (session_id, lastMsg = {}) => {
       const existSession = realm
         .objects('session_info')
         .find(sessionObj => sessionObj.session_id === session_id);
+      if (!existSession) {
+        resolve(true);
+        return;
+      }
       realm.write(() => {
         existSession.last_msg_content = lastMsgContent;
         existSession.updated_at = new Date();
         resolve(true);
       });
     } catch (error) {
-      console.error('删除本地会话失败', error);
+      console.error('更新会话的最后一条消息失败', error);
       reject(error);
     }
   });

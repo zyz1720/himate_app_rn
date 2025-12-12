@@ -102,7 +102,12 @@ const AudioMsg = props => {
     <View style={styles.audioBut}>
       <TouchableOpacity
         onPress={async () => startPlay()}
-        onLongPress={onLongPress}
+        onLongPress={()=>{
+          onLongPress({
+            type: 'media',
+            url: currentMessage?.audio,
+          });
+        }}
         row
         centerV
         paddingV-6

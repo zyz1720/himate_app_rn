@@ -122,3 +122,17 @@ export const searchLocalMessages = keyword => {
     return [];
   }
 };
+
+/* 移除指定本地消息 */
+export const removeLocalMessage = clientMsgId => {
+  try {
+    realm.write(() => {
+      const msg = realm.objectForPrimaryKey('chat_msg', clientMsgId);
+      if (msg) {
+        realm.delete(msg);
+      }
+    });
+  } catch (error) {
+    console.error('删除本地消息失败', error);
+  }
+};

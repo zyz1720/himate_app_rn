@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, ActivityIndicator, Vibration} from 'react-native';
+import {StyleSheet, ActivityIndicator} from 'react-native';
 import {
   View,
   Colors,
@@ -12,12 +12,9 @@ import {formatSeconds} from '@utils/common/time_utils';
 import {createVideoThumbnail} from 'react-native-compressor';
 import {useTranslation} from 'react-i18next';
 import {useToast} from '@components/common/useToast';
-import {downloadFile} from '@utils/system/file_utils';
 import VideoModal from '@components/common/VideoModal';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Video from 'react-native-video';
-import BaseSheet from '@components/common/BaseSheet';
-import Clipboard from '@react-native-clipboard/clipboard';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 const VideoMsg = React.memo(props => {
@@ -26,6 +23,7 @@ const VideoMsg = React.memo(props => {
     uploadIds = [],
     nowUploadId = null,
     uploadProgress = 0,
+    onLongPress = () => {},
   } = props;
 
   const {t} = useTranslation();
@@ -36,17 +34,6 @@ const VideoMsg = React.memo(props => {
   const [videoLoading, setVideoLoading] = useState(true);
 
   const [videoVisible, setVideoVisible] = useState(false);
-  const [showActionSheet, setShowActionSheet] = useState(false);
-
-  const onSave = async url => {
-    showToast(t('component.image_saving'), 'success');
-    const pathRes = await downloadFile(url, {isInCameraRoll: true});
-    if (pathRes) {
-      showToast(t('component.save_to') + pathRes, 'success');
-    } else {
-      showToast(t('component.save_failed'), 'error');
-    }
-  };
 
   useEffect(() => {
     if (currentMessage?.video) {
@@ -88,8 +75,10 @@ const VideoMsg = React.memo(props => {
           <TouchableOpacity
             style={styles.videoControl}
             onLongPress={() => {
-              Vibration.vibrate(50);
-              setShowActionSheet(true);
+               onLongPress({
+                 type: 'media',
+                 url: currentMessage?.video,
+               });
             }}
             onPress={() => setVideoVisible(true)}>
             <AntDesign name="playcircleo" color={Colors.white} size={32} />
@@ -128,28 +117,6 @@ const VideoMsg = React.memo(props => {
           showToast(t('common.video_load_failed'), 'error');
           console.log(e);
         }}
-      />
-      {/* 保存文件弹窗 */}
-      <BaseSheet
-        title={t('component.save_file')}
-        visible={showActionSheet}
-        setVisible={setShowActionSheet}
-        actions={[
-          {
-            label: t('component.save_to_album'),
-            color: Colors.primary,
-            onPress: () => onSave(currentMessage.video),
-          },
-          {
-            label: t('common.copy_link'),
-            color: Colors.success,
-            onPress: () => {
-              Clipboard.setString(currentMessage.video);
-              setShowActionSheet(false);
-              showToast(t('common.copy_link_success'), 'success');
-            },
-          },
-        ]}
       />
     </>
   );

@@ -6,7 +6,7 @@ import {useConfigStore} from '@store/configStore';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import VideoPlayer from 'react-native-video-player';
 
-const VideoModal = props => {
+const VideoModal = React.memo(props => {
   const {
     visible = false,
     onClose = () => {},
@@ -52,7 +52,7 @@ const VideoModal = props => {
       </View>
     </Modal>
   );
-};
+});
 const styles = StyleSheet.create({
   BackBut: {
     position: 'absolute',

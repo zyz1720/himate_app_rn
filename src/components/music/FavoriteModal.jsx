@@ -86,6 +86,8 @@ const FavoriteModal = React.memo(props => {
                 source={{
                   uri: envConfig.STATIC_URL + userAvatar,
                 }}
+                imageProps={{errorSource: require('@assets/images/empty.jpg')}}
+                backgroundColor={Colors.transparent}
               />
               <Text text70 marginL-6 white>
                 {userName}

@@ -2,6 +2,7 @@ import React from 'react';
 import {ActivityIndicator} from 'react-native';
 import {Colors, Text, View} from 'react-native-ui-lib';
 import {useTranslation} from 'react-i18next';
+import {MsgTypeEnum} from '@const/database_enum';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 /* 自定义消息状态 */
@@ -23,7 +24,7 @@ const CustomTicks = ({message, uploadIds, nowUploadId, uploadProgress}) => {
       </View>
     );
   }
-  if (msg_type !== 'text') {
+  if (msg_type !== MsgTypeEnum.text) {
     if (uploadIds.includes(client_msg_id) && nowUploadId === client_msg_id) {
       return (
         <View flexG row center marginT-4>

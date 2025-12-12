@@ -1,7 +1,10 @@
 import {Buffer} from 'buffer';
-import {createRandomLetters, reverseString} from '@utils/common/string_utils';
-import {createRandomNumber} from '@utils/common/number_utils';
+import {reverseString} from '@utils/common/string_utils';
 import QuickCrypto from 'react-native-quick-crypto';
+
+export const createHash = str => {
+  return QuickCrypto.createHash('sha256').update(str).digest('hex');
+};
 
 /**
  * AES加密函数

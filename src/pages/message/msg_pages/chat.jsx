@@ -1,11 +1,10 @@
 import React, {useEffect, useState, useRef} from 'react';
 import {Vibration} from 'react-native';
-import {View} from 'react-native-ui-lib';
+import {View, Colors} from 'react-native-ui-lib';
 import {GiftedChat, Message} from 'react-native-gifted-chat';
 import {useSocketStore} from '@store/socketStore';
 import {useToast} from '@components/common/useToast';
 import {isEmptyObject} from '@utils/common/object_utils';
-import {getNewElementsWithSet} from '@utils/common/array_utils';
 import {
   encryptMsg,
   formatCloudMsgToLocal,
@@ -13,8 +12,13 @@ import {
   formatTmpMsgToLocal,
   createTmpMessage,
   processMessage,
+  messageIdGenerator,
 } from '@utils/system/chat_utils';
-import {setLocalMessages, getLocalMessages} from '@utils/realm/useChatMsg';
+import {
+  setLocalMessages,
+  getLocalMessages,
+  removeLocalMessage,
+} from '@utils/realm/useChatMsg';
 import {
   resetUnreadCount,
   updateSessionLastMsg,
@@ -24,8 +28,16 @@ import {useUserStore} from '@store/userStore';
 import {useSettingStore} from '@store/settingStore';
 import {useChatMsgStore} from '@store/chatMsgStore';
 import {getSelfGroupMember} from '@api/group_member';
-import {MemberStatusEnum, ChatTypeEnum} from '@const/database_enum';
+import {
+  MemberStatusEnum,
+  ChatTypeEnum,
+  MsgTypeEnum,
+} from '@const/database_enum';
 import {useTranslation} from 'react-i18next';
+import {downloadFile} from '@utils/system/file_utils';
+import BaseSheet from '@components/common/BaseSheet';
+import Clipboard from '@react-native-clipboard/clipboard';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import CustomDay from '@components/message/custom/CustomDay';
 import CustomLoadEarlier from '@components/message/custom/CustomLoadEarlier';
 import CustomBubble from '@components/message/custom/CustomBubble';
@@ -40,7 +52,8 @@ import CustomFileMessage from '@components/message/custom/CustomFileMessage';
 import VideoMsg from '@components/message/media/VideoMsg';
 import ImageMsg from '@components/message/media/ImageMsg';
 import AudioMsg from '@components/message/media/AudioMsg';
-import 'dayjs/locale/zh-cn';
+import 'dayjs/locale/zh';
+import 'dayjs/locale/en';
 
 const Chat = React.memo(({navigation, route}) => {
   const {session_id, primaryId, search_msg_cid} = route.params;
@@ -50,7 +63,7 @@ const Chat = React.memo(({navigation, route}) => {
 
   const {userInfo} = useUserStore();
   const {envConfig} = useConfigStore();
-  const {isEncryptMsg} = useSettingStore();
+  const {isEncryptMsg, language} = useSettingStore();
   const {socket, isConnected} = useSocketStore();
   const {setNowJoinSession, removeNowJoinSession, setUpdateKey} =
     useChatMsgStore();
@@ -65,6 +78,11 @@ const Chat = React.memo(({navigation, route}) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [nowPlayAudioId, setNowPlayAudioId] = useState(null);
   const [showActions, setShowActions] = useState(false);
+  const [showActionSheet, setShowActionSheet] = useState(false);
+  const [toBeSavedInfo, setToBeSavedInfo] = useState({type: '', url: ''});
+  const [msgActions, setMsgActions] = useState([]);
+  const [showMsgActionSheet, setShowMsgActionSheet] = useState(false);
+  const curMessageRef = useRef({});
 
   // 获取自己在群中的信息
   const getSelfGroupMemberInfo = async _session_id => {
@@ -76,50 +94,6 @@ const Chat = React.memo(({navigation, route}) => {
     } catch (error) {
       console.error(error);
     }
-  };
-
-  /* 自定义长按消息 */
-  const onLongPress = (context, currentMessage) => {
-    // if (currentMessage.msg_type === 'text') {
-    //   Vibration.vibrate(50);
-    //   const options = ['复制消息', '取消'];
-    //   const cancelButtonIndex = options.length - 1;
-    //   if (currentMessage.status === 'failed') {
-    //     options.unshift('取消发送');
-    //     options.unshift('重新发送');
-    //   }
-    //   context.actionSheet().showActionSheetWithOptions(
-    //     {
-    //       options,
-    //       cancelButtonIndex,
-    //     },
-    //     buttonIndex => {
-    //       const showMsghandle = currentMessage.status === 'failed';
-    //       if (showMsghandle && buttonIndex === 0) {
-    //         sendMessage(currentMessage?.text, 'text', true)
-    //           .then(() => {
-    //             removeMessage(currentMessage.clientMsg_id);
-    //             handleSystemMsg(null, false);
-    //           })
-    //           .catch(error => {
-    //             handleSystemMsg('发送失败！');
-    //             console.error(error);
-    //           });
-    //       }
-    //       if (showMsghandle && buttonIndex === 1) {
-    //         removeMessage(currentMessage.clientMsg_id);
-    //       }
-    //       if (
-    //         (showMsghandle && buttonIndex === 2) ||
-    //         (!showMsghandle && buttonIndex === 0)
-    //       ) {
-    //         Clipboard.setString(currentMessage.text);
-    //         showToast('已复制到剪贴板', 'success');
-    //         return;
-    //       }
-    //     },
-    //   );
-    // }
   };
 
   /* 点击头像 */
@@ -191,7 +165,7 @@ const Chat = React.memo(({navigation, route}) => {
   };
 
   /* 发送消息 */
-  const sendMessage = async (_content, msgType = 'text') => {
+  const sendMessage = async (_content, msgType = MsgTypeEnum.text) => {
     if (!_content) {
       showToast(t('chat.empty_msg'), 'error');
       return new Promise(resolve => {
@@ -223,7 +197,7 @@ const Chat = React.memo(({navigation, route}) => {
         const emitTimer = setTimeout(() => {
           clearTimeout(emitTimer);
           resolve(false);
-        }, 5000);
+        }, 10000);
 
         socket.emit('send-message', baseMsg, res => {
           clearTimeout(emitTimer);
@@ -275,6 +249,17 @@ const Chat = React.memo(({navigation, route}) => {
     });
   };
 
+  // 移除临时消息
+  const removeTmpMessage = message => {
+    setChatMessages(prevMsgs => {
+      const messageId = message?._id;
+      if (!messageId) {
+        return prevMsgs;
+      }
+      return prevMsgs.filter(msg => msg._id !== messageId);
+    });
+  };
+
   /* 追加临时消息 */
   const appendTmpMessage = (messages = []) => {
     setChatMessages(prev => {
@@ -287,6 +272,7 @@ const Chat = React.memo(({navigation, route}) => {
   /* 本地发送 */
   const onSend = async (messages = []) => {
     appendTmpMessage(messages);
+    console.log('onSend', messages);
     for (const message of messages) {
       try {
         const handleMsg = await processMessage(message, {
@@ -333,7 +319,6 @@ const Chat = React.memo(({navigation, route}) => {
   /* 获取本地消息 */
   const getLocalMsgList = _session_id => {
     const localMsgList = getLocalMessages(_session_id);
-    // console.log('getLocalMsgList', localMsgList);
     const tmpMsgList = formatLocalMsgToTmp(localMsgList);
     appendTmpMessage(tmpMsgList);
   };
@@ -361,12 +346,84 @@ const Chat = React.memo(({navigation, route}) => {
     }
   };
 
+  // 保存文件
+  const onSave = async info => {
+    showToast(t('common.saving'), 'success');
+    const pathRes = await downloadFile(info.url, {
+      isInCameraRoll: info.type === 'media',
+    });
+    if (pathRes) {
+      showToast(t('component.save_to') + pathRes, 'success');
+    } else {
+      showToast(t('component.save_failed'), 'error');
+    }
+  };
+
+  const messageOptions = [
+    {
+      label: t('chat.retry_send'),
+      color: Colors.primary,
+      onPress: () => {
+        delete curMessageRef.current?.status;
+        removeTmpMessage(curMessageRef.current);
+        removeLocalMessage(curMessageRef.current._id);
+        onSend([curMessageRef.current]);
+        setShowMsgActionSheet(false);
+      },
+    },
+    {
+      label: t('chat.cancel_send'),
+      color: Colors.error,
+      onPress: () => {
+        removeTmpMessage(curMessageRef.current);
+        removeLocalMessage(curMessageRef.current._id);
+        setShowMsgActionSheet(false);
+      },
+    },
+    {
+      label: t('chat.copy_content'),
+      color: Colors.success,
+      onPress: () => {
+        Clipboard.setString(curMessageRef.current.text);
+        setShowMsgActionSheet(false);
+        showToast(t('common.copy_text_success'), 'success');
+      },
+    },
+  ];
+
+  /* 自定义长按消息 */
+  const onLongPressMsg = (_, currentMessage) => {
+    if (
+      currentMessage?.msg_type === MsgTypeEnum.text ||
+      !currentMessage?.msg_type
+    ) {
+      const showProgress = currentMessage.status === 'failed';
+      curMessageRef.current = currentMessage;
+      Vibration.vibrate(50);
+      if (showProgress) {
+        setMsgActions(messageOptions);
+      } else {
+        setMsgActions([messageOptions.at(-1)]);
+      }
+      setShowMsgActionSheet(true);
+    }
+  };
+
   /* 自定义消息（用于计算高度） */
   const renderMessage = props => (
     <View onLayout={e => onMessageLayout(e)}>
       <Message {...props} />
     </View>
   );
+
+  /* 滚动到底部按钮 */
+  const scrollToBottomComponent = () => {
+    return (
+      <View>
+        <Ionicons name="chevron-down" color={Colors.primary} size={24} />
+      </View>
+    );
+  };
 
   /* 滚动到指定消息 */
   useEffect(() => {
@@ -408,18 +465,13 @@ const Chat = React.memo(({navigation, route}) => {
     <>
       <GiftedChat
         messageContainerRef={chatListRef}
+        messageIdGenerator={messageIdGenerator}
         placeholder={
           userInGroupInfo.member_status === MemberStatusEnum.forbidden
             ? t('chat.msg_mute_placeholder')
             : t('chat.msg_placeholder')
         }
-        dateFormatCalendar={{
-          sameDay: `[${t('common.toDay')}] HH:mm`,
-          lastDay: `[${t('common.yesterday')}] HH:mm`,
-          lastWeek: `[${t('common.lastWeek')}] DDDD HH:mm`,
-          sameElse: 'YYYY-MM-DD HH:mm',
-        }}
-        locale={'zh-cn'}
+        locale={language}
         dateFormat={'MM/DD HH:mm'}
         timeFormat={'HH:mm'}
         renderDay={props => <CustomDay {...props} />}
@@ -438,7 +490,7 @@ const Chat = React.memo(({navigation, route}) => {
         onLoadEarlier={() => {
           setMsgsLoading(true);
         }}
-        onLongPress={onLongPress}
+        onLongPress={onLongPressMsg}
         onPressAvatar={onAvatarPress}
         onLongPressAvatar={onLongPressAvatar}
         renderBubble={props => <CustomBubble {...props} />}
@@ -486,6 +538,10 @@ const Chat = React.memo(({navigation, route}) => {
             uploadIds={uploadIds}
             nowUploadId={nowUploadId}
             uploadProgress={uploadProgress}
+            onLongPress={info => {
+              setToBeSavedInfo(info);
+              setShowActionSheet(true);
+            }}
           />
         )}
         renderMessageVideo={props => (
@@ -494,6 +550,10 @@ const Chat = React.memo(({navigation, route}) => {
             uploadIds={uploadIds}
             nowUploadId={nowUploadId}
             uploadProgress={uploadProgress}
+            onLongPress={info => {
+              setToBeSavedInfo(info);
+              setShowActionSheet(true);
+            }}
           />
         )}
         renderMessageAudio={props => (
@@ -501,21 +561,33 @@ const Chat = React.memo(({navigation, route}) => {
             {...props}
             nowPlayAudioId={nowPlayAudioId}
             setNowPlayAudioId={setNowPlayAudioId}
+            onLongPress={info => {
+              setToBeSavedInfo(info);
+              setShowActionSheet(true);
+            }}
           />
         )}
         renderMessageText={props => (
           <CustomFileMessage
             {...props}
-            onPress={() => {}}
-            onLongPress={() => {}}
+            onPress={() => {
+              showToast(t('common.file_not_supported'), 'warning');
+            }}
+            onLongPress={info => {
+              setToBeSavedInfo(info);
+              setShowActionSheet(true);
+            }}
           />
         )}
+        scrollToBottom={true}
+        scrollToBottomComponent={scrollToBottomComponent}
         shouldUpdateMessage={(prevMsg, newMsg) => {
           return prevMsg._id === newMsg._id;
         }}
         onSend={onSend}
         textInputProps={{
-          readOnly: userInGroupInfo.member_status === 'forbidden',
+          readOnly:
+            userInGroupInfo.member_status === MemberStatusEnum.forbidden,
         }}
         user={{
           _id: 1,
@@ -524,6 +596,38 @@ const Chat = React.memo(({navigation, route}) => {
             ? userInGroupInfo?.member_remark
             : userInfo?.user_name,
         }}
+      />
+      {/* 保存文件弹窗 */}
+      <BaseSheet
+        title={t('component.save_file')}
+        visible={showActionSheet}
+        setVisible={setShowActionSheet}
+        actions={[
+          {
+            label:
+              toBeSavedInfo.type === 'media'
+                ? t('component.save_to_album')
+                : t('component.save_to_download'),
+            color: Colors.primary,
+            onPress: () => onSave(toBeSavedInfo),
+          },
+          {
+            label: t('common.copy_link'),
+            color: Colors.success,
+            onPress: () => {
+              Clipboard.setString(toBeSavedInfo.url);
+              setShowActionSheet(false);
+              showToast(t('common.copy_link_success'), 'success');
+            },
+          },
+        ]}
+      />
+      {/* 消息操作弹窗 */}
+      <BaseSheet
+        title={t('chat.message_options')}
+        visible={showMsgActionSheet}
+        setVisible={setShowMsgActionSheet}
+        actions={msgActions}
       />
     </>
   );

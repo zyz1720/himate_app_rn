@@ -63,8 +63,8 @@ const styles = StyleSheet.create({
 let recordTimer = null;
 const audioRecorderPlayer = new AudioRecorderPlayer();
 
-/* 自定义加载更多 */
-const CustomAccessory = props => {
+/* 自定义操作 accessory */
+const CustomAccessory = React.memo(props => {
   const {
     onAudioRecordSuccess = () => {},
     onAudioRecordComplete = () => {},
@@ -112,6 +112,7 @@ const CustomAccessory = props => {
       return;
     }
     Vibration.vibrate(50);
+    setVisible(true);
     audioRecorderPlayer
       .startRecorder()
       .then(() => {
@@ -155,7 +156,6 @@ const CustomAccessory = props => {
     .onStart(() => {
       recorderVisible.value = true;
       runOnJS(startRecord)();
-      runOnJS(setVisible)(true);
     })
     .onUpdate(({translationX, translationY}) => {
       if (
@@ -215,6 +215,11 @@ const CustomAccessory = props => {
           flexS
           centerH
           onPress={() => {
+            if (!accessMicrophone) {
+              showToast(t('permissions.microphone_please'), 'warning');
+              setAccessMicrophone();
+              return;
+            }
             showToast(t('chat.record_placeholder'), 'warning');
           }}>
           <GestureHandlerRootView>
@@ -418,6 +423,6 @@ const CustomAccessory = props => {
       </Animated.View>
     </>
   );
-};
+});
 
 export default CustomAccessory;

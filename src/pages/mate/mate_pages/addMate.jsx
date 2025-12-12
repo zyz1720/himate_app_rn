@@ -98,11 +98,13 @@ const AddMate = ({navigation}) => {
           <Avatar
             size={60}
             source={{
-              uri: envConfig.STATIC_URL + item.user_avatar,
+              uri: envConfig.STATIC_URL + item?.user_avatar,
             }}
+            imageProps={{errorSource: require('@assets/images/empty.jpg')}}
+            backgroundColor={Colors.transparent}
           />
           <View marginL-10>
-            <Text text80BL>{item.user_name}</Text>
+            <Text text80BL>{item?.user_name || ''}</Text>
             <Text text90L marginT-2 grey30>
               {t('user.account')}: {item.self_account}
             </Text>

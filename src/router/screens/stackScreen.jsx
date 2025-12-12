@@ -3,6 +3,8 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {Colors, TouchableOpacity} from 'react-native-ui-lib';
 import {useSettingStore} from '@store/settingStore';
 import {useTranslation} from 'react-i18next';
+import {ChatTypeEnum} from '@const/database_enum';
+import {useToast} from '@components/common/useToast';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import TabScreen from './tabScreen';
 import EditUser from '@pages/user/user_pages/editUser';
@@ -26,6 +28,7 @@ const Stack = createStackNavigator();
 
 function StackScreen() {
   const {themeColor, isFullScreen} = useSettingStore();
+  const {showToast} = useToast();
   const {t} = useTranslation();
 
   return (
@@ -126,11 +129,13 @@ function StackScreen() {
                 <TouchableOpacity
                   paddingR-16
                   onPress={() => {
-                    if (route.params.chat_type === 'private') {
+                    const {chat_type, groupId, userId} = route.params;
+                    if (chat_type === ChatTypeEnum.private && userId) {
                       navigation.navigate('ChatHistory', route.params);
-                    }
-                    if (route.params.chat_type === 'group') {
+                    } else if (chat_type === ChatTypeEnum.group && groupId) {
                       navigation.navigate('GroupInfo', route.params);
+                    } else {
+                      showToast(t('common.invalid_session'));
                     }
                   }}>
                   <FontAwesome name="reorder" color={Colors.white} size={20} />

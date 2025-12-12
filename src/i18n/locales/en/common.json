@@ -18,6 +18,7 @@
   "about": "About",
   "upload": "Upload",
   "download": "Download",
+  "saving": "Saving...",
   "syncing": "Syncing...",
   "loading": "Loading...",
   "modifying": "Modifying...",
@@ -65,5 +66,13 @@
   "toDay": "Today",
   "yesterday": "Yesterday",
   "lastWeek": "Last week",
-  "load_more": "Load more"
+  "sunday": "Sunday",
+  "monday": "Monday",
+  "tuesday": "Tuesday",
+  "wednesday": "Wednesday",
+  "thursday": "Thursday",
+  "friday": "Friday",
+  "saturday": "Saturday",
+  "load_more": "Load more",
+  "invalid_session": "Invalid session"
 }

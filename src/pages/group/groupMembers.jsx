@@ -208,13 +208,11 @@ const GroupMembers = ({navigation, route}) => {
                     userId: item?.user?.id,
                   });
                 }}
-                source={
-                  item?.user?.user_avatar
-                    ? {
-                        uri: envConfig.STATIC_URL + item.user.user_avatar,
-                      }
-                    : require('@assets/images/empty.jpg')
-                }
+                source={{
+                  uri: envConfig.STATIC_URL + item?.user?.user_avatar,
+                }}
+                imageProps={{errorSource: require('@assets/images/empty.jpg')}}
+                backgroundColor={Colors.transparent}
                 imageStyle={
                   item.member_status === MemberStatusEnum.forbidden
                     ? styles.avatarOpacity

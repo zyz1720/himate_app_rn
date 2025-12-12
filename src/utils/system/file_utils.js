@@ -12,9 +12,16 @@ import {
 import {Colors} from 'react-native-ui-lib';
 import {displayName} from '@root/app.json';
 import {useUserStore} from '@store/userStore';
+import {isEmptyString} from '../common/string_utils';
 import {useConfigStore} from '@store/configStore';
+import {FileTypeEnum} from '@const/database_enum';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 
+/**
+ * 格式化文件大小
+ * @param {number} size 文件大小（字节）
+ * @returns {string} 格式化后的文件大小
+ */
 export const formatFileSize = size => {
   if (size === 0) {
     return '0B';
@@ -32,7 +39,7 @@ export const formatFileSize = size => {
  */
 export const getFileName = url => {
   try {
-    if (!url || typeof url !== 'string') {
+    if (isEmptyString(url)) {
       return '';
     }
     let cleanPath = url.split('?')[0].split('#')[0];
@@ -101,13 +108,13 @@ export const getFileColor = ext => {
 export const getFileFromImageCropPicker = fileInfo => {
   const baseType = fileInfo.mime;
 
-  let type = 'image';
+  let type = FileTypeEnum.image;
   if (baseType.startsWith('image/')) {
-    type = 'image';
+    type = FileTypeEnum.image;
   } else if (baseType.startsWith('video/')) {
-    type = 'video';
+    type = FileTypeEnum.video;
   } else if (baseType.startsWith('audio/')) {
-    type = 'audio';
+    type = FileTypeEnum.audio;
   }
 
   const uri = fileInfo.path;
@@ -138,15 +145,15 @@ export const getFileFromDocumentPicker = fileInfo => {
   const ext = getFileExt(originalName);
   const documentTypes = [...docTypes, ...excelTypes, ...pptTypes, ...pdfTypes];
 
-  let type = 'other';
+  let type = FileTypeEnum.other;
   if (baseType.startsWith('image/') || imageExtNames.includes(ext)) {
-    type = 'image';
+    type = FileTypeEnum.image;
   } else if (baseType.startsWith('video/') || videoExtNames.includes(ext)) {
-    type = 'video';
+    type = FileTypeEnum.video;
   } else if (baseType.startsWith('audio/') || audioExtNames.includes(ext)) {
-    type = 'audio';
+    type = FileTypeEnum.audio;
   } else if (documentTypes.includes(ext)) {
-    type = 'document';
+    type = FileTypeEnum.document;
   }
 
   const file = {
@@ -168,7 +175,7 @@ export const getFileFromDocumentPicker = fileInfo => {
  * @returns {object} 文件信息
  */
 export const getFileFromAudioRecorderPlayer = filePath => {
-  const type = 'audio';
+  const type = FileTypeEnum.audio;
 
   const ext = getFileExt(filePath);
 
@@ -245,6 +252,9 @@ export const downloadFile = async (fileUrl, options = {}) => {
     isSystemDownload = true,
     onProgress = () => {},
   } = options;
+  if (isEmptyString(fileName)) {
+    return false;
+  }
   // 处理下载路径
   const dirs = ReactNativeBlobUtil.fs.dirs;
   let originPath = dirs.LegacyDownloadDir;

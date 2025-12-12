@@ -74,7 +74,7 @@ const FavoritesDetail = ({navigation, route}) => {
                 <Image
                   source={{
                     uri:
-                      envConfig.THUMBNAIL_URL + favoritesInfo.favorites_cover,
+                      envConfig.THUMBNAIL_URL + favoritesInfo?.favorites_cover,
                   }}
                   errorSource={require('@assets/images/favorites_cover.jpg')}
                   style={styles.image}
@@ -86,32 +86,34 @@ const FavoritesDetail = ({navigation, route}) => {
                 }}>
                 <View marginL-12>
                   <Text text60 grey10 marginT-4 numberOfLines={2}>
-                    {favoritesInfo.favorites_name}
+                    {favoritesInfo?.favorites_name}
                   </Text>
                   <View row centerV marginT-10>
                     <Avatar
                       size={26}
                       source={{
                         uri:
-                          envConfig.STATIC_URL + favoritesInfo.user.user_avatar,
+                          envConfig.STATIC_URL + favoritesInfo?.user?.user_avatar,
                       }}
+                      imageProps={{errorSource: require('@assets/images/empty.jpg')}}
+                      backgroundColor={Colors.transparent}
                     />
                     <Text text90 marginL-4 grey20>
-                      {favoritesInfo.user.user_name}
+                      {favoritesInfo?.user?.user_name}
                     </Text>
                   </View>
                   <Text marginT-10 text90L grey40>
                     {t('common.created') +
-                      dayjs(favoritesInfo.create_time).format('YYYY/MM/DD')}
+                      dayjs(favoritesInfo?.create_time).format('YYYY/MM/DD')}
                   </Text>
                 </View>
               </TouchableOpacity>
             </View>
-            {favoritesInfo.favorites_uid === userInfo.id ? (
+            {favoritesInfo?.favorites_uid === userInfo?.id ? (
               <TouchableOpacity
                 onPress={() => {
                   navigation.navigate('EditFavorites', {
-                    favoritesId: favoritesInfo.id,
+                    favoritesId: favoritesInfo?.id,
                   });
                 }}
                 row

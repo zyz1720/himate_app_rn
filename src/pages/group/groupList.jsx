@@ -45,11 +45,9 @@ const GroupList = ({navigation}) => {
       }}>
       <View flexS row centerV>
         <Avatar
-          source={
-            item?.group_avatar
-              ? {uri: envConfig.STATIC_URL + item.group_avatar}
-              : require('@assets/images/empty.jpg')
-          }
+          source={{uri: envConfig.STATIC_URL + item?.group_avatar}}
+          imageProps={{errorSource: require('@assets/images/empty.jpg')}}
+          backgroundColor={Colors.transparent}
         />
         <View marginL-10>
           <Text text70>{item.group_name}</Text>

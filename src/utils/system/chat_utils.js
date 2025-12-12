@@ -10,7 +10,7 @@ import {v4 as uuid} from 'uuid';
 import {isEmptyObject} from '@utils/common/object_utils';
 import {createRandomNumber} from '@utils/common/number_utils';
 import {getFileExt, uploadFile} from './file_utils';
-import {FileUseTypeEnum} from '@const/database_enum';
+import {FileUseTypeEnum, MsgTypeEnum} from '@const/database_enum';
 import i18n from 'i18next';
 
 /* 创建临时消息 */
@@ -35,7 +35,7 @@ export const createTmpMessage = (options = {}) => {
       name: userName,
       avatar: userAvatar,
     },
-    msg_type: 'text',
+    msg_type: MsgTypeEnum.text,
     fileInfo,
   };
   if (isSystem) {
@@ -43,14 +43,18 @@ export const createTmpMessage = (options = {}) => {
   }
   if (!isEmptyObject(fileInfo)) {
     const {type, uri, ext} = fileInfo;
-    const mediaTypes = ['image', 'video', 'audio'];
+    const mediaTypes = [
+      MsgTypeEnum.image,
+      MsgTypeEnum.video,
+      MsgTypeEnum.audio,
+    ];
     if (mediaTypes.includes(type)) {
       message[type] = uri;
       message.msg_type = type;
     } else {
       message.text = ext;
-      message.msg_type = 'file';
-      message.file_url = uri;
+      message.msg_type = MsgTypeEnum.file;
+      message.file = uri;
     }
   }
 
@@ -100,12 +104,13 @@ export const showMessageText = message => {
     return `[${i18n.t('chat.empty_chat')}]`;
   }
   const msgTypeMap = {
-    text: msg_secret && content ? decryptMsg(content, msg_secret) : content,
-    image: `[${i18n.t('chat.msg_type_image')}]`,
-    video: `[${i18n.t('chat.msg_type_video')}]`,
-    audio: `[${i18n.t('chat.msg_type_audio')}]`,
-    file: `[${i18n.t('chat.msg_type_file')}]`,
-    other: `[${i18n.t('chat.msg_type_other')}]`,
+    [MsgTypeEnum.text]:
+      msg_secret && content ? decryptMsg(content, msg_secret) : content,
+    [MsgTypeEnum.image]: `[${i18n.t('chat.msg_type_image')}]`,
+    [MsgTypeEnum.video]: `[${i18n.t('chat.msg_type_video')}]`,
+    [MsgTypeEnum.audio]: `[${i18n.t('chat.msg_type_audio')}]`,
+    [MsgTypeEnum.file]: `[${i18n.t('chat.msg_type_file')}]`,
+    [MsgTypeEnum.other]: `[${i18n.t('chat.msg_type_other')}]`,
   };
   return msgTypeMap[msg_type] || '';
 };
@@ -146,7 +151,7 @@ export const formatTmpMsgToLocal = (message, options = {}) => {
     sender_remarks: user?.name || sender_remarks,
     sender_ip: 'localhost',
     content: text,
-    msg_type: msg_type || 'text',
+    msg_type: msg_type || MsgTypeEnum.text,
     chat_type: chat_type,
     create_time: createdAt?.toISOString(),
     status: status,
@@ -187,17 +192,21 @@ export const formatLocalMsgToTmp = (messages = []) => {
       msg_type: msg_type,
       status: status,
     };
-    if (msg_type !== 'text') {
+    if (msg_type !== MsgTypeEnum.text) {
       message.text = null;
-      const mediaTypes = ['image', 'video', 'audio'];
+      const mediaTypes = [
+        MsgTypeEnum.image,
+        MsgTypeEnum.video,
+        MsgTypeEnum.audio,
+      ];
       if (mediaTypes.includes(msg_type)) {
-        if (msg_type === 'image') {
+        if (msg_type === MsgTypeEnum.image) {
           message[msg_type] = envConfig.THUMBNAIL_URL + text;
         } else {
           message[msg_type] = envConfig.STATIC_URL + text;
         }
       } else {
-        message.file_url = envConfig.STATIC_URL + text;
+        message.file = envConfig.STATIC_URL + text;
         message.text = getFileExt(text);
       }
     }
@@ -210,8 +219,8 @@ export const processMessage = async (
   message,
   {onProgress = () => {}, setUploadId = () => {}, setUploadIds = () => {}},
 ) => {
-  const {msg_type = 'text', text, fileInfo} = message || {};
-  if (msg_type === 'text') {
+  const {msg_type = MsgTypeEnum.text, text, fileInfo} = message || {};
+  if (msg_type === MsgTypeEnum.text) {
     return {msg_type, text};
   } else {
     if (!fileInfo || isEmptyObject(fileInfo)) {

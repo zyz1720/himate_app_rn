@@ -85,6 +85,8 @@ const FavoritesList = props => {
                       source={{
                         uri: envConfig.STATIC_URL + item?.user?.user_avatar,
                       }}
+                      imageProps={{errorSource: require('@assets/images/empty.jpg')}}
+                      backgroundColor={Colors.transparent}
                     />
                   </View>
                 </View>

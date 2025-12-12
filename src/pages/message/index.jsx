@@ -193,17 +193,15 @@ const Msg = ({navigation}) => {
               });
             }}>
             <Avatar
-              source={
-                sessionExtra?.session_avatar
-                  ? {
-                      uri: envConfig.STATIC_URL + sessionExtra.session_avatar,
-                    }
-                  : require('@assets/images/empty.jpg')
-              }
+              source={{
+                uri: envConfig.STATIC_URL + sessionExtra?.session_avatar,
+              }}
+              imageProps={{errorSource: require('@assets/images/empty.jpg')}}
+              backgroundColor={Colors.transparent}
             />
             <View marginL-12>
               <View flexG row centerV spread width={'92%'}>
-                <Text text70BL>{sessionExtra.session_name}</Text>
+                <Text text70BL>{sessionExtra?.session_name}</Text>
                 <View flexS row centerV>
                   {session?.unread_count ? (
                     <Badge
