@@ -44,5 +44,7 @@
     "copy_content": "复制内容",
     "cancel_send": "取消发送",
     "retry_send": "重新发送",
-    "message_options": "消息操作"
+    "message_options": "消息操作",
+    "msg_searched": "消息已找到",
+    "msg_mention": "请选择要@的成员"
 }

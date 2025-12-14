@@ -22,6 +22,7 @@ import {
 import {formatDateTime} from '@utils/common/time_utils';
 import {useConfigStore} from '@store/configStore';
 import {useChatMsgStore} from '@store/chatMsgStore';
+import {useAppStateStore} from '@store/appStateStore';
 import {useTranslation} from 'react-i18next';
 import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
 import {
@@ -32,17 +33,23 @@ import {
 } from '@utils/realm/useSessionInfo';
 import {delay} from '@utils/common/time_utils';
 import {useIsFocused} from '@react-navigation/native';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
 
 const Msg = ({navigation}) => {
   const {envConfig} = useConfigStore();
-  const {notRemindSessionIds, setNotRemindSessionIds, updateKey} =
-    useChatMsgStore();
+  const {
+    notRemindSessionIds,
+    setNotRemindSessionIds,
+    updateKey,
+    remindSessionIds,
+  } = useChatMsgStore();
+  const {networkIsConnected} = useAppStateStore();
   const {showToast} = useToast();
   const {t} = useTranslation();
   const isFocused = useIsFocused();
 
-  const {list, onEndReached, loading, onRefresh} =
+  const {list, onEndReached, loading, onRefresh, refreshData} =
     useInfiniteScroll(getUserSessions);
 
   const [sessions, setSessions] = useState([]);
@@ -85,59 +92,6 @@ const Msg = ({navigation}) => {
       return;
     }
   };
-
-  // 监听应用状态
-  const appState = useRef(AppState.currentState);
-  const [appStateVisible, setAppStateVisible] = useState(appState.current);
-  const subscription = AppState.addEventListener('change', nextAppState => {
-    appState.current = nextAppState;
-    setAppStateVisible(appState.current);
-  });
-
-  /* 强制显示提醒 */
-  const [remindSessions, setRemindSessions] = useState([]);
-  const [selfRemindList, setSelfRemindList] = useState([]); // 提醒自己的@
-  const getSelfReminds = sessions => {
-    sessions.forEach(sessionInfo => {
-      if (sessionInfo.chat_type === 'group') {
-        const selfRemind = `@`;
-        setSelfRemindList(prev => {
-          if (
-            prev.find(
-              item =>
-                item.id === sessionInfo.id && item.selfRemind === selfRemind,
-            )
-          ) {
-            return prev;
-          } else {
-            return [
-              ...prev,
-              {
-                id: sessionInfo.id,
-                selfRemind,
-              },
-            ];
-          }
-        });
-      }
-    });
-  };
-
-  useEffect(() => {
-    refreshLocalSessions();
-  }, [updateKey]);
-
-  useEffect(() => {
-    setLocalSession(list);
-    refreshLocalSessions();
-  }, [list]);
-
-  useEffect(() => {
-    if (isFocused) {
-      refreshLocalSessions();
-    }
-    return () => subscription.remove();
-  }, [isFocused]);
 
   /* 列表元素 */
   const renderSessionItem = ({item}) => {
@@ -222,7 +176,7 @@ const Msg = ({navigation}) => {
               </View>
               <View flexG row centerV spread width={'92%'}>
                 <Text text80 numberOfLines={1} grey30 style={{width: '70%'}}>
-                  {remindSessions.includes(session.id) ? (
+                  {remindSessionIds.find(e => e.sessionId === session.id) ? (
                     <Text text80 red40>
                       {t('chat.reminder')}
                     </Text>
@@ -230,8 +184,7 @@ const Msg = ({navigation}) => {
                   {sessionExtra?.lastSenderRemarks
                     ? sessionExtra.lastSenderRemarks + ': '
                     : null}
-                  {session?.last_msg_content ||
-                    showMessageText(session.lastMsg)}
+                  {session?.lastMsgContent || showMessageText(session.lastMsg)}
                 </Text>
                 <Text text90L grey40>
                   {formatDateTime(session.update_time)}
@@ -244,8 +197,40 @@ const Msg = ({navigation}) => {
     );
   };
 
+  useEffect(() => {
+    refreshLocalSessions();
+  }, [updateKey]);
+
+  useEffect(() => {
+    setLocalSession(list);
+    refreshLocalSessions();
+  }, [list]);
+
+  useEffect(() => {
+    if (isFocused) {
+      refreshLocalSessions();
+    }
+  }, [isFocused]);
+
+  useEffect(() => {
+    refreshData();
+  }, []);
+
   return (
     <View>
+      {networkIsConnected ? null : (
+        <View padding-6 center bg-red40 centerV>
+          <Text text90L white>
+            <FontAwesome
+              name="exclamation-circle"
+              color={Colors.white}
+              size={14}
+            />
+            &nbsp;
+            {t('httpError.unConnected')}
+          </Text>
+        </View>
+      )}
       <FlatList
         refreshControl={
           <RefreshControl

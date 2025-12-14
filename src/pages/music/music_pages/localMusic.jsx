@@ -75,6 +75,7 @@ const LocalMusic = () => {
     return audioFilesInDir;
   };
 
+  // 扫描本地音乐
   const scanMusic = async dirPathList => {
     setLoading(true);
     try {

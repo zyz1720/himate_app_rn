@@ -24,7 +24,7 @@ const CreateGroup = ({navigation, route}) => {
 
   /* 创建群聊 */
   const [selectIds, setSelectIds] = useState(initialSelectIds);
-  const handleCreateGroup = async () => {
+  const createGroup = async () => {
     if (isCreate && selectIds.length < 2) {
       showToast(t('group.at_least_two'), 'warning');
       return;
@@ -44,7 +44,7 @@ const CreateGroup = ({navigation, route}) => {
         });
         if (res.code === 0) {
           showToast(t('group.invite_success'), 'success');
-          navigation.navigate('GroupList');
+          navigation.goBack();
           return;
         }
         showToast(res.message, 'error');
@@ -74,7 +74,7 @@ const CreateGroup = ({navigation, route}) => {
             size={Button.sizes.small}
             borderRadius={8}
             backgroundColor={Colors.primary}
-            onPress={handleCreateGroup}
+            onPress={createGroup}
           />
         ) : null}
       </View>

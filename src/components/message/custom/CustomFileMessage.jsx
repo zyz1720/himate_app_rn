@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
 });
 
 /* 自定义文件消息 */
-const CustomFileMessage = props => {
+const CustomFileMessage = React.memo(props => {
   const {currentMessage, onLongPress = () => {}, onPress = () => {}} = props;
   return (
     <>
@@ -51,6 +51,6 @@ const CustomFileMessage = props => {
       )}
     </>
   );
-};
+});
 
 export default CustomFileMessage;

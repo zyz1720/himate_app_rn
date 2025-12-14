@@ -1,5 +1,5 @@
 import React, {useMemo, useCallback} from 'react';
-import {StyleSheet, Modal, ImageBackground, FlatList} from 'react-native';
+import {StyleSheet, Modal, FlatList} from 'react-native';
 import {View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
 import {fullHeight, statusBarHeight} from '@style/index';
 import {useUserStore} from '@store/userStore';
@@ -7,6 +7,7 @@ import {useConfigStore} from '@store/configStore';
 import {useMusicStore} from '@store/musicStore';
 import {useTranslation} from 'react-i18next';
 import {renderArtists} from '@utils/system/lyric_utils';
+import BaseImageBackground from '@components/common/BaseImageBackground';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
 const styles = StyleSheet.create({
@@ -116,14 +117,10 @@ const ToBePlayedModal = React.memo(props => {
       <View
         height={fullHeight + statusBarHeight}
         backgroundColor={Colors.black4}>
-        <ImageBackground
+        <BaseImageBackground
           blurRadius={40}
           style={styles.listBackImage}
-          source={
-            userInfo?.user_bg_img
-              ? {uri: envConfig.STATIC_URL + userInfo.user_bg_img}
-              : require('@assets/images/user_bg.jpg')
-          }
+          source={{uri: envConfig.STATIC_URL + userInfo?.user_bg_img}}
           resizeMode="cover">
           <View padding-12>
             <View row centerV spread>
@@ -153,7 +150,7 @@ const ToBePlayedModal = React.memo(props => {
               removeClippedSubviews={true}
             />
           </View>
-        </ImageBackground>
+        </BaseImageBackground>
       </View>
     </Modal>
   );

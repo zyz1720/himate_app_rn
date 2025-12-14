@@ -13,5 +13,6 @@
   "introduction": "还没有简介哦~",
   "my_favorites": "还没有任何歌单，快去新建一个吧~",
   "select": "请至少选择一个再进行操作",
-  "music_lrc": "此歌曲暂时还没有歌词哦 ~"
+  "music_lrc": "此歌曲暂时还没有歌词哦 ~",
+  "group_member": "此群聊还没有成员哦 ~"
 }

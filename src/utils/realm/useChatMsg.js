@@ -2,6 +2,7 @@ import {realm} from './index';
 import {decryptMsg} from '@utils/system/chat_utils';
 import {deepClone} from '@utils/common/object_utils';
 import {useSettingStore} from '@store/settingStore';
+import {MsgTypeEnum} from '@const/database_enum';
 
 /* 写入本地消息 */
 export const setLocalMessages = (messages = []) => {
@@ -10,16 +11,19 @@ export const setLocalMessages = (messages = []) => {
     return;
   }
   try {
-    for (let i = 0; i < messages.length; i++) {
-      const message = messages[i];
+    messages.forEach(message => {
       const existMeg = realm.objectForPrimaryKey(
         'chat_msg',
         message.client_msg_id,
       );
+      const cloneMsg = deepClone(message);
+      cloneMsg.reminders = cloneMsg.reminders || [];
       if (existMeg) {
-        continue;
+        delete cloneMsg.client_msg_id;
+        realm.write(() => {
+          Object.assign(existMeg, cloneMsg);
+        });
       } else {
-        const cloneMsg = deepClone(message);
         cloneMsg.decrypted_content = decryptMsg(
           cloneMsg.content,
           cloneMsg?.msg_secret,
@@ -28,7 +32,7 @@ export const setLocalMessages = (messages = []) => {
           realm.create('chat_msg', cloneMsg);
         });
       }
-    }
+    });
   } catch (error) {
     console.error('写入本地消息失败', error);
   }
@@ -92,9 +96,10 @@ export const searchLocalMessagesById = (keyword, session_id) => {
     const localMsgs = realm.objects('chat_msg');
     const list = localMsgs
       .filtered(
-        'session_id == $0 && (decrypted_content CONTAINS $1 || sender_remarks CONTAINS $1)',
+        'session_id == $0 && (decrypted_content CONTAINS $1 || sender_remarks CONTAINS $1) && msg_type == $2',
         session_id,
         keyword.trim(),
+        MsgTypeEnum.text,
       )
       .sorted('create_time', true)
       .toJSON();
@@ -111,8 +116,9 @@ export const searchLocalMessages = keyword => {
     const list = realm
       .objects('chat_msg')
       .filtered(
-        'decrypted_content CONTAINS $0 || sender_remarks CONTAINS $0',
+        '(decrypted_content CONTAINS $0 || sender_remarks CONTAINS $0) && msg_type == $1',
         keyword.trim(),
+        MsgTypeEnum.text,
       )
       .sorted('create_time', true)
       .toJSON();

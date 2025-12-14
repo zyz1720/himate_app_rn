@@ -38,14 +38,14 @@ const GroupMembers = ({navigation, route}) => {
   const {showToast} = useToast();
 
   const [delVisible, setDelVisible] = useState(false);
-
-  // 多选
   const [isMultiSelect, setIsMultiSelect] = useState(false);
   const [isAllSelect, setIsAllSelect] = useState(false);
-
   const [selectedIds, setSelectedIds] = useState([]);
 
-  /* 删除文件 */
+  const [ownerIds, setOwnerIds] = useState([]);
+  const [adminIds, setAdminIds] = useState([]);
+
+  /* 删除选中成员 */
   const removeMembers = async () => {
     if (selectedIds.length === 0) {
       showToast(t('empty.select'), 'warning');
@@ -59,7 +59,7 @@ const GroupMembers = ({navigation, route}) => {
         t('group.delete_member_success', {num: selectedIds.length}),
         'success',
       );
-      refreshData();
+      navigation.goBack();
     } else {
       showToast(delRes.message, 'error');
     }
@@ -235,11 +235,7 @@ const GroupMembers = ({navigation, route}) => {
                 }}
               />
               <View marginL-24 width={'100%'}>
-                <Text
-                  text70L
-                  grey10
-                  numberOfLines={1}
-                  style={styles.maxWidth80}>
+                <Text text80 grey10 numberOfLines={1} style={styles.maxWidth80}>
                   {item.member_remarks}
                 </Text>
                 {item.member_status === MemberStatusEnum.forbidden ? (
@@ -292,9 +288,6 @@ const GroupMembers = ({navigation, route}) => {
   const getGroupMembersList = async () => {
     return getGroupMembers(groupId);
   };
-
-  const [ownerIds, setOwnerIds] = useState([]);
-  const [adminIds, setAdminIds] = useState([]);
 
   const {list, onEndReached, loading, onRefresh, refreshData} =
     useInfiniteScroll(getGroupMembersList);
@@ -397,7 +390,7 @@ const GroupMembers = ({navigation, route}) => {
         ListEmptyComponent={
           <View marginT-16 center>
             <Text text90L grey40>
-              {t('empty.file')}
+              {t('empty.group_member')}
             </Text>
           </View>
         }

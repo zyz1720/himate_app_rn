@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {StatusBar} from 'react-native';
+import {StatusBar, AppState} from 'react-native';
 import {Colors} from 'react-native-ui-lib';
 import {useToast} from '@components/common/useToast';
 import {displayName} from '@root/app.json';
@@ -10,8 +10,10 @@ import {useSettingStore} from '@store/settingStore';
 import {useErrorMsgStore} from '@store/errorMsgStore';
 import {useTranslation} from 'react-i18next';
 import {useSocketStore} from '@store/socketStore';
+import {useAppStateStore} from '@store/appStateStore';
 import {UNREAD} from '@const/sse_path';
 import {useSse} from '@utils/hooks/useSse';
+import {addEventListener} from '@react-native-community/netinfo';
 import FullScreenLoading from '@components/common/FullScreenLoading';
 import RootScreen from './rootScreen';
 import i18n from 'i18next';
@@ -25,8 +27,24 @@ const RootView = () => {
   const {envConfig, configLoading, updateEnvConfig} = useConfigStore();
   const {isFastStatic, themeColor, language, isFullScreen} = useSettingStore();
   const {errorMsg, clearMsgStore} = useErrorMsgStore();
+  const {setNetworkIsConnected, setAppIsActive} = useAppStateStore();
+
   const {socketInit} = useSocketStore();
   const {sseInit} = useSse(UNREAD);
+
+  // 监听网络状态变化
+  const unsubscribeNetInfo = addEventListener(state => {
+    const {isConnected, isInternetReachable} = state;
+    setNetworkIsConnected(isConnected && isInternetReachable);
+  });
+
+  // 监听应用状态
+  const unsubscribeAppState = AppState.addEventListener(
+    'change',
+    nextAppState => {
+      setAppIsActive(nextAppState === 'active');
+    },
+  );
 
   // 在应用启动时
   const [isInitialized, setIsInitialized] = useState(false);
@@ -75,9 +93,13 @@ const RootView = () => {
     }
   }, [language]);
 
-  // 初始化应用
+  // 监听网络状态变化
   useEffect(() => {
     initializeApp();
+    return () => {
+      unsubscribeNetInfo();
+      unsubscribeAppState?.remove();
+    };
   }, []);
 
   return (

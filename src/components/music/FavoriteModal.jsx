@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, ScrollView, Modal, ImageBackground} from 'react-native';
+import {StyleSheet, ScrollView, Modal} from 'react-native';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
 import {fullHeight, statusBarHeight} from '@style/index';
 import {useConfigStore} from '@store/configStore';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import BaseImageBackground from '@components/common/BaseImageBackground';
 
 const styles = StyleSheet.create({
   listBackImage: {
@@ -60,14 +61,10 @@ const FavoriteModal = React.memo(props => {
       <View
         height={fullHeight + statusBarHeight}
         backgroundColor={Colors.black4}>
-        <ImageBackground
+        <BaseImageBackground
           blurRadius={50}
           style={styles.listBackImage}
-          source={
-            backgroundImg
-              ? {uri: envConfig.STATIC_URL + backgroundImg}
-              : require('@assets/images/user_bg.jpg')
-          }
+          source={{uri: envConfig.STATIC_URL + backgroundImg}}
           resizeMode="cover">
           <TouchableOpacity paddingT-48 paddingL-22 onPress={onClose}>
             <AntDesign name="close" color={Colors.white} size={24} />
@@ -104,7 +101,7 @@ const FavoriteModal = React.memo(props => {
               </Text>
             </View>
           </ScrollView>
-        </ImageBackground>
+        </BaseImageBackground>
       </View>
     </Modal>
   );

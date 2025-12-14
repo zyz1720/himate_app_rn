@@ -1,5 +1,5 @@
 import {create} from 'zustand';
-import {getAppConfig} from '@api/app_config';
+import {getAppConfig} from '@/config/app_config';
 import {generateSecretKey} from '@utils/system/crypto_utils';
 import {isEmptyObject} from '@utils/common/object_utils';
 

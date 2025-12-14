@@ -2,6 +2,7 @@ import axios from 'axios';
 import {useUserStore} from '@store/userStore.js';
 import {useConfigStore} from '@store/configStore.js';
 import {useErrorMsgStore} from '@store/errorMsgStore.js';
+import {useAppStateStore} from '@store/appStateStore.js';
 import {API_PREFIX} from '@env';
 import i18n from 'i18next';
 
@@ -11,6 +12,14 @@ const instance = axios.create();
 // 添加请求拦截器
 instance.interceptors.request.use(
   function (requestConfig) {
+    const {networkIsConnected} = useAppStateStore.getState();
+    if (!networkIsConnected) {
+      return Promise.reject({
+        message: 'The network is not connected',
+        status: 500,
+      });
+    }
+
     const {envConfig} = useConfigStore.getState();
     const {access_token, token_type} = useUserStore.getState();
 
@@ -49,7 +58,9 @@ instance.interceptors.response.use(
     const resMessage = error.response?.data?.message;
     let {message, status} = error;
 
-    if (message === 'Network Error') {
+    if (message === 'The network is not connected') {
+      message = i18n.t('httpError.unConnected');
+    } else if (message === 'Network Error') {
       message = i18n.t('httpError.network');
     } else if (message.includes('timeout')) {
       message = i18n.t('httpError.timeout');

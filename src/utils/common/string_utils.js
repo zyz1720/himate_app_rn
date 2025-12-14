@@ -64,12 +64,11 @@ export const reverseString = str => {
  * @param {number} count 随机字符长度
  * @returns {string} 随机字符
  */
-export const createRandomLetters = count => {
+export const createRandomLetters = (count = 6) => {
   let result = '';
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-  const charactersLength = characters.length;
   for (let i = 0; i < count; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
   return result;
 };

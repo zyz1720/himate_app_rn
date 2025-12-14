@@ -15,6 +15,7 @@ import {useUserStore} from '@store/userStore';
 import {isEmptyString} from '../common/string_utils';
 import {useConfigStore} from '@store/configStore';
 import {FileTypeEnum} from '@const/database_enum';
+import {createVideoThumbnail, getVideoMetaData} from 'react-native-compressor';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 
 /**
@@ -101,6 +102,25 @@ export const getFileColor = ext => {
 };
 
 /**
+ * 获取文件来自视频缩略图
+ * @param {object} fileInfo 文件信息
+ * @returns {object} 文件信息
+ */
+export const getFileFromVideoThumbnail = filePath => {
+  const file = {
+    name: 'file',
+    filename: getFileName(filePath),
+    data: Platform.OS === 'ios' ? filePath : ReactNativeBlobUtil.wrap(filePath),
+  };
+  return {
+    file,
+    type: FileTypeEnum.image,
+    uri: filePath,
+    ext: 'jpg',
+  };
+};
+
+/**
  * 获取文件来自react-native-image-crop-picker
  * @param {object} fileInfo 文件信息
  * @returns {object} 文件信息
@@ -175,10 +195,6 @@ export const getFileFromDocumentPicker = fileInfo => {
  * @returns {object} 文件信息
  */
 export const getFileFromAudioRecorderPlayer = filePath => {
-  const type = FileTypeEnum.audio;
-
-  const ext = getFileExt(filePath);
-
   const file = {
     name: 'file',
     filename: getFileName(filePath),
@@ -187,9 +203,9 @@ export const getFileFromAudioRecorderPlayer = filePath => {
 
   return {
     file,
-    type,
+    type: FileTypeEnum.audio,
     uri: filePath,
-    ext,
+    ext: getFileExt(filePath),
   };
 };
 
@@ -375,6 +391,40 @@ export const readJSONFile = async path => {
     return jsonData;
   } catch (error) {
     console.log('文件读取失败:', error);
+    return null;
+  }
+};
+
+/**
+ * 获取视频元数据
+ * @param {string} videoPath 视频路径
+ * @returns {object} 视频元数据
+ */
+export const getVideoMetaDataInfo = async videoPath => {
+  try {
+    const metaData = await getVideoMetaData(videoPath);
+    return metaData;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
+/**
+ * 创建视频缩略图
+ * @param {string} videoPath 视频路径
+ * @param {object} options 选项
+ * @param {string} options.quality 质量
+ * @param {number} options.width 宽度
+ * @param {number} options.height 高度
+ * @returns {object} 视频缩略图
+ */
+export const createVideoThumbnailImg = async videoPath => {
+  try {
+    const thumbnail = await createVideoThumbnail(videoPath);
+    return thumbnail;
+  } catch (error) {
+    console.error(error);
     return null;
   }
 };

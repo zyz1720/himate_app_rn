@@ -13,5 +13,6 @@
   "introduction": "No introduction yet~",
   "my_favorites": "No playlists yet, go create one!",
   "select": "Please select at least one before proceeding",
-  "music_lrc": "this music has no lyrics"
+  "music_lrc": "this music has no lyrics",
+  "group_member": "this group chat has no members"
 }

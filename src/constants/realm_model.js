@@ -14,7 +14,7 @@ export class SessionInfo extends Realm.Object {
       userId: 'int?',
       unread_count: 'int?',
       lastSenderRemarks: 'string?',
-      last_msg_content: 'string?',
+      lastMsgContent: 'string?',
       update_time: 'string',
       created_at: 'date',
       updated_at: 'date',
@@ -42,6 +42,8 @@ export class ChatMsg extends Realm.Object {
       decrypted_content: 'string?',
       create_time: 'string',
       status: 'string',
+      system: 'bool?',
+      reminders: 'int?[]',
     },
   };
 }

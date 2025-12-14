@@ -1,10 +1,5 @@
 import React, {useState, useEffect, useMemo} from 'react';
-import {
-  StyleSheet,
-  Modal,
-  ImageBackground,
-  useWindowDimensions,
-} from 'react-native';
+import {StyleSheet, Modal, useWindowDimensions} from 'react-native';
 import {
   View,
   Text,
@@ -26,6 +21,7 @@ import {useTranslation} from 'react-i18next';
 import {useMusicStore} from '@store/musicStore';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import BaseImageBackground from '@components/common/BaseImageBackground';
 import LrcView from './LrcView';
 
 const styles = StyleSheet.create({
@@ -179,14 +175,10 @@ const LyricModal = React.memo(props => {
       <View
         height={fullHeight + statusBarHeight}
         backgroundColor={Colors.black4}>
-        <ImageBackground
+        <BaseImageBackground
           blurRadius={50}
           style={styles.backImage}
-          source={
-            musicExtra?.music_cover
-              ? {uri: envConfig.STATIC_URL + musicExtra.music_cover}
-              : require('@assets/images/user_bg.jpg')
-          }
+          source={{uri: envConfig.STATIC_URL + musicExtra?.music_cover}}
           resizeMode="cover">
           <TouchableOpacity paddingT-48 paddingL-22 onPress={onClose}>
             <Ionicons name="chevron-down" color={Colors.lyricColor} size={24} />
@@ -482,7 +474,7 @@ const LyricModal = React.memo(props => {
               </View>
             </Carousel>
           )}
-        </ImageBackground>
+        </BaseImageBackground>
       </View>
     </Modal>
   );

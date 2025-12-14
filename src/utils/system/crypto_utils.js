@@ -2,7 +2,12 @@ import {Buffer} from 'buffer';
 import {reverseString} from '@utils/common/string_utils';
 import QuickCrypto from 'react-native-quick-crypto';
 
-export const createHash = str => {
+/**
+ * 生成SHA256哈希值
+ * @param {string} str 待哈希字符串
+ * @returns {string} SHA256哈希值
+ */
+export const createHashSha256 = str => {
   return QuickCrypto.createHash('sha256').update(str).digest('hex');
 };
 
@@ -65,13 +70,13 @@ export const decryptAES = (encryptedData, iv, secretKey) => {
  * @returns {string} 生成的秘钥库
  */
 export const generateSecretKey = msgSecret => {
-  const secretHash = QuickCrypto.createHash('sha512').update(String(msgSecret));
-  const secretReHash = QuickCrypto.createHash('sha512').update(
-    String(reverseString(msgSecret)),
-  );
-  const secretKey = secretHash.digest('hex');
-  const secretReKey = secretReHash.digest('hex');
-  return secretKey + secretReKey;
+  const secretHash = QuickCrypto.createHash('sha512')
+    .update(String(msgSecret))
+    .digest('hex');
+  const secretReHash = QuickCrypto.createHash('sha512')
+    .update(String(reverseString(msgSecret)))
+    .digest('hex');
+  return secretHash + secretReHash;
 };
 
 /**

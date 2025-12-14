@@ -12,17 +12,22 @@ import {
 import {useToast} from '@components/common/useToast';
 import {playSystemSound} from '@utils/system/notification';
 import {displayName} from '@root/app.json';
-import {getAppConfig} from '@api/app_config';
+import {getAppConfig} from '@/config/app_config';
 import {deepClone} from '@utils/common/object_utils';
 import {useSettingStore} from '@store/settingStore';
 import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
 import {UserRoleEnum} from '@const/database_enum';
 import {useTranslation} from 'react-i18next';
+import {formatFileSize} from '@utils/system/file_utils';
+import {useIsFocused} from '@react-navigation/native';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 import ListItem from '@components/common/ListItem';
 import BaseColorPicker from '@components/setting/BaseColorPicker';
 import BaseSheet from '@components/common/BaseSheet';
+import BaseDialog from '@components/common/BaseDialog';
 
+const cacheDir = ReactNativeBlobUtil.fs.dirs.CacheDir;
 const superRole = [UserRoleEnum.admin, UserRoleEnum.vip];
 
 const Setting = ({navigation}) => {
@@ -54,6 +59,57 @@ const Setting = ({navigation}) => {
   const {userInfo} = useUserStore();
   const {envConfig, updateEnvConfig} = useConfigStore();
   const {t} = useTranslation();
+  const isFocused = useIsFocused();
+
+  // 获取缓存大小
+  const getCacheSize = async () => {
+    try {
+      // 递归遍历目录并计算总大小
+      const calculateDirectorySize = async path => {
+        let totalSize = 0;
+        try {
+          const files = await ReactNativeBlobUtil.fs.ls(path);
+          if (files.length === 0) {
+            return totalSize;
+          }
+          for (const file of files) {
+            const filePath = `${path}/${file}`;
+            try {
+              const isDir = await ReactNativeBlobUtil.fs.isDir(filePath);
+              if (!isDir) {
+                const stats = await ReactNativeBlobUtil.fs.stat(filePath);
+                totalSize += stats.size;
+              } else if (isDir) {
+                const dirSize = await calculateDirectorySize(filePath);
+                totalSize += dirSize;
+              }
+            } catch (err) {
+              console.error(`处理文件 ${filePath} 时出错:`, err);
+            }
+          }
+        } catch (err) {
+          console.error(`扫描目录 ${path} 时出错:`, err);
+        }
+        return totalSize;
+      };
+      // 计算缓存目录总大小（转换为MB）
+      const totalBytes = await calculateDirectorySize(cacheDir);
+      setCacheSize(totalBytes);
+    } catch (error) {
+      setCacheSize(0);
+      console.error('getCacheSize error', error);
+    }
+  };
+
+  // 清除缓存
+  const clearCache = async () => {
+    try {
+      await ReactNativeBlobUtil.fs.unlink(cacheDir);
+      getCacheSize();
+    } catch (error) {
+      console.error('clearCache error', error);
+    }
+  };
 
   const soundNames = [
     {id: 1, name: t('setting.default'), value: 'default_1.mp3'},
@@ -62,23 +118,14 @@ const Setting = ({navigation}) => {
     {id: 4, name: t('setting.ring4'), value: 'default_4.mp3'},
   ];
 
-  // 获取颜色
   const [showDialog, setShowDialog] = useState(false);
-
-  // 消息提示类型
   const [showToastType, setShowToastType] = useState(false);
-
-  // 首选语言
   const [showLanguage, setShowLanguage] = useState(false);
-
-  // 音效选择
   const [showAudio, setShowAudio] = useState(false);
-
-  // 查看文件位置
   const [showFileLocation, setShowFileLocation] = useState(false);
-
-  // 默认应用
   const [showDefaultApp, setShowDefaultApp] = useState(false);
+  const [showClearCache, setShowClearCache] = useState(false);
+  const [cacheSize, setCacheSize] = useState(0);
 
   // 设置静态资源地址
   const settingStaticUrl = async value => {
@@ -91,6 +138,12 @@ const Setting = ({navigation}) => {
     }
     updateEnvConfig(newUrlInfo);
   };
+
+  useEffect(() => {
+    if (isFocused) {
+      getCacheSize();
+    }
+  }, [isFocused]);
 
   return (
     <>
@@ -209,6 +262,15 @@ const Setting = ({navigation}) => {
               setShowFileLocation(true);
             }}
           />
+          <ListItem
+            itemName={t('setting.clearCache')}
+            iconName={'trash'}
+            iconColor={Colors.orange40}
+            rightText={formatFileSize(cacheSize)}
+            onConfirm={() => {
+              setShowClearCache(true);
+            }}
+          />
           {superRole.includes(userInfo?.user_role) ? (
             <ListItem
               itemName={t('setting.fastStatic')}
@@ -230,31 +292,6 @@ const Setting = ({navigation}) => {
         </Card>
       </View>
 
-      <Dialog visible={showDialog} onDismiss={() => setShowDialog(false)}>
-        <Card padding-16 row left style={styles.flexWrap}>
-          <BaseColorPicker
-            selectedColor={themeColor}
-            onConfirm={item => {
-              setThemeColor(item.color);
-              showToast(t('setting.setSuccess'), 'success');
-              setShowDialog(false);
-            }}
-          />
-          <View flexS row centerV paddingH-24>
-            <Text>{t('setting.customThemeColor')}</Text>
-            <ColorPicker
-              colors={[Colors.primary]}
-              initialColor={Colors.primary}
-              value={Colors.primary}
-              onSubmit={color => {
-                setThemeColor(color);
-                showToast(t('setting.setSuccess'), 'success');
-                setShowDialog(false);
-              }}
-            />
-          </View>
-        </Card>
-      </Dialog>
       <BaseSheet
         title={t('setting.toastType_select')}
         visible={showToastType}
@@ -373,6 +410,31 @@ const Setting = ({navigation}) => {
           },
         ]}
       />
+      <Dialog visible={showDialog} onDismiss={() => setShowDialog(false)}>
+        <Card padding-16 row left style={styles.flexWrap}>
+          <BaseColorPicker
+            selectedColor={themeColor}
+            onConfirm={item => {
+              setThemeColor(item.color);
+              showToast(t('setting.setSuccess'), 'success');
+              setShowDialog(false);
+            }}
+          />
+          <View flexS row centerV paddingH-24>
+            <Text>{t('setting.customThemeColor')}</Text>
+            <ColorPicker
+              colors={[Colors.primary]}
+              initialColor={Colors.primary}
+              value={Colors.primary}
+              onSubmit={color => {
+                setThemeColor(color);
+                showToast(t('setting.setSuccess'), 'success');
+                setShowDialog(false);
+              }}
+            />
+          </View>
+        </Card>
+      </Dialog>
       <Dialog
         visible={showFileLocation}
         onDismiss={() => setShowFileLocation(false)}>
@@ -403,6 +465,15 @@ const Setting = ({navigation}) => {
           </View>
         </Card>
       </Dialog>
+      <BaseDialog
+        title={true}
+        onConfirm={() => {
+          clearCache();
+        }}
+        visible={showClearCache}
+        setVisible={setShowClearCache}
+        description={t('setting.clearCache_confirm')}
+      />
     </>
   );
 };

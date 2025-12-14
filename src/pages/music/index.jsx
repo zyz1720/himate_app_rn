@@ -58,8 +58,7 @@ const Music = ({navigation}) => {
 
   const scales = ['00:00', '00:30', '01:00', '01:30', '02:00'];
 
-  // 宫格列表数据
-  const [itemData, setItemData] = useState([
+  const menuItems = [
     {
       title: t('music.find_favorites'),
       icon: 'cloud',
@@ -88,7 +87,10 @@ const Music = ({navigation}) => {
       num: 0,
       route: 'MyFavorites',
     },
-  ]);
+  ];
+
+  // 宫格列表数据
+  const [itemData, setItemData] = useState(menuItems);
 
   /* 默认收藏数量 */
   const getDefaultFavoritesCount = async () => {
@@ -504,14 +506,11 @@ const Music = ({navigation}) => {
                     });
                   }}>
                   <Image
-                    source={
-                      item?.favorites_cover
-                        ? {
-                            uri: envConfig.THUMBNAIL_URL + item.favorites_cover,
-                          }
-                        : require('@assets/images/favorites_cover.jpg')
-                    }
+                    source={{
+                      uri: envConfig.THUMBNAIL_URL + item.favorites_cover,
+                    }}
                     style={styles.favoritesCover}
+                    errorSource={require('@assets/images/favorites_cover.jpg')}
                   />
                   <View centerV marginL-12>
                     <Text>{item.favorites_name}</Text>

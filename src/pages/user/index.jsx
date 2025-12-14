@@ -10,12 +10,7 @@ import {
   Button,
   ProgressBar,
 } from 'react-native-ui-lib';
-import {
-  StyleSheet,
-  ActivityIndicator,
-  Platform,
-  ImageBackground,
-} from 'react-native';
+import {StyleSheet, ActivityIndicator, Platform} from 'react-native';
 import {useToast} from '@components/common/useToast';
 import {downloadFile} from '@utils/system/file_utils';
 import {getAppVersion} from '@api/app_package';
@@ -29,6 +24,7 @@ import DeviceInfo from 'react-native-device-info';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FullScreenLoading from '@components/common/FullScreenLoading';
+import BaseImageBackground from '@components/common/BaseImageBackground';
 import ImgModal from '@components/common/ImgModal';
 import ListItem from '@components/common/ListItem';
 
@@ -117,13 +113,9 @@ const User = ({navigation}) => {
         <FullScreenLoading Message={displayName + ' ' + t('common.loading')} />
       ) : (
         <View flexG top paddingH-16 paddingT-16>
-          <ImageBackground
+          <BaseImageBackground
             style={styles.userBgImage}
-            source={
-              userInfo?.user_bg_img
-                ? {uri: envConfig.STATIC_URL + userInfo.user_bg_img}
-                : require('@assets/images/user_bg.jpg')
-            }
+            source={{uri: envConfig.STATIC_URL + userInfo?.user_bg_img}}
             resizeMode="cover">
             <View backgroundColor={Colors.black2}>
               <View
@@ -176,7 +168,7 @@ const User = ({navigation}) => {
                 </TouchableOpacity>
               </View>
             </View>
-          </ImageBackground>
+          </BaseImageBackground>
           <Card flexS centerV enableShadow={false} marginT-16>
             <ListItem
               itemName={t('user.account_safe')}

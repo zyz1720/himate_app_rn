@@ -1,21 +1,41 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {StyleSheet, ActivityIndicator} from 'react-native';
-import {
-  View,
-  Colors,
-  Text,
-  TouchableOpacity,
-  AnimatedScanner,
-  Image,
-} from 'react-native-ui-lib';
+import {View, Colors, Text, TouchableOpacity, Image} from 'react-native-ui-lib';
 import {formatSeconds} from '@utils/common/time_utils';
-import {createVideoThumbnail} from 'react-native-compressor';
 import {useTranslation} from 'react-i18next';
 import {useToast} from '@components/common/useToast';
 import VideoModal from '@components/common/VideoModal';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import Video from 'react-native-video';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import AnimatedScanner from '@components/common/AnimatedScanner';
+
+const styles = StyleSheet.create({
+  video: {
+    width: 150,
+    height: 100,
+    borderRadius: 12,
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
+  },
+  videoControl: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    top: 0,
+    left: 0,
+    borderRadius: 12,
+  },
+  videoTime: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    color: Colors.white,
+    fontSize: 12,
+  },
+});
 
 const VideoMsg = React.memo(props => {
   const {
@@ -25,43 +45,24 @@ const VideoMsg = React.memo(props => {
     uploadProgress = 0,
     onLongPress = () => {},
   } = props;
-
   const {t} = useTranslation();
   const {showToast} = useToast();
 
-  const [videoThumbnail, setVideoThumbnail] = useState(null);
-  const [videoDuration, setVideoDuration] = useState(0);
+  const {thumbnail, duration: videoDuration} = currentMessage?.videoInfo || {};
+
   const [videoLoading, setVideoLoading] = useState(true);
-
   const [videoVisible, setVideoVisible] = useState(false);
-
-  useEffect(() => {
-    if (currentMessage?.video) {
-      createVideoThumbnail(currentMessage?.video)
-        .then(res => {
-          setVideoLoading(false);
-          setVideoThumbnail(res.path);
-        })
-        .catch(error => {
-          setVideoLoading(false);
-          console.error(error);
-        });
-    }
-  }, [currentMessage]);
+  const [videoThumbnail, setVideoThumbnail] = useState(thumbnail);
 
   return (
     <>
       <View>
-        <Video
-          source={{uri: currentMessage?.video}}
-          paused={true}
-          onLoad={e => {
-            setVideoDuration(e.duration);
-          }}
-        />
         <Image
           style={styles.video}
           source={{uri: videoThumbnail}}
+          errorSource={require('@assets/images/video_empty.jpg')}
+          onLoadEnd={() => setVideoLoading(false)}
+          onError={() => setVideoThumbnail(null)}
           resizeMode="cover"
         />
         {videoLoading ? (
@@ -75,10 +76,10 @@ const VideoMsg = React.memo(props => {
           <TouchableOpacity
             style={styles.videoControl}
             onLongPress={() => {
-               onLongPress({
-                 type: 'media',
-                 url: currentMessage?.video,
-               });
+              onLongPress({
+                type: 'media',
+                url: currentMessage?.video,
+              });
             }}
             onPress={() => setVideoVisible(true)}>
             <AntDesign name="playcircleo" color={Colors.white} size={32} />
@@ -98,10 +99,8 @@ const VideoMsg = React.memo(props => {
         )}
         {uploadIds.includes(currentMessage._id) ? (
           <AnimatedScanner
-            progress={nowUploadId === currentMessage._id ? uploadProgress : 0}
-            duration={1200}
-            backgroundColor={Colors.black}
-            opacity={0.5}
+            progress={currentMessage?._id === nowUploadId ? uploadProgress : 0}
+            borderRadius={12}
           />
         ) : null}
       </View>
@@ -111,6 +110,7 @@ const VideoMsg = React.memo(props => {
         visible={videoVisible}
         onPressClose={() => {
           setVideoVisible(false);
+          console.log(currentMessage?.video);
         }}
         onClose={() => setVideoVisible(false)}
         onError={e => {
@@ -120,34 +120,6 @@ const VideoMsg = React.memo(props => {
       />
     </>
   );
-});
-
-const styles = StyleSheet.create({
-  video: {
-    width: 150,
-    height: 100,
-    borderRadius: 12,
-    backgroundColor: 'transparent',
-    overflow: 'hidden',
-  },
-  videoControl: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
-    top: 0,
-    left: 0,
-    borderRadius: 12,
-  },
-  videoTime: {
-    position: 'absolute',
-    bottom: 8,
-    right: 8,
-    color: Colors.white,
-    fontSize: 12,
-  },
 });
 
 export default VideoMsg;

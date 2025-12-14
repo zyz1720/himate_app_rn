@@ -6,7 +6,7 @@ import React, {
   createContext,
   useContext,
 } from 'react';
-import {StyleSheet, ImageBackground} from 'react-native';
+import {StyleSheet} from 'react-native';
 import {Image, View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 import {fullWidth} from '@style/index';
@@ -30,6 +30,7 @@ import Animated, {
   useAnimatedStyle,
 } from 'react-native-reanimated';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import BaseImageBackground from '@components/common/BaseImageBackground';
 import LyricModal from './LyricModal';
 import ToBePlayedModal from './ToBePlayedModal';
 
@@ -500,15 +501,11 @@ const MusicCtrlProvider = React.memo(props => {
             fadeDownAnimatedStyle,
             styles.ctrlBackImage,
           ]}>
-          <ImageBackground
+          <BaseImageBackground
             blurRadius={40}
-            source={
-              userInfo?.user_bg_img
-                ? {
-                    uri: envConfig.THUMBNAIL_URL + userInfo.user_bg_img,
-                  }
-                : require('@assets/images/user_bg.jpg')
-            }
+            source={{
+              uri: envConfig.THUMBNAIL_URL + userInfo?.user_bg_img,
+            }}
             resizeMode="cover">
             <GestureHandlerRootView>
               <View row centerV spread>
@@ -589,7 +586,7 @@ const MusicCtrlProvider = React.memo(props => {
                 </View>
               </View>
             </GestureHandlerRootView>
-          </ImageBackground>
+          </BaseImageBackground>
         </Animated.View>
       </View>
       <LyricModal

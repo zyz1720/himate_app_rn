@@ -10,7 +10,7 @@ export const deleteMate = id => instance.delete(`app/mate/${id}`);
 export const getMateList = params => instance.get('app/mate', {params});
 
 // 是否是好友
-export const getIsMate = userId => instance.get(`app/mate/relation/${userId}`);
+export const getIsMate = userId => instance.get(`app/mate/${userId}/relation`);
 
 // 申请我为好友待通过的好友
 export const getApplyList = () => instance.get('app/mate/waiting');
@@ -20,11 +20,11 @@ export const getRejectedList = () => instance.get('app/mate/rejected');
 
 // 修改好友备注
 export const editMateRemarks = (id, data) =>
-  instance.put(`app/mate/remarks/${id}`, data);
+  instance.put(`app/mate/${id}/remarks`, data);
 
 // 同意好友申请
 export const agreeMateApply = (id, data) =>
-  instance.put(`app/mate/agree/${id}`, data);
+  instance.put(`app/mate/${id}/agree`, data);
 
 // 拒绝好友申请
-export const refuseMateApply = id => instance.put(`app/mate/refuse/${id}`);
+export const refuseMateApply = id => instance.put(`app/mate/${id}/refuse`);

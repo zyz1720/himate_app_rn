@@ -7,5 +7,6 @@
   "status": "系统接口{{code}}错误",
   "network": "网络连接异常",
   "timeout": "网络请求超时",
-  "default": "系统未知错误"
+  "default": "系统未知错误",
+  "unConnected": "当前无法连接网络，请检查网络设置是否正常"
 }

@@ -45,3 +45,17 @@ export const getLocalMates = () => {
     return [];
   }
 };
+
+/* 删除本地好友信息 */
+export const deleteLocalMateInfo = () => {
+  try {
+    const existMate = realm.objects('mate_info');
+    if (existMate) {
+      realm.write(() => {
+        realm.delete(existMate);
+      });
+    }
+  } catch (error) {
+    console.error('删除本地好友失败', error);
+  }
+};

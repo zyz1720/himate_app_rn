@@ -50,7 +50,7 @@ const GroupList = ({navigation}) => {
           backgroundColor={Colors.transparent}
         />
         <View marginL-10>
-          <Text text70>{item.group_name}</Text>
+          <Text text80 grey10>{item.group_name}</Text>
         </View>
       </View>
       <View>

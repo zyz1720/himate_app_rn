@@ -16,7 +16,7 @@ export const getDefaultFavorites = params =>
 
 // 歌单详情
 export const getFavoritesDetail = id =>
-  instance.get(`app/favorites/detail/${id}`);
+  instance.get(`app/favorites/${id}/detail`);
 
 // 修改歌单
 export const updateFavorites = (id, data) =>

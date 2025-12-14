@@ -3,6 +3,7 @@ import {name as appName} from '@root/app.json';
 import {useSettingStore} from '@store/settingStore';
 import {useConfigStore} from '@store/configStore';
 import {useChatMsgStore} from '@store/chatMsgStore';
+import {useAppStateStore} from '@store/appStateStore';
 import {formatSessionToNotification} from './chat_utils';
 import i18n from 'i18next';
 import Sound from 'react-native-sound';
@@ -55,17 +56,33 @@ export const onDisplayRealMsg = async message => {
 
 // 批量处理通知
 export const batchDisplayMsgNotifications = async messages => {
-  const {notRemindSessionIds, nowJoinSessions} = useChatMsgStore.getState();
+  const {notRemindSessionIds, nowJoinSessions, remindSessionIds} =
+    useChatMsgStore.getState();
+  const {isPlaySound} = useSettingStore.getState();
+  const {appIsActive} = useAppStateStore.getState();
   const toBeDisplayedMsgs = formatSessionToNotification(messages);
+
+  const reminder = item => {
+    if (!appIsActive) {
+      onDisplayRealMsg(item);
+    }
+    if (isPlaySound) {
+      playSystemSound();
+    }
+  };
+
   for (const item of toBeDisplayedMsgs) {
+    if (remindSessionIds.find(e => e.sessionId === item.id)) {
+      reminder(item);
+      continue;
+    }
     if (
       notRemindSessionIds.includes(item.id) ||
       nowJoinSessions.includes(item.session_id)
     ) {
       continue;
     }
-    await onDisplayRealMsg(item);
-    await playSystemSound();
+    reminder(item);
   }
 };
 

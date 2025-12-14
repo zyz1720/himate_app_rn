@@ -1,13 +1,9 @@
 import React, {useState} from 'react';
 import {StyleSheet} from 'react-native';
-import {
-  Colors,
-  TouchableOpacity,
-  AnimatedScanner,
-  Image,
-} from 'react-native-ui-lib';
+import {TouchableOpacity, Image} from 'react-native-ui-lib';
 import {useConfigStore} from '@store/configStore';
 import ImgModal from '@components/common/ImgModal';
+import AnimatedScanner from '@components/common/AnimatedScanner';
 
 const styles = StyleSheet.create({
   image: {
@@ -15,7 +11,6 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 12,
     margin: 3,
-    resizeMode: 'cover',
   },
 });
 
@@ -45,13 +40,16 @@ const ImageMsg = React.memo(props => {
             ),
           });
         }}>
-        <Image style={styles.image} source={{uri: currentMessage.image}} />
+        <Image
+          style={styles.image}
+          source={{uri: currentMessage.image}}
+          errorSource={require('@assets/images/image_empty.jpg')}
+          resizeMode="cover"
+        />
         {uploadIds.includes(currentMessage._id) ? (
           <AnimatedScanner
             progress={nowUploadId === currentMessage._id ? uploadProgress : 0}
-            duration={1200}
-            backgroundColor={Colors.black}
-            opacity={0.5}
+            borderRadius={12}
           />
         ) : null}
       </TouchableOpacity>

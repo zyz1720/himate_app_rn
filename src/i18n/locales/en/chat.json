@@ -43,5 +43,7 @@
     "copy_content": "Copy content",
     "cancel_send": "Cancel send",
     "retry_send": "Retry send",
-    "message_options": "Message options"
+    "message_options": "Message options",
+    "msg_searched": "Message found",
+    "msg_mention": "Please select the member to @mention"
 }

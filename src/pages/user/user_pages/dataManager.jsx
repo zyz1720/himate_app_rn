@@ -23,7 +23,6 @@ import {
   getFileExt,
   formatFileSize,
 } from '@utils/system/file_utils';
-import {formatDateTime} from '@utils/common/time_utils';
 import {showMessageText} from '@utils/system/chat_utils';
 import {getLocalSessionById} from '@utils/realm/useSessionInfo';
 import {FileTypeEnum, FileUseTypeEnum} from '@const/database_enum';
@@ -301,6 +300,7 @@ const DataManager = ({navigation}) => {
             source={{
               uri: envConfig.THUMBNAIL_URL + item.file_key,
             }}
+            errorSource={require('@assets/images/empty.jpg')}
           />
         ) : (
           renderFileIcon(item.file_type, item.file_key)
@@ -312,7 +312,7 @@ const DataManager = ({navigation}) => {
           <View row marginT-4 bottom spread>
             <Text grey30>{formatFileSize(item.file_size)}</Text>
             <Text grey40 text90L>
-              {formatDateTime(item.create_time)}
+              {dayjs(item.create_time).format('YYYY/MM/DD HH:mm:ss')}
             </Text>
           </View>
         </View>

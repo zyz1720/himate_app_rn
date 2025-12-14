@@ -91,9 +91,9 @@ const DrawerScreen = () => {
         <Drawer.Screen
           name="WebView"
           component={BaseWebView}
-          options={({route}) => ({
-            title: route.params?.title || displayName,
-          })}
+          options={{
+            title: t('common.about') + displayName,
+          }}
         />
       </Drawer.Group>
     </Drawer.Navigator>

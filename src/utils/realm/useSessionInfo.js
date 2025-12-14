@@ -3,13 +3,13 @@ import {deepClone} from '@utils/common/object_utils';
 import {showMessageText} from '@utils/system/chat_utils';
 import {isEmptyString} from '@utils/common/string_utils';
 
-/* 写入本地会话 */
+/* 格式化并写入本地会话 */
 export const setLocalSession = (sessions = []) => {
   try {
     sessions.forEach(sessionWithExtra => {
       const {session, sessionExtra, isLatest} = sessionWithExtra;
       const sessionInfo = deepClone({...session, ...sessionExtra});
-      sessionInfo.last_msg_content = showMessageText(sessionInfo.lastMsg);
+      sessionInfo.lastMsgContent = showMessageText(sessionInfo.lastMsg);
       const existSession = realm.objectForPrimaryKey(
         'session_info',
         sessionInfo.id,
@@ -46,7 +46,7 @@ export const getLocalSession = session_id => {
     const sessionExtras = realm
       .objects('session_info')
       .filtered('session_id == $0', session_id)
-      .sort('updated_at', true)
+      .sorted('updated_at', true)
       .toJSON();
     return sessionExtras;
   } catch (error) {
@@ -132,7 +132,7 @@ export const updateSessionLastMsg = (session_id, lastMsg = {}) => {
         return;
       }
       realm.write(() => {
-        existSession.last_msg_content = lastMsgContent;
+        existSession.lastMsgContent = lastMsgContent;
         existSession.updated_at = new Date();
         resolve(true);
       });

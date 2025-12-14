@@ -4,10 +4,10 @@ import instance from '@utils/request';
 export const getMusic = params => instance.get('app/music', {params});
 
 // 音乐详情
-export const getMusicDetail = id => instance.get(`app/music/detail/${id}`);
+export const getMusicDetail = id => instance.get(`app/music/${id}/detail`);
 
 // 音乐是否收藏
-export const getMusicIsLiked = id => instance.get(`app/music/isLiked/${id}`);
+export const getMusicIsLiked = id => instance.get(`app/music/${id}/isLiked`);
 
 // 收藏音乐
 export const likeMusic = data => instance.post('app/music/like', data);
@@ -22,7 +22,7 @@ export const getMusicFromDefaultFavorites = params =>
 
 // 获取收藏夹音乐列表
 export const getMusicFromFavorites = (favoritesId, params) =>
-  instance.get(`app/music/favorites/${favoritesId}`, {params});
+  instance.get(`app/music/${favoritesId}/favorites`, {params});
 
 // 添加音乐到收藏夹
 export const appendMusicToFavorites = data =>
@@ -30,4 +30,4 @@ export const appendMusicToFavorites = data =>
 
 // 从收藏夹移除音乐
 export const removeMusicToFavorites = (favoritesId, data) =>
-  instance.delete(`app/music/favorites/${favoritesId}`, {data});
+  instance.delete(`app/music/${favoritesId}/favorites`, {data});

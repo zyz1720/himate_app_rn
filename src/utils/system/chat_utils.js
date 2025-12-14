@@ -5,13 +5,45 @@ import {
   createRandomSecretKey,
   encryptAES,
   decryptAES,
+  createHashSha256,
 } from './crypto_utils';
 import {v4 as uuid} from 'uuid';
 import {isEmptyObject} from '@utils/common/object_utils';
 import {createRandomNumber} from '@utils/common/number_utils';
-import {getFileExt, uploadFile} from './file_utils';
+import {
+  getFileExt,
+  uploadFile,
+  createVideoThumbnailImg,
+  getVideoMetaDataInfo,
+  getFileFromVideoThumbnail,
+} from './file_utils';
 import {FileUseTypeEnum, MsgTypeEnum} from '@const/database_enum';
+import DeviceInfo from 'react-native-device-info';
 import i18n from 'i18next';
+
+// 消息ID生成器
+const deviceId = DeviceInfo.getUniqueIdSync();
+export const messageIdGenerator = () => {
+  return createHashSha256(`${deviceId}_${uuid()}_${Date.now().toString()}`);
+};
+
+/**
+ * 解析视频信息
+ * @param {string} str
+ * @returns {string} 格式化后的视频时长（格式为 MM:SS）
+ */
+export const parseVideoInfo = str => {
+  const {envConfig} = useConfigStore.getState();
+  const videoInfo = str.split(',');
+  if (videoInfo.length !== 3) {
+    return {};
+  }
+  return {
+    video: videoInfo[0],
+    thumbnail: envConfig.THUMBNAIL_URL + videoInfo[1],
+    duration: Number(videoInfo[2]),
+  };
+};
 
 /* 创建临时消息 */
 export const createTmpMessage = (options = {}) => {
@@ -23,10 +55,11 @@ export const createTmpMessage = (options = {}) => {
     userName,
     userAvatar,
     fileInfo = {},
+    videoInfo = {},
   } = options;
 
   const message = {
-    _id: uuid(),
+    _id: messageIdGenerator(),
     text: text,
     createdAt: new Date(),
     user: {
@@ -37,10 +70,9 @@ export const createTmpMessage = (options = {}) => {
     },
     msg_type: MsgTypeEnum.text,
     fileInfo,
+    videoInfo,
+    system: isSystem,
   };
-  if (isSystem) {
-    message.system = true;
-  }
   if (!isEmptyObject(fileInfo)) {
     const {type, uri, ext} = fileInfo;
     const mediaTypes = [
@@ -115,6 +147,15 @@ export const showMessageText = message => {
   return msgTypeMap[msg_type] || '';
 };
 
+/* 显示提醒文本 */
+export const showReminderText = (reminders = []) => {
+  const {userInfo} = useUserStore.getState();
+  if (reminders.includes(userInfo?.id)) {
+    return i18n.t('chat.reminder');
+  }
+  return '';
+};
+
 /* 格式化云端消息为本地消息 */
 export const formatCloudMsgToLocal = (list = [], session_id) => {
   return list.map(item => {
@@ -125,6 +166,7 @@ export const formatCloudMsgToLocal = (list = [], session_id) => {
       sender_remarks: senderInfo?.remarks,
       chat_type: senderInfo?.chat_type,
       status: 'ok',
+      system: message?.is_system,
       ...message,
     };
   });
@@ -132,7 +174,7 @@ export const formatCloudMsgToLocal = (list = [], session_id) => {
 
 /* 格式化临时消息为本地消息 */
 export const formatTmpMsgToLocal = (message, options = {}) => {
-  const {_id, createdAt, text, user, msg_type} = message || {};
+  const {_id, createdAt, text, user, msg_type, system} = message || {};
   const {
     session_id,
     chat_type,
@@ -140,6 +182,7 @@ export const formatTmpMsgToLocal = (message, options = {}) => {
     sender_avatar,
     sender_remarks,
     status,
+    reminders,
   } = options || {};
   return {
     id: -createRandomNumber(11),
@@ -155,6 +198,8 @@ export const formatTmpMsgToLocal = (message, options = {}) => {
     chat_type: chat_type,
     create_time: createdAt?.toISOString(),
     status: status,
+    system: system,
+    reminders: reminders || [],
   };
 };
 
@@ -175,6 +220,8 @@ export const formatLocalMsgToTmp = (messages = []) => {
       sender_remarks,
       sender_avatar,
       status,
+      system,
+      reminders = [],
     } = msg;
     const text =
       decrypted_content ||
@@ -202,6 +249,10 @@ export const formatLocalMsgToTmp = (messages = []) => {
       if (mediaTypes.includes(msg_type)) {
         if (msg_type === MsgTypeEnum.image) {
           message[msg_type] = envConfig.THUMBNAIL_URL + text;
+        } else if (msg_type === MsgTypeEnum.video) {
+          const videoInfo = parseVideoInfo(text);
+          message.videoInfo = videoInfo;
+          message[msg_type] = envConfig.STATIC_URL + videoInfo.video;
         } else {
           message[msg_type] = envConfig.STATIC_URL + text;
         }
@@ -210,38 +261,112 @@ export const formatLocalMsgToTmp = (messages = []) => {
         message.text = getFileExt(text);
       }
     }
+    if (reminders && reminders.length > 0 && status === 'failed') {
+      message.reminders = reminders;
+    }
+    if (system) {
+      message.system = system;
+    }
     return message;
   });
+};
+
+/* 处理视频消息 */
+export const processVideoThumbnail = async thumbnail => {
+  try {
+    const fileInfo = getFileFromVideoThumbnail(thumbnail);
+    const result = await uploadFile(fileInfo.file, {
+      form: {
+        file_type: fileInfo.type,
+        use_type: FileUseTypeEnum.chat,
+      },
+    });
+    const upRes = JSON.parse(result.text());
+    if (upRes.code === 0) {
+      return upRes.data.file_key;
+    } else {
+      console.error(upRes.message);
+      return null;
+    }
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
+// 获取视频消息信息
+export const getVideoMsgInfo = async videoPath => {
+  try {
+    const thumbnailInfo = await createVideoThumbnailImg(videoPath);
+    const metaData = await getVideoMetaDataInfo(videoPath);
+    if (!thumbnailInfo || !metaData) {
+      return null;
+    }
+    return {
+      thumbnail: thumbnailInfo.path,
+      duration: metaData.duration,
+    };
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 };
 
 /* 处理消息 */
 export const processMessage = async (
   message,
-  {onProgress = () => {}, setUploadId = () => {}, setUploadIds = () => {}},
+  {
+    reminders = [],
+    onProgress = () => {},
+    setUploadId = () => {},
+    onComplete = () => {},
+  },
 ) => {
-  const {msg_type = MsgTypeEnum.text, text, fileInfo} = message || {};
+  const {
+    _id,
+    msg_type = MsgTypeEnum.text,
+    text,
+    fileInfo = {},
+    videoInfo = {},
+  } = message || {};
+
+  const baseMsg = {msg_type, content: text, client_msg_id: _id};
+
   if (msg_type === MsgTypeEnum.text) {
-    return {msg_type, text};
+    if (reminders && reminders.length > 0) {
+      baseMsg.reminders = reminders;
+    }
+    return baseMsg;
   } else {
-    if (!fileInfo || isEmptyObject(fileInfo)) {
+    if (
+      isEmptyObject(fileInfo) ||
+      (msg_type === MsgTypeEnum.video && isEmptyObject(videoInfo))
+    ) {
       return false;
     }
     try {
-      setUploadId(message._id);
-      setUploadIds(prevIds => [...new Set([...prevIds, message._id])]);
-      const res = await uploadFile(fileInfo.file, {
+      setUploadId(_id);
+      let thumbnailKey = null;
+      if (msg_type === MsgTypeEnum.video) {
+        thumbnailKey = await processVideoThumbnail(videoInfo.thumbnail);
+        if (!thumbnailKey) {
+          return false;
+        }
+      }
+      const result = await uploadFile(fileInfo.file, {
         form: {
           file_type: fileInfo.type,
           use_type: FileUseTypeEnum.chat,
         },
         onProgress: onProgress,
       });
-      const upRes = JSON.parse(res.text());
+      const upRes = JSON.parse(result.text());
       if (upRes.code === 0) {
-        return {
-          msg_type,
-          text: upRes.data.file_key,
-        };
+        baseMsg.content =
+          msg_type === MsgTypeEnum.video
+            ? `${upRes.data.file_key},${thumbnailKey},${videoInfo.duration}`
+            : upRes.data.file_key;
+        return baseMsg;
       } else {
         console.error(upRes.message);
         return false;
@@ -250,9 +375,7 @@ export const processMessage = async (
       console.error(error);
       return false;
     } finally {
-      onProgress(0);
-      setUploadId(null);
-      setUploadIds(prevIds => prevIds.filter(id => id !== message._id));
+      onComplete();
     }
   }
 };
@@ -269,7 +392,7 @@ export const formatLocalSessionToTmp = (sessions = []) => {
       groupId,
       userId,
       unread_count,
-      last_msg_content,
+      lastMsgContent,
       lastSenderRemarks,
       update_time,
       created_at,
@@ -284,7 +407,7 @@ export const formatLocalSessionToTmp = (sessions = []) => {
         update_time,
         created_at,
         updated_at,
-        last_msg_content,
+        lastMsgContent,
       },
       sessionExtra: {
         session_name,

@@ -12,7 +12,28 @@ import {useMusicStore} from '@store/musicStore';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
-const AudioMsg = props => {
+const styles = StyleSheet.create({
+  audioBut: {
+    backgroundColor: Colors.white,
+    borderRadius: 8,
+    minWidth: 80,
+    justifyContent: 'center',
+    marginVertical: 4,
+  },
+  audioProgress: {
+    width: 50,
+  },
+  audioThumb: {
+    width: 2,
+    height: 24,
+    backgroundColor: Colors.red30,
+    borderWidth: 1,
+    borderRadius: 1,
+    borderColor: Colors.red30,
+  },
+});
+
+const AudioMsg = React.memo(props => {
   const {
     currentMessage = {},
     onLongPress = () => {},
@@ -102,7 +123,7 @@ const AudioMsg = props => {
     <View style={styles.audioBut}>
       <TouchableOpacity
         onPress={async () => startPlay()}
-        onLongPress={()=>{
+        onLongPress={() => {
           onLongPress({
             type: 'media',
             url: currentMessage?.audio,
@@ -169,27 +190,6 @@ const AudioMsg = props => {
       </TouchableOpacity>
     </View>
   );
-};
-
-const styles = StyleSheet.create({
-  audioBut: {
-    backgroundColor: Colors.white,
-    borderRadius: 8,
-    minWidth: 80,
-    justifyContent: 'center',
-    marginVertical: 4,
-  },
-  audioProgress: {
-    width: 50,
-  },
-  audioThumb: {
-    width: 2,
-    height: 24,
-    backgroundColor: Colors.red30,
-    borderWidth: 1,
-    borderRadius: 1,
-    borderColor: Colors.red30,
-  },
 });
 
 export default AudioMsg;

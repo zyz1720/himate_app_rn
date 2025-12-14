@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, ImageBackground} from 'react-native';
+import {StyleSheet} from 'react-native';
 import {
   View,
   Card,
@@ -16,6 +16,7 @@ import {addMate, editMateRemarks, deleteMate, getIsMate} from '@api/mate';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
 import {ChatTypeEnum} from '@const/database_enum';
+import BaseImageBackground from '@components/common/BaseImageBackground';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import BaseDialog from '@components/common/BaseDialog';
 import ImgModal from '@components/common/ImgModal';
@@ -134,14 +135,10 @@ const MateInfo = ({navigation, route}) => {
 
   return (
     <View padding-16>
-      <ImageBackground
+      <BaseImageBackground
         key={otherUserInfo?.id}
         style={styles.userBgImage}
-        source={
-          otherUserInfo?.user_bg_img
-            ? {uri: envConfig.STATIC_URL + otherUserInfo.user_bg_img}
-            : require('@assets/images/user_bg.jpg')
-        }
+        source={{uri: envConfig.STATIC_URL + otherUserInfo?.user_bg_img}}
         resizeMode="cover">
         <View backgroundColor={Colors.black2}>
           <View
@@ -171,7 +168,7 @@ const MateInfo = ({navigation, route}) => {
                   {mateRemarks}
                 </Text>
               ) : null}
-              <Text white text70BO numberOfLines={1}>
+              <Text white text80 numberOfLines={1}>
                 {t('user.user_name')}: {otherUserInfo?.user_name || '-'}
               </Text>
               <View width={166}>
@@ -209,7 +206,7 @@ const MateInfo = ({navigation, route}) => {
             </View>
           </View>
         </View>
-      </ImageBackground>
+      </BaseImageBackground>
       {isMate ? (
         <>
           <Card enableShadow={false} marginT-16>

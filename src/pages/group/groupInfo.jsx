@@ -64,7 +64,6 @@ const GroupInfo = ({navigation, route}) => {
     try {
       setRefreshing(true);
       const res = await getGroupDetail(id);
-      console.log('getGroupDetail', id, res.data);
       if (res.code === 0) {
         const {group_avatar, members} = res.data;
         const userIds = members.map(item => item.user_id);
@@ -80,9 +79,9 @@ const GroupInfo = ({navigation, route}) => {
   };
 
   // 获取自己在群中的信息
-  const getSelfGroupMemberInfo = async _session_id => {
+  const getSelfGroupMemberInfo = async _groupId => {
     try {
-      const res = await getSelfGroupMember(_session_id);
+      const res = await getSelfGroupMember(_groupId);
       if (res.code === 0) {
         const {member_role, member_remarks} = res.data;
         setMemberRole(member_role);
@@ -253,10 +252,10 @@ const GroupInfo = ({navigation, route}) => {
     if (groupId && isFocused) {
       dataInit(groupId);
     }
-    if (session_id && isFocused) {
-      getSelfGroupMemberInfo(session_id);
+    if (groupId && isFocused) {
+      getSelfGroupMemberInfo(groupId);
     }
-  }, [isFocused, groupId, session_id]);
+  }, [isFocused, groupId]);
 
   return (
     <>

@@ -4,7 +4,11 @@ import {getMateList, getApplyList} from '@api/mate';
 import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
 import {useIsFocused} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
-import {getLocalMates, setLocalMateInfo} from '@utils/realm/useMateInfo';
+import {
+  getLocalMates,
+  setLocalMateInfo,
+  deleteLocalMateInfo,
+} from '@utils/realm/useMateInfo';
 import ListItem from '@components/common/ListItem';
 import MateList from '@components/mate/MateList';
 
@@ -40,6 +44,7 @@ const Mate = ({navigation}) => {
   useEffect(() => {
     if (list.length) {
       setMateList(list);
+      deleteLocalMateInfo();
       setLocalMateInfo(list);
     }
   }, [list]);

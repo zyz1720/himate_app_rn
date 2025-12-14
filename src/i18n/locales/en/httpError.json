@@ -7,5 +7,6 @@
   "status": "System interface {{code}} error",
   "network": "Network connection abnormal",
   "timeout": "Network request timeout",
-  "default": "Unknown system error"
+  "default": "Unknown system error",
+  "unConnected": "Current network connection is abnormal, please check network settings"
 }

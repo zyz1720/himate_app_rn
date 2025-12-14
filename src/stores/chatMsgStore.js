@@ -1,42 +1,52 @@
 import {create} from 'zustand';
 import {persist, createJSONStorage} from 'zustand/middleware';
-import {v4 as uuid} from 'uuid';
+import {createRandomLetters} from '@utils/common/string_utils';
+import {useUserStore} from '@store/userStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const defaultState = {
   updateKey: 'update_key', // 更新key，用于刷新会话列表
-  cloudSessions: [], // 云端会话列表
   notRemindSessionIds: [], // 不用提醒的会话id列表
   nowJoinSessions: [], // 现在加入的会话session_id
+  remindSessionIds: [], // 提醒会话session_id列表
 };
 
 export const useChatMsgStore = create(
   persist(
     set => ({
       ...defaultState,
-      setUpdateKey: () => set({updateKey: uuid()}),
-      setCloudSessions: (data = []) =>
+      setUpdateKey: () => set({updateKey: createRandomLetters()}),
+      setRemindSessions: (data = []) => {
+        const {userInfo} = useUserStore.getState();
         set(state => {
           data.forEach(sessionWithExtra => {
             const {session} = sessionWithExtra;
-            const index = state.cloudSessions.findIndex(
-              item => item.session.id === session.id,
-            );
-            if (index !== -1) {
-              state.cloudSessions[index] = sessionWithExtra;
-            } else {
-              state.cloudSessions.unshift(sessionWithExtra);
+            const {reminders = []} = session?.lastMsg || {};
+            if (reminders.includes(userInfo.id)) {
+              const remindInfo = {
+                sessionId: session.id,
+                msg_id: session?.lastMsg?.client_msg_id || null,
+              };
+              const index = state.remindSessionIds.findIndex(
+                item => item.sessionId === session.id,
+              );
+              if (index !== -1) {
+                state.remindSessionIds[index] = remindInfo;
+              } else {
+                state.remindSessionIds.push(remindInfo);
+              }
             }
           });
           return state;
-        }),
-      removeCloudSession: sessionId =>
+        });
+      },
+      removeRemindSession: sessionId =>
         set(state => {
-          const index = state.cloudSessions.findIndex(
-            item => item.id === sessionId,
+          const index = state.remindSessionIds.findIndex(
+            item => item.sessionId === sessionId,
           );
           if (index !== -1) {
-            state.cloudSessions.splice(index, 1);
+            state.remindSessionIds.splice(index, 1);
           }
           return state;
         }),
@@ -73,6 +83,7 @@ export const useChatMsgStore = create(
       storage: createJSONStorage(() => AsyncStorage),
       partialize: state => ({
         notRemindSessionIds: state.notRemindSessionIds,
+        remindSessionIds: state.remindSessionIds,
       }),
     },
   ),

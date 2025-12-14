@@ -4,7 +4,19 @@ import {View, Text, TouchableOpacity} from 'react-native-ui-lib';
 import {useTranslation} from 'react-i18next';
 import {colorList} from '@style/index';
 
-const BaseColorPicker = React.memo(({onConfirm, selectedColor}) => {
+const styles = StyleSheet.create({
+  smallBox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+  },
+  selectedStyle: {
+    borderRadius: 10,
+    borderWidth: 2,
+  },
+});
+
+const BaseColorPicker = ({onConfirm, selectedColor}) => {
   const {t} = useTranslation();
 
   return colorList.map(item => (
@@ -22,12 +34,12 @@ const BaseColorPicker = React.memo(({onConfirm, selectedColor}) => {
           width={34}
           flexG
           center
-          style={
-            (selectedColor === item.color ? styles.selectedStyle : null,
+          style={[
+            selectedColor === item.color ? styles.selectedStyle : null,
             {
               borderColor: item.color,
-            })
-          }>
+            },
+          ]}>
           <View style={styles.smallBox} backgroundColor={item.color} />
         </View>
         <Text marginT-4 text90>
@@ -36,18 +48,6 @@ const BaseColorPicker = React.memo(({onConfirm, selectedColor}) => {
       </View>
     </TouchableOpacity>
   ));
-});
-
-const styles = StyleSheet.create({
-  smallBox: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-  },
-  selectedStyle: {
-    borderRadius: 10,
-    borderWidth: 2,
-  },
-});
+};
 
 export default BaseColorPicker;

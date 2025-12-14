@@ -10,7 +10,7 @@ export const useSse = path => {
   const {token_type, access_token} = useUserStore();
   const {envConfig} = useConfigStore();
   const [isConnected, setIsConnected] = useState(false);
-  const {setCloudSessions, setUpdateKey} = useChatMsgStore();
+  const {setRemindSessions, setUpdateKey} = useChatMsgStore();
   let sseInstanceRef = useRef(null);
   let sseTimer = useRef(null);
 
@@ -59,8 +59,8 @@ export const useSse = path => {
         if (Array.isArray(result?.data)) {
           const list = result.data;
           setUpdateKey();
-          setCloudSessions(list);
           setLocalSession(list);
+          setRemindSessions(list);
           batchDisplayMsgNotifications(list);
         }
       } catch (error) {

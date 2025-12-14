@@ -22,4 +22,4 @@ export const userLogout = () => instance.delete('app/user/logout');
 export const searchUsers = params => instance.get('app/user/search', {params});
 
 // 获取用户详情
-export const getUserDetail = id => instance.get(`app/user/detail/${id}`);
+export const getUserDetail = id => instance.get(`app/user/${id}/detail`);
