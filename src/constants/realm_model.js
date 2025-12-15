@@ -43,7 +43,6 @@ export class ChatMsg extends Realm.Object {
       create_time: 'string',
       status: 'string',
       system: 'bool?',
-      reminders: 'int?[]',
     },
   };
 }

@@ -21,13 +21,12 @@ import {UserRoleEnum} from '@const/database_enum';
 import {useTranslation} from 'react-i18next';
 import {formatFileSize} from '@utils/system/file_utils';
 import {useIsFocused} from '@react-navigation/native';
-import ReactNativeBlobUtil from 'react-native-blob-util';
+import {getCacheSize, deleteDir, cacheDir} from '@utils/system/fs_utils';
 import ListItem from '@components/common/ListItem';
 import BaseColorPicker from '@components/setting/BaseColorPicker';
 import BaseSheet from '@components/common/BaseSheet';
 import BaseDialog from '@components/common/BaseDialog';
 
-const cacheDir = ReactNativeBlobUtil.fs.dirs.CacheDir;
 const superRole = [UserRoleEnum.admin, UserRoleEnum.vip];
 
 const Setting = ({navigation}) => {
@@ -61,56 +60,6 @@ const Setting = ({navigation}) => {
   const {t} = useTranslation();
   const isFocused = useIsFocused();
 
-  // 获取缓存大小
-  const getCacheSize = async () => {
-    try {
-      // 递归遍历目录并计算总大小
-      const calculateDirectorySize = async path => {
-        let totalSize = 0;
-        try {
-          const files = await ReactNativeBlobUtil.fs.ls(path);
-          if (files.length === 0) {
-            return totalSize;
-          }
-          for (const file of files) {
-            const filePath = `${path}/${file}`;
-            try {
-              const isDir = await ReactNativeBlobUtil.fs.isDir(filePath);
-              if (!isDir) {
-                const stats = await ReactNativeBlobUtil.fs.stat(filePath);
-                totalSize += stats.size;
-              } else if (isDir) {
-                const dirSize = await calculateDirectorySize(filePath);
-                totalSize += dirSize;
-              }
-            } catch (err) {
-              console.error(`处理文件 ${filePath} 时出错:`, err);
-            }
-          }
-        } catch (err) {
-          console.error(`扫描目录 ${path} 时出错:`, err);
-        }
-        return totalSize;
-      };
-      // 计算缓存目录总大小（转换为MB）
-      const totalBytes = await calculateDirectorySize(cacheDir);
-      setCacheSize(totalBytes);
-    } catch (error) {
-      setCacheSize(0);
-      console.error('getCacheSize error', error);
-    }
-  };
-
-  // 清除缓存
-  const clearCache = async () => {
-    try {
-      await ReactNativeBlobUtil.fs.unlink(cacheDir);
-      getCacheSize();
-    } catch (error) {
-      console.error('clearCache error', error);
-    }
-  };
-
   const soundNames = [
     {id: 1, name: t('setting.default'), value: 'default_1.mp3'},
     {id: 2, name: t('setting.ring2'), value: 'default_2.mp3'},
@@ -139,9 +88,25 @@ const Setting = ({navigation}) => {
     updateEnvConfig(newUrlInfo);
   };
 
+  // 获取缓存大小
+  const getCacheSizeFunc = async () => {
+    const size = await getCacheSize();
+    setCacheSize(size);
+  };
+
+  // 清除缓存
+  const clearCache = async () => {
+    try {
+      await deleteDir(cacheDir);
+      getCacheSizeFunc();
+    } catch (error) {
+      console.error('clearCache error', error);
+    }
+  };
+
   useEffect(() => {
     if (isFocused) {
-      getCacheSize();
+      getCacheSizeFunc();
     }
   }, [isFocused]);
 

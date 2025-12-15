@@ -46,7 +46,7 @@ MSG_SECRET=你的加密消息秘钥
 
 2
 COULD_URL=获取所有服务接口
-COULD_SECRE=获取所有服务的秘钥（如有）
+COULD_SECRET=获取所有服务的秘钥（如有）
 ```
 
 选择一种方式作为你的环境配置：

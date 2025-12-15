@@ -20,6 +20,23 @@ export const validateEmail = mail => {
 };
 
 /**
+ * 提取文本中的@提及用户
+ * @param {string} text 文本内容
+ * @returns {string[]} 提及用户数组
+ */
+export const extractMentions = text => {
+  const pattern = /@([\w\u4e00-\u9fa5\u0800-\u4e00\uac00-\ud7af]+)/g;
+  const mentions = [];
+  let match;
+
+  while ((match = pattern.exec(text)) !== null) {
+    mentions.push(match[1]);
+  }
+
+  return mentions;
+};
+
+/**
  * 获取首字母
  * @param {string} word 单词
  * @returns {string} 首字母

@@ -182,7 +182,6 @@ export const formatTmpMsgToLocal = (message, options = {}) => {
     sender_avatar,
     sender_remarks,
     status,
-    reminders,
   } = options || {};
   return {
     id: -createRandomNumber(11),
@@ -199,7 +198,6 @@ export const formatTmpMsgToLocal = (message, options = {}) => {
     create_time: createdAt?.toISOString(),
     status: status,
     system: system,
-    reminders: reminders || [],
   };
 };
 
@@ -221,7 +219,6 @@ export const formatLocalMsgToTmp = (messages = []) => {
       sender_avatar,
       status,
       system,
-      reminders = [],
     } = msg;
     const text =
       decrypted_content ||
@@ -260,9 +257,6 @@ export const formatLocalMsgToTmp = (messages = []) => {
         message.file = envConfig.STATIC_URL + text;
         message.text = getFileExt(text);
       }
-    }
-    if (reminders && reminders.length > 0 && status === 'failed') {
-      message.reminders = reminders;
     }
     if (system) {
       message.system = system;
@@ -333,7 +327,7 @@ export const processMessage = async (
   const baseMsg = {msg_type, content: text, client_msg_id: _id};
 
   if (msg_type === MsgTypeEnum.text) {
-    if (reminders && reminders.length > 0) {
+    if (reminders?.length > 0) {
       baseMsg.reminders = reminders;
     }
     return baseMsg;

@@ -17,7 +17,6 @@ export const setLocalMessages = (messages = []) => {
         message.client_msg_id,
       );
       const cloneMsg = deepClone(message);
-      cloneMsg.reminders = cloneMsg.reminders || [];
       if (existMeg) {
         delete cloneMsg.client_msg_id;
         realm.write(() => {

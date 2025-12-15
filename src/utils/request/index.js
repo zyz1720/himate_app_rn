@@ -27,7 +27,7 @@ instance.interceptors.request.use(
 
     if (envConfig?.BASE_URL) {
       requestConfig.baseURL = envConfig.BASE_URL + API_PREFIX;
-      requestConfig.timeout = 30000;
+      requestConfig.timeout = 16000;
     }
 
     if (access_token && token_type) {

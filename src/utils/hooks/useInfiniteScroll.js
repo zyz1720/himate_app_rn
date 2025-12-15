@@ -38,8 +38,6 @@ export const useInfiniteScroll = fetchData => {
           pageSize: 20,
         });
         if (result.code === 0) {
-          console.log('加载数据成功:', result.data);
-
           const newList = result.data.list || [];
           setTotal(result.data.total || 0);
           if (pageNum === 1) {

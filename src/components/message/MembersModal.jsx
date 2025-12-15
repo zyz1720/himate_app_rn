@@ -57,7 +57,7 @@ const MembersModal = props => {
         paddingV-6
         onPress={() => {
           onPress({
-            remark: item.member_remarks + ' ',
+            remark: item.member_remarks,
             id: item.user_id,
           });
         }}>
@@ -107,7 +107,7 @@ const MembersModal = props => {
         height={fullHeight * 0.6}
         width={fullWidth}
         style={styles.memberDialog}>
-        <View flexS row centerV spread padding-16>
+        <View flexS row centerV spread paddingH-16 height={60}>
           <Text grey30>{t('chat.msg_mention')}</Text>
           <Button
             label={t('common.cancel')}

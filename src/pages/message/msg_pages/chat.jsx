@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useRef} from 'react';
-import {Vibration} from 'react-native';
+import {Vibration, Keyboard} from 'react-native';
 import {View, Colors} from 'react-native-ui-lib';
 import {GiftedChat, Message} from 'react-native-gifted-chat';
 import {useSocketStore} from '@store/socketStore';
@@ -36,6 +36,7 @@ import {
 } from '@const/database_enum';
 import {useTranslation} from 'react-i18next';
 import {downloadFile} from '@utils/system/file_utils';
+import {extractMentions} from '@utils/common/string_utils';
 import {fullHeight} from '@style/index';
 import BaseSheet from '@components/common/BaseSheet';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -90,13 +91,13 @@ const Chat = ({navigation, route}) => {
   const [showMsgActionSheet, setShowMsgActionSheet] = useState(false);
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [isGroupChat, setIsGroupChat] = useState(false);
-  const [reminders, setReminders] = useState([]);
   const [searchMsgCid, setSearchMsgCid] = useState(null);
   const [offsetHeight, setOffsetHeight] = useState(0);
   const searchIsEnd = useRef(false);
   const prevOffsetHeight = useRef(0);
   const offsetCount = useRef(0);
   const prevContentRef = useRef('');
+  const remindersRef = useRef(new Map());
 
   const curMessageRef = useRef({});
   const chatListRef = useRef(null);
@@ -125,15 +126,37 @@ const Chat = ({navigation, route}) => {
     if (isGroupChat && user._id === 2 && user?.id) {
       Vibration.vibrate(50);
       setContent(prev => prev + `@${user.name} `);
-      setReminders(prev => [...new Set([...prev, user.id])]);
+      remindersRef.current.set(user.id, user.name);
     }
   };
 
   // 重置@用户
   const resetReminders = () => {
-    if (reminders.length > 0 && isGroupChat) {
-      setReminders([]);
+    if (remindersRef.current.size > 0 && isGroupChat) {
+      remindersRef.current.clear();
     }
+  };
+
+  // 处理@用户
+  const processAtUser = _content => {
+    if (
+      _content.endsWith('@') &&
+      _content.length > prevContentRef.current.length
+    ) {
+      setShowMembersModal(true);
+    } else if (
+      !_content.endsWith('@') &&
+      prevContentRef.current.endsWith('@')
+    ) {
+      setShowMembersModal(false);
+    }
+    const mentions = extractMentions(_content);
+    remindersRef.current.forEach((value, key) => {
+      if (!mentions.includes(value)) {
+        remindersRef.current.delete(key);
+      }
+    });
+    prevContentRef.current = _content;
   };
 
   // 加入房间
@@ -338,7 +361,7 @@ const Chat = ({navigation, route}) => {
     for (const message of messages) {
       try {
         const processedMsg = await processMessage(message, {
-          reminders: reminders,
+          reminders: [...remindersRef.current.keys()],
           onProgress: progress => {
             setUploadProgress(progress);
           },
@@ -568,20 +591,9 @@ const Chat = ({navigation, route}) => {
 
   useEffect(() => {
     if (isGroupChat) {
-      if (
-        content.endsWith('@') &&
-        content.length > prevContentRef.current.length
-      ) {
-        setShowMembersModal(true);
-      } else if (
-        !content.endsWith('@') &&
-        prevContentRef.current.endsWith('@')
-      ) {
-        setShowMembersModal(false);
-      }
+      processAtUser(content);
     }
-    prevContentRef.current = content;
-  }, [content]);
+  }, [content, isGroupChat]);
 
   useEffect(() => {
     if (primaryId) {
@@ -593,6 +605,9 @@ const Chat = ({navigation, route}) => {
     <>
       <GiftedChat
         messageContainerRef={chatListRef}
+        handleOnScroll={event => {
+          console.log('handleOnScroll', event);
+        }}
         messageIdGenerator={messageIdGenerator}
         placeholder={
           userInGroupInfo.member_status === MemberStatusEnum.forbidden
@@ -643,6 +658,9 @@ const Chat = ({navigation, route}) => {
             isExpand={showActions}
             setExpand={value => {
               setShowActions(value);
+              if (value) {
+                Keyboard.dismiss();
+              }
             }}
           />
         )}
@@ -773,8 +791,8 @@ const Chat = ({navigation, route}) => {
           groupId={groupId}
           oneselfUserId={userInfo?.id}
           onPress={({remark, id}) => {
-            setContent(prev => prev + remark);
-            setReminders(prev => [...new Set([...prev, id])]);
+            setContent(prev => prev + `${remark} `);
+            remindersRef.current.set(id, remark);
             setShowMembersModal(false);
           }}
         />

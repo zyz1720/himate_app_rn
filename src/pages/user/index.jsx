@@ -268,6 +268,7 @@ const User = ({navigation}) => {
                             ? t('common.immediate_update')
                             : t('common.download_install_pkg')
                         }
+                        size={'medium'}
                         backgroundColor={Colors.primary}
                         onPress={downloadApp}
                       />
