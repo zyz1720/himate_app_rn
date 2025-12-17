@@ -380,7 +380,7 @@ const EditUser = () => {
         }}
       />
       {submitting ? (
-        <FullScreenLoading Message={t('common.modifying')} />
+        <FullScreenLoading message={t('common.modifying')} />
       ) : null}
     </>
   );

@@ -19,7 +19,7 @@ const MyFavorites = () => {
         setFavoritesId(res.data.id);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 

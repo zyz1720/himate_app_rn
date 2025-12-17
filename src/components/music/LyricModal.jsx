@@ -178,7 +178,7 @@ const LyricModal = React.memo(props => {
         <BaseImageBackground
           blurRadius={50}
           style={styles.backImage}
-          source={{uri: envConfig.STATIC_URL + musicExtra?.music_cover}}
+          source={{uri: envConfig.THUMBNAIL_URL + musicExtra?.music_cover}}
           resizeMode="cover">
           <TouchableOpacity paddingT-48 paddingL-22 onPress={onClose}>
             <Ionicons name="chevron-down" color={Colors.lyricColor} size={24} />

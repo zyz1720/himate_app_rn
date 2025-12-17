@@ -80,7 +80,7 @@ export const delStorage = (oldKey, oldId = null) => {
       console.log('清除单个key-id成功');
     })
     .catch(error => {
-      console.log('清除单个key-id失败', error);
+      console.error('清除单个key-id失败', error);
     });
 };
 
@@ -95,7 +95,7 @@ export const delKeyStorage = oldKey => {
       console.log('清除key-storage成功');
     })
     .catch(error => {
-      console.log('清除key-storage失败', error);
+      console.error('清除key-storage失败', error);
     });
 };
 
@@ -109,6 +109,6 @@ export const clearStorage = () => {
       console.log('清除storage成功');
     })
     .catch(error => {
-      console.log('清除storage失败', error);
+      console.error('清除storage失败', error);
     });
 };

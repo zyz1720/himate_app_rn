@@ -293,7 +293,6 @@ export const downloadFile = async (fileUrl, options = {}) => {
   if (!isDirExists) {
     const flag = await ReactNativeBlobUtil.fs.mkdir(path);
     if (!flag) {
-      console.log('创建文件夹失败:', path);
       return false;
     }
   }
@@ -360,7 +359,6 @@ export const writeJSONFile = async (jsonData, fileName) => {
   if (!isDirExists) {
     const flag = await ReactNativeBlobUtil.fs.mkdir(path);
     if (!flag) {
-      console.log('创建文件夹失败:', path);
       return false;
     }
   }
@@ -370,10 +368,9 @@ export const writeJSONFile = async (jsonData, fileName) => {
       .writeFile(writeDest, jsonString, 'utf8')
       .then(() => {
         resolve(true);
-        console.log('文件写入成功:', path);
       })
       .catch(error => {
-        console.log('文件写入失败:', error);
+        console.error('文件写入失败:', error);
         resolve(false);
       });
   });
@@ -390,7 +387,7 @@ export const readJSONFile = async path => {
     const jsonData = JSON.parse(jsonString);
     return jsonData;
   } catch (error) {
-    console.log('文件读取失败:', error);
+    console.error('文件读取失败:', error);
     return null;
   }
 };

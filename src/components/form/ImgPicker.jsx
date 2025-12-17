@@ -90,7 +90,6 @@ const ImgPicker = props => {
               mediaType: 'photo',
             })
               .then(image => {
-                console.log(image);
                 const fileInfo = getFileFromImageCropPicker(image);
                 onSelected(fileInfo);
               })

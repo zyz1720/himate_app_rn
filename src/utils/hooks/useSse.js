@@ -32,11 +32,11 @@ export const useSse = path => {
 
     /* 监听连接 */
     sseInstanceRef.current.addEventListener('open', event => {
+      console.log('sse connected', event);
+
       clearInterval(sseTimer.current);
       setIsConnected(true);
       sseTimer.current = null;
-
-      console.log('sse connected', event);
     });
 
     /* 断线重连 */
@@ -51,20 +51,20 @@ export const useSse = path => {
     });
 
     /* 监听消息 */
-    sseInstanceRef.current.addEventListener('message', event => {
+    sseInstanceRef.current.addEventListener('message', async event => {
       try {
         const result = JSON.parse(event.data);
         console.log('SSE message', result.data);
 
         if (Array.isArray(result?.data)) {
           const list = result.data;
+          await setLocalSession(list);
           setUpdateKey();
-          setLocalSession(list);
           setRemindSessions(list);
           batchDisplayMsgNotifications(list);
         }
       } catch (error) {
-        console.log('SSE message parse error', error);
+        console.error('SSE message parse error', error);
       }
     });
   };

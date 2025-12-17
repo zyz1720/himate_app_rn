@@ -110,12 +110,10 @@ const VideoMsg = React.memo(props => {
         visible={videoVisible}
         onPressClose={() => {
           setVideoVisible(false);
-          console.log(currentMessage?.video);
         }}
         onClose={() => setVideoVisible(false)}
-        onError={e => {
+        onError={() => {
           showToast(t('common.video_load_failed'), 'error');
-          console.log(e);
         }}
       />
     </>

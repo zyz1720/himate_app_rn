@@ -93,6 +93,12 @@ const Msg = ({navigation}) => {
     }
   };
 
+  // 是否有@当前用户
+  const isHasAtCurrentUser = id => {
+    const remindInfo = remindSessionIds.find(e => e.sessionId === id);
+    return remindInfo || {};
+  };
+
   /* 列表元素 */
   const renderSessionItem = ({item}) => {
     const {session = {}, sessionExtra = {}} = item || {};
@@ -144,6 +150,7 @@ const Msg = ({navigation}) => {
                 chat_type: session.chat_type,
                 userId: sessionExtra.userId,
                 groupId: sessionExtra.groupId,
+                search_msg_cid: isHasAtCurrentUser(session.id)?.client_msg_id,
               });
             }}>
             <Avatar
@@ -176,7 +183,7 @@ const Msg = ({navigation}) => {
               </View>
               <View flexG row centerV spread width={'92%'}>
                 <Text text80 numberOfLines={1} grey30 style={{width: '70%'}}>
-                  {remindSessionIds.find(e => e.sessionId === session.id) ? (
+                  {isHasAtCurrentUser(session.id)?.sessionId ? (
                     <Text text80 red40>
                       {t('chat.reminder')}
                     </Text>

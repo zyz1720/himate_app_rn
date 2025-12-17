@@ -31,7 +31,7 @@
     "record_tips": "倾听中... {{recordTime}}S",
     "send_tips": "松手后发送",
     "cancel_tips": "松手后取消发送",
-    "to_search_result": "正在尝试跳转到搜索结果",
+    "to_search_result": "正在尝试跳转...",
     "socket_error": "socket 未连接",
     "empty_msg": "请输入内容!",
     "search_placeholder": "请输入聊天记录关键字/昵称",
@@ -46,5 +46,6 @@
     "retry_send": "重新发送",
     "message_options": "消息操作",
     "msg_searched": "消息已找到",
-    "msg_mention": "请选择要@的成员"
+    "msg_mention": "请选择要@的成员",
+    "stop_jump": "已停止跳转"
 }

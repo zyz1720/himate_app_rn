@@ -550,7 +550,7 @@ const GroupInfo = ({navigation, route}) => {
           />
         }
       />
-      {uploading ? <FullScreenLoading Message={t('common.modifying')} /> : null}
+      {uploading ? <FullScreenLoading message={t('common.modifying')} /> : null}
       {loadingAll ? <FullScreenLoading message={t('common.syncing')} /> : null}
     </>
   );

@@ -366,9 +366,13 @@ const MusicCtrlProvider = React.memo(props => {
 
   useEffect(() => {
     if (isMusicResumePlay) {
-      playNewMusic().then(() => onSliderChange(playPosition));
       setIsMusicResumePlay(false);
       setIsMusicPaused(false);
+      playNewMusic().then(() => {
+        if (playPosition) {
+          onSliderChange();
+        }
+      });
     }
   }, [isMusicResumePlay]);
 

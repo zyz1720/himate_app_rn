@@ -110,7 +110,7 @@ const User = ({navigation}) => {
   return (
     <>
       {isEmptyObject(userInfo) ? (
-        <FullScreenLoading Message={displayName + ' ' + t('common.loading')} />
+        <FullScreenLoading message={displayName + ' ' + t('common.loading')} />
       ) : (
         <View flexG top paddingH-16 paddingT-16>
           <BaseImageBackground

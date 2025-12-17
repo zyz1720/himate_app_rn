@@ -77,7 +77,7 @@ const GroupMembers = ({navigation, route}) => {
       }
       showToast(editRes.message, editRes.code === 0 ? 'success' : 'error');
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 

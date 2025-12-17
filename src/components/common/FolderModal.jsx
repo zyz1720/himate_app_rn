@@ -150,8 +150,6 @@ const FolderModal = props => {
                 linkColor={Colors.blue40}
                 marginR-24
                 onPress={() => {
-                  console.log('nowDirPath', nowDirPath);
-
                   if (nowDirPath === '' || nowDirPath === rootDir) {
                     showToast(t('music.is_root_dir'), 'warning', true);
                     return;

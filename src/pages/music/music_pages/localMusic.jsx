@@ -138,7 +138,7 @@ const LocalMusic = () => {
         setVisible={setDelVisible}
         description={t('music.local_clear_confirm')}
       />
-      {loading ? <FullScreenLoading Message={t('music.scanning')} /> : null}
+      {loading ? <FullScreenLoading message={t('music.scanning')} /> : null}
     </View>
   );
 };

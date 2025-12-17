@@ -38,6 +38,7 @@ import {useTranslation} from 'react-i18next';
 import {downloadFile} from '@utils/system/file_utils';
 import {extractMentions} from '@utils/common/string_utils';
 import {fullHeight} from '@style/index';
+import {deleteChannel} from '@utils/system/notification';
 import BaseSheet from '@components/common/BaseSheet';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -96,6 +97,7 @@ const Chat = ({navigation, route}) => {
   const searchIsEnd = useRef(false);
   const prevOffsetHeight = useRef(0);
   const offsetCount = useRef(0);
+  const isFirstDragRef = useRef(true);
   const prevContentRef = useRef('');
   const remindersRef = useRef(new Map());
 
@@ -474,7 +476,7 @@ const Chat = ({navigation, route}) => {
 
   // 点击消息
   const onPressMsg = (_, currentMessage) => {
-    if (currentMessage._id === search_msg_cid) {
+    if (currentMessage._id === searchMsgCid) {
       setSearchMsgCid(null);
     }
   };
@@ -504,7 +506,7 @@ const Chat = ({navigation, route}) => {
     }
     prevOffsetHeight.current += height;
     offsetCount.current++;
-    if (search_msg_cid === _id) {
+    if (searchMsgCid === _id) {
       showToast(t('chat.msg_searched'), 'success');
       searchIsEnd.current = true;
       setOffsetHeight(prevOffsetHeight.current);
@@ -512,6 +514,21 @@ const Chat = ({navigation, route}) => {
     }
     if (offsetCount.current % 50 === 0) {
       setOffsetHeight(prevOffsetHeight.current);
+    }
+  };
+
+  /* 用户手动滚动 */
+  const onScrollBeginDrag = () => {
+    if (
+      isFirstDragRef.current &&
+      searchMsgCid &&
+      offsetHeight > 0 &&
+      !searchIsEnd.current
+    ) {
+      showToast(t('chat.stop_jump'), 'error');
+      setOffsetHeight(0);
+      setSearchMsgCid(null);
+      isFirstDragRef.current = false;
     }
   };
 
@@ -540,29 +557,29 @@ const Chat = ({navigation, route}) => {
   };
 
   useEffect(() => {
-    if (search_msg_cid) {
+    if (searchMsgCid) {
+      isFirstDragRef.current = true;
       searchIsEnd.current = false;
       offsetCount.current = 0;
       prevOffsetHeight.current = 0;
       showToast(t('chat.to_search_result'), 'warning');
-      setSearchMsgCid(search_msg_cid);
     }
-  }, [search_msg_cid]);
+  }, [searchMsgCid]);
 
   useEffect(() => {
-    if (search_msg_cid && offsetHeight > 0) {
+    if (searchMsgCid && offsetHeight > 0) {
       chatListRef.current?.scrollToOffset({
-        offset: offsetHeight - fullHeight / 2,
+        offset: offsetHeight > fullHeight ? offsetHeight - fullHeight / 2 : 0,
       });
     }
-  }, [search_msg_cid, offsetHeight]);
+  }, [searchMsgCid, offsetHeight]);
 
   useEffect(() => {
     if (session_id) {
       getLocalMsgList(session_id);
       resetUnreadCount(session_id);
       setNowJoinSession(session_id);
-
+      deleteChannel(session_id);
       return () => {
         resetUnreadCount(session_id).then(() => setUpdateKey());
         removeNowJoinSession(session_id);
@@ -601,14 +618,20 @@ const Chat = ({navigation, route}) => {
     }
   }, [primaryId]);
 
+  useEffect(() => {
+    if (search_msg_cid) {
+      setSearchMsgCid(search_msg_cid);
+    }
+  }, [search_msg_cid]);
+
   return (
     <>
       <GiftedChat
         messageContainerRef={chatListRef}
-        handleOnScroll={event => {
-          console.log('handleOnScroll', event);
-        }}
         messageIdGenerator={messageIdGenerator}
+        listViewProps={{
+          onScrollBeginDrag: onScrollBeginDrag,
+        }}
         placeholder={
           userInGroupInfo.member_status === MemberStatusEnum.forbidden
             ? t('chat.msg_mute_placeholder')

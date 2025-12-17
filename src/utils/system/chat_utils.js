@@ -18,6 +18,7 @@ import {
   getFileFromVideoThumbnail,
 } from './file_utils';
 import {FileUseTypeEnum, MsgTypeEnum} from '@const/database_enum';
+import {getLocalSessionById} from '@utils/realm/useSessionInfo';
 import DeviceInfo from 'react-native-device-info';
 import i18n from 'i18next';
 
@@ -420,14 +421,16 @@ export const formatSessionToNotification = (sessions = []) => {
     const {id, session_id, unread_count, lastMsg} = item?.session || {};
     const {session_avatar, session_name, lastSenderRemarks} =
       item?.sessionExtra || {};
+    const localSession = getLocalSessionById(id);
     return {
       id: id,
       session_name: session_name || '',
       session_avatar: session_avatar || '',
       session_id: session_id,
-      unread_count: unread_count || 0,
+      unread_count: unread_count || localSession?.unread_count,
       text: showMessageText(lastMsg),
       lastSenderRemarks: lastSenderRemarks,
+      reminders: lastMsg?.reminders || [],
     };
   });
 };

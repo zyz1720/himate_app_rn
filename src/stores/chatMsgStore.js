@@ -19,13 +19,17 @@ export const useChatMsgStore = create(
       setRemindSessions: (data = []) => {
         const {userInfo} = useUserStore.getState();
         set(state => {
+          const nowJoinSessions = state.nowJoinSessions;
           data.forEach(sessionWithExtra => {
             const {session} = sessionWithExtra;
             const {reminders = []} = session?.lastMsg || {};
-            if (reminders.includes(userInfo.id)) {
+            if (
+              reminders.includes(userInfo.id) &&
+              !nowJoinSessions.includes(session.session_id)
+            ) {
               const remindInfo = {
                 sessionId: session.id,
-                msg_id: session?.lastMsg?.client_msg_id || null,
+                client_msg_id: session?.lastMsg?.client_msg_id || null,
               };
               const index = state.remindSessionIds.findIndex(
                 item => item.sessionId === session.id,

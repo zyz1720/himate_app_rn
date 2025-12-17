@@ -29,11 +29,12 @@ export const getAppConfig = async () => {
     return defaultConfig;
   }
   try {
-    const response = await axios.get(COULD_URL, {
+    const response = await axios(COULD_URL, {
+      method: 'GET',
       headers: {Authorization: COULD_SECRET},
     });
-    const config = response.data;
-    return config;
+    const cloudConfig = response.data;
+    return cloudConfig;
   } catch (error) {
     console.error('获取云端配置失败:', error);
     return defaultConfig;

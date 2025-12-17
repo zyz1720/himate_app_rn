@@ -363,8 +363,8 @@ const DataManager = ({navigation}) => {
             <Text text90L grey30>
               {t('chat.send_to', {
                 name:
-                  getLocalSessionById(item.session_primary_id)[0]
-                    ?.session_name || t('chat.unknown_user'),
+                  getLocalSessionById(item.session_primary_id)?.session_name ||
+                  t('chat.unknown_user'),
               })}
             </Text>
           </View>
@@ -374,8 +374,8 @@ const DataManager = ({navigation}) => {
                 backgroundColor={Colors.blue50}
                 label={t(
                   'chat.chat_type_' +
-                    getLocalSessionById(item.session_primary_id)[0]
-                      ?.chat_type || '',
+                    getLocalSessionById(item.session_primary_id)?.chat_type ||
+                    '',
                 )}
               />
               <View marginL-6>
@@ -637,9 +637,8 @@ const DataManager = ({navigation}) => {
           setVideoVisible(!videoVisible);
         }}
         onPressClose={() => setVideoVisible(false)}
-        onError={e => {
+        onError={() => {
           showToast(t('common.video_load_failed'), 'error');
-          console.log(e);
         }}
       />
       {/* 图片预览 */}

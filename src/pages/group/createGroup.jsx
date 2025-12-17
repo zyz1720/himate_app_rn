@@ -85,7 +85,6 @@ const CreateGroup = ({navigation, route}) => {
         initialSelectIds={initialSelectIds}
         excludeIds={excludeIds}
         onSelectChange={value => {
-          console.log('onSelectChange', value);
           setSelectIds(value);
         }}
         onEndReached={onEndReached}

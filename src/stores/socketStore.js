@@ -14,6 +14,7 @@ export const useSocketStore = create(set => ({
     const {access_token} = useUserStore.getState();
     const {envConfig} = useConfigStore.getState();
 
+    console.log('socketInit ', socketInstance);
     // 如果已经有socket实例，先断开连接
     if (socketInstance) {
       socketInstance.disconnect();
@@ -30,15 +31,17 @@ export const useSocketStore = create(set => ({
 
     /* 监听连接 */
     socketInstance.on('connect', () => {
+      console.log('socket connected', socketInstance.id);
+
       clearInterval(socketTimer);
       set({socket: socketInstance, isConnected: true});
-      console.log('socket connected', socketInstance.id);
     });
 
     /* 断线重连 */
     socketInstance.on('connect_error', res => {
-      set({isConnected: false, socket: null});
       console.log('socket error', res);
+
+      set({isConnected: false, socket: null});
       socketInstance.disconnect();
       socketTimer = setInterval(() => {
         socketInstance.connect();
@@ -47,8 +50,9 @@ export const useSocketStore = create(set => ({
 
     /* 监听断开连接 */
     socketInstance.on('disconnect', () => {
-      set({isConnected: false, socket: null});
       console.log('socket disconnected');
+
+      set({isConnected: false, socket: null});
     });
 
     /* 监听错误 */

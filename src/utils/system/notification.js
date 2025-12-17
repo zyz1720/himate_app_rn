@@ -4,6 +4,7 @@ import {useSettingStore} from '@store/settingStore';
 import {useConfigStore} from '@store/configStore';
 import {useChatMsgStore} from '@store/chatMsgStore';
 import {useAppStateStore} from '@store/appStateStore';
+import {useUserStore} from '@store/userStore';
 import {formatSessionToNotification} from './chat_utils';
 import i18n from 'i18next';
 import Sound from 'react-native-sound';
@@ -56,10 +57,10 @@ export const onDisplayRealMsg = async message => {
 
 // 批量处理通知
 export const batchDisplayMsgNotifications = async messages => {
-  const {notRemindSessionIds, nowJoinSessions, remindSessionIds} =
-    useChatMsgStore.getState();
+  const {notRemindSessionIds, nowJoinSessions} = useChatMsgStore.getState();
   const {isPlaySound} = useSettingStore.getState();
   const {appIsActive} = useAppStateStore.getState();
+  const {userInfo} = useUserStore.getState();
   const toBeDisplayedMsgs = formatSessionToNotification(messages);
 
   const reminder = item => {
@@ -72,7 +73,7 @@ export const batchDisplayMsgNotifications = async messages => {
   };
 
   for (const item of toBeDisplayedMsgs) {
-    if (remindSessionIds.find(e => e.sessionId === item.id)) {
+    if (item.reminders.includes(userInfo?.id)) {
       reminder(item);
       continue;
     }
@@ -101,7 +102,7 @@ export const playSystemSound = async sound_name => {
   const {ringtone} = useSettingStore.getState();
   const sound = new Sound(sound_name || ringtone, Sound.MAIN_BUNDLE, error => {
     if (error) {
-      console.log('加载声音文件失败', error);
+      console.error('加载声音文件失败', error);
       return;
     }
     sound.setVolume(1.0);
@@ -109,7 +110,7 @@ export const playSystemSound = async sound_name => {
       if (success) {
         sound.release();
       } else {
-        console.log('播放声音时出错');
+        console.error('播放声音时出错');
       }
     });
   });

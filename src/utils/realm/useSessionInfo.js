@@ -4,40 +4,44 @@ import {showMessageText} from '@utils/system/chat_utils';
 import {isEmptyString} from '@utils/common/string_utils';
 
 /* 格式化并写入本地会话 */
-export const setLocalSession = (sessions = []) => {
-  try {
-    sessions.forEach(sessionWithExtra => {
-      const {session, sessionExtra, isLatest} = sessionWithExtra;
-      const sessionInfo = deepClone({...session, ...sessionExtra});
-      sessionInfo.lastMsgContent = showMessageText(sessionInfo.lastMsg);
-      const existSession = realm.objectForPrimaryKey(
-        'session_info',
-        sessionInfo.id,
-      );
+export const setLocalSession = async (sessions = []) => {
+  return new Promise((resolve, reject) => {
+    try {
+      sessions.forEach(sessionWithExtra => {
+        const {session, sessionExtra, isLatest} = sessionWithExtra;
+        const sessionInfo = deepClone({...session, ...sessionExtra});
+        sessionInfo.lastMsgContent = showMessageText(sessionInfo.lastMsg);
+        const existSession = realm.objectForPrimaryKey(
+          'session_info',
+          sessionInfo.id,
+        );
 
-      if (existSession) {
-        delete sessionInfo.id;
-        realm.write(() => {
-          Object.assign(existSession, sessionInfo);
-          if (isLatest) {
-            existSession.unread_count = (existSession?.unread_count || 0) + 1;
-          }
-          existSession.updated_at = new Date();
-        });
-      } else {
-        realm.write(() => {
-          sessionInfo.created_at = new Date();
-          sessionInfo.updated_at = new Date();
-          if (isLatest) {
-            sessionInfo.unread_count = 1;
-          }
-          realm.create('session_info', sessionInfo);
-        });
-      }
-    });
-  } catch (error) {
-    console.error('写入本地会话失败', error);
-  }
+        if (existSession) {
+          delete sessionInfo.id;
+          realm.write(() => {
+            Object.assign(existSession, sessionInfo);
+            if (isLatest) {
+              existSession.unread_count = (existSession?.unread_count || 0) + 1;
+            }
+            existSession.updated_at = new Date();
+          });
+        } else {
+          realm.write(() => {
+            sessionInfo.created_at = new Date();
+            sessionInfo.updated_at = new Date();
+            if (isLatest) {
+              sessionInfo.unread_count = 1;
+            }
+            realm.create('session_info', sessionInfo);
+          });
+        }
+      });
+      resolve(true);
+    } catch (error) {
+      console.error('写入本地会话失败', error);
+      reject(error);
+    }
+  });
 };
 
 /* 查询本地会话 */
@@ -45,13 +49,11 @@ export const getLocalSession = session_id => {
   try {
     const sessionExtras = realm
       .objects('session_info')
-      .filtered('session_id == $0', session_id)
-      .sorted('updated_at', true)
-      .toJSON();
-    return sessionExtras;
+      .find(sessionObj => sessionObj.session_id === session_id);
+    return sessionExtras || {};
   } catch (error) {
     console.error('查询本地会话失败', error);
-    return [{}];
+    return {};
   }
 };
 
@@ -71,12 +73,11 @@ export const getLocalSessionById = id => {
   try {
     const sessionExtras = realm
       .objects('session_info')
-      .filtered('id == $0', id)
-      .toJSON();
-    return sessionExtras;
+      .find(sessionObj => sessionObj.id === id);
+    return sessionExtras || {};
   } catch (error) {
     console.error('查询本地会话失败', error);
-    return [{}];
+    return {};
   }
 };
 

@@ -3,6 +3,7 @@ import {useUserStore} from '@store/userStore.js';
 import {useConfigStore} from '@store/configStore.js';
 import {useErrorMsgStore} from '@store/errorMsgStore.js';
 import {useAppStateStore} from '@store/appStateStore.js';
+import {useSettingStore} from '@store/settingStore.js';
 import {API_PREFIX} from '@env';
 import i18n from 'i18next';
 
@@ -21,6 +22,7 @@ instance.interceptors.request.use(
     }
 
     const {envConfig} = useConfigStore.getState();
+    const {language} = useSettingStore.getState();
     const {access_token, token_type} = useUserStore.getState();
 
     console.log('BASE_URL ', envConfig?.BASE_URL);
@@ -33,6 +35,7 @@ instance.interceptors.request.use(
     if (access_token && token_type) {
       requestConfig.headers.Authorization = token_type + ' ' + access_token;
     }
+    requestConfig.headers['x-custom-lang'] = language;
     return requestConfig;
   },
   function (error) {
@@ -50,7 +53,7 @@ instance.interceptors.response.use(
     }
   },
   function (error) {
-    console.error(error);
+    console.error('httpError ', error);
 
     const {setRefreshToken} = useUserStore.getState();
     const {setErrorMsg} = useErrorMsgStore.getState();

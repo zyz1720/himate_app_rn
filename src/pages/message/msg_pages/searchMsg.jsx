@@ -43,7 +43,7 @@ const SearchMsg = ({navigation, route}) => {
     const needList = msgList.map(item => {
       const newItem = deepClone(item);
       const sessionExtras = getLocalSession(item.session_id);
-      newItem.sessionExtra = sessionExtras[0] || {};
+      newItem.sessionExtra = sessionExtras;
       return newItem;
     });
 

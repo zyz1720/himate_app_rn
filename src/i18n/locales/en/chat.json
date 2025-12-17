@@ -45,5 +45,6 @@
     "retry_send": "Retry send",
     "message_options": "Message options",
     "msg_searched": "Message found",
-    "msg_mention": "Please select the member to @mention"
+    "msg_mention": "Please select the member to @mention",
+    "stop_jump": "Jump stopped"
 }

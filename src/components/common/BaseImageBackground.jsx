@@ -1,4 +1,4 @@
-import {Image, ImageBackground} from 'react-native';
+import {ImageBackground} from 'react-native';
 import React, {useEffect, useState} from 'react';
 
 const BaseImageBackground = props => {
@@ -8,12 +8,12 @@ const BaseImageBackground = props => {
 
   const imagePrefetch = async () => {
     try {
-      const isPrefetched = await Image.prefetch(props.source?.uri);
-      if (isPrefetched) {
+      const response = await fetch(props.source?.uri);
+      if (response.ok) {
         setDefaultSource(props.source);
       }
     } catch (error) {
-      console.error('imagePrefetch error', error);
+      console.warn('imagePrefetch error', error);
     }
   };
 

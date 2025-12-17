@@ -63,12 +63,12 @@ const RootView = () => {
    * @dependencies isLogin
    */
   useEffect(() => {
-    if (isLogin) {
+    if (isLogin && !configLoading) {
       setUserInfo();
       socketInit();
       sseInit();
     }
-  }, [isLogin]);
+  }, [isLogin, configLoading]);
 
   // 是否启用高速静态资源
   useEffect(() => {
@@ -123,7 +123,7 @@ const RootView = () => {
         hidden={false}
       />
       {configLoading || !isInitialized ? (
-        <FullScreenLoading Message={displayName + t('common.init_loading')} />
+        <FullScreenLoading message={displayName + t('common.init_loading')} />
       ) : (
         <RootScreen />
       )}

@@ -461,7 +461,7 @@ const EditUser = ({route}) => {
           </View>
         }
       />
-      {uploading ? <FullScreenLoading Message={t('common.modifying')} /> : null}
+      {uploading ? <FullScreenLoading message={t('common.modifying')} /> : null}
     </>
   );
 };
