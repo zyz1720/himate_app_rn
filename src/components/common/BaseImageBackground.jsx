@@ -8,7 +8,9 @@ const BaseImageBackground = props => {
 
   const imagePrefetch = async () => {
     try {
-      const response = await fetch(props.source?.uri);
+      const response = await fetch(props.source?.uri, {
+        method: 'HEAD',
+      });
       if (response.ok) {
         setDefaultSource(props.source);
       }

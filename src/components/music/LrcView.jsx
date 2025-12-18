@@ -10,6 +10,7 @@ import {useTranslation} from 'react-i18next';
 import {renderArtists} from '@utils/system/lyric_utils';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LrcItem from './LrcItem';
+import {useMusicControl} from '@utils/hooks/useMusicControl';
 
 const styles = StyleSheet.create({
   lyricText: {
@@ -75,6 +76,7 @@ const LrcView = React.memo(props => {
   const {showToast} = useToast();
   const [parsedLrc, setParsedLrc] = useState([]);
   const flatListRef = useRef(null);
+  const {updateLyric} = useMusicControl();
 
   const [haveYrc, setHaveYrc] = useState(false);
   const [haveTrans, setHaveTrans] = useState(false);
@@ -221,7 +223,9 @@ const LrcView = React.memo(props => {
     setNowIndex(index);
     if (flatListRef.current && index >= 0) {
       flatListRef.current.scrollToIndex({index, animated: true});
-      onLyricsChange(parsedLrc[index]?.lyric);
+      const lyric = parsedLrc[index]?.lyric || '';
+      updateLyric(lyric);
+      onLyricsChange(lyric);
     } else {
       onLyricsChange('');
     }

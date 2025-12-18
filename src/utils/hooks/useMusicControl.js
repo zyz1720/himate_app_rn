@@ -10,7 +10,7 @@ export const useMusicControl = () => {
   const [isInit, setIsInit] = useState(false);
 
   const initMusicControl = () => {
-    MusicControl.setNotificationId(6666, 'music_controller_channel');
+    MusicControl.setNotificationId(1001, 'music_controller_channel');
     MusicControl.enableControl('play', true);
     MusicControl.enableControl('pause', true);
     MusicControl.enableControl('stop', false);
@@ -46,6 +46,13 @@ export const useMusicControl = () => {
     [envConfig.STATIC_URL, userInfo?.user_avatar],
   );
 
+  // 更新歌词
+  const updateLyric = useCallback((lyric = '') => {
+    MusicControl.updatePlayback({
+      lyric: lyric || '',
+    });
+  }, []);
+
   // 恢复播放
   const resumePlayerCtrl = useCallback(() => {
     MusicControl.updatePlayback({
@@ -70,7 +77,7 @@ export const useMusicControl = () => {
   // 停止播放
   const stopPlayerCtrl = useCallback(() => {
     MusicControl.stopControl();
-    cancelNotification('6666');
+    cancelNotification('1001');
     deleteChannel('music_controller_channel');
   }, []);
 
@@ -121,5 +128,6 @@ export const useMusicControl = () => {
     onNextTrackCtrl,
     onPreviousTrackCtrl,
     onSeekCtrl,
+    updateLyric,
   };
 };

@@ -40,7 +40,6 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import BaseDialog from '@components/common/BaseDialog';
 import dayjs from 'dayjs';
-import FlymeLyric from '@utils/system/FlymeLyric';
 
 const Music = ({navigation}) => {
   const {showToast} = useToast();
@@ -240,13 +239,6 @@ const Music = ({navigation}) => {
       getAllMusicCount();
       getLocalMusicInfo();
       refreshData();
-      FlymeLyric.setLyric('这是一句歌词')
-        .then(res => {
-          console.log(res);
-        })
-        .catch(err => {
-          console.error(err);
-        });
     }
   }, [isFocused]);
 
