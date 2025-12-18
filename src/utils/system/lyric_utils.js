@@ -137,7 +137,7 @@ export const formatLrc = musicExtra => {
     };
   });
   return {
-    Lyrics: mergeArraysByIndex(mergedLyrics, yrcLyrics, romaLyricsMap),
+    lyrics: mergeArraysByIndex(mergedLyrics, yrcLyrics, romaLyricsMap),
     haveYrc: yrcLyrics.length > 0,
     haveTrans: transLyrics.length > 0,
     haveRoma: romaLyricsMap.length > 0,

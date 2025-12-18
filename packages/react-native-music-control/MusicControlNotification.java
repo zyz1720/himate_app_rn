@@ -81,7 +81,7 @@ public class MusicControlNotification {
             Class<?> objClass = Class.forName("android.app.Notification");
             mFlagAlwaysShowTicker = (int) getFieldStepwise(objClass, objClass, "FLAG_ALWAYS_SHOW_TICKER");
             mFlagOnlyUpdateTicker = (int) getFieldStepwise(objClass, objClass, "FLAG_ONLY_UPDATE_TICKER");
-            isFlymeSupported = (mFlagAlwaysShowTicker > 0 );
+            isFlymeSupported = (mFlagAlwaysShowTicker > 0 && mFlagOnlyUpdateTicker > 0);
         } catch (Exception e) {
             // Not a Flyme device or feature not supported
             isFlymeSupported = false;
@@ -164,7 +164,7 @@ public class MusicControlNotification {
         builder.setDeleteIntent(PendingIntent.getBroadcast(context, 0, remove, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
         Notification mNotification = builder.build();
 
-        if (mFlagAlwaysShowTicker > 0) {
+        if (isFlymeSupported) {
                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 mNotification.extras.putBoolean("ticker_icon_switch", false);
                 }

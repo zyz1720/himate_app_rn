@@ -71,6 +71,7 @@ public class MusicControlModule extends ReactContextBaseJavaModule implements Co
     private long controls = 0;
     protected int ratingType = RatingCompat.RATING_PERCENTAGE;
     private Map<String, Integer> skipOptions = new HashMap<>();
+    private String previousLyric = null;
 
     public NotificationClose notificationClose = NotificationClose.PAUSED;
 
@@ -204,7 +205,7 @@ public class MusicControlModule extends ReactContextBaseJavaModule implements Co
         filter.addAction(Intent.ACTION_MEDIA_BUTTON);
         filter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
         receiver = new MusicControlReceiver(this, context);
-        context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED);
 
         Intent myIntent = new Intent(context, MusicControlNotification.NotificationService.class);
 
@@ -440,7 +441,6 @@ public class MusicControlModule extends ReactContextBaseJavaModule implements Co
 
         long updateTime;
         long elapsedTime;
-        String lyric = info.hasKey("lyric") ? info.getString("lyric") : null;
         long bufferedTime = info.hasKey("bufferedTime") ? (long)(info.getDouble("bufferedTime") * 1000) : state.getBufferedPosition();
         float speed = info.hasKey("speed") ? (float)info.getDouble("speed") : state.getPlaybackSpeed();
         int pbState = info.hasKey("state") ? info.getInt("state") : state.getState();
@@ -455,12 +455,9 @@ public class MusicControlModule extends ReactContextBaseJavaModule implements Co
             speed = 1;
         }
 
-        if (mflag_show_ticker > 0 && lyric != null) {
-             nb.setTicker(lyric);
-        }
-
-        if (isPlaying == false) {
+        if (!isPlaying) {
             nb.setTicker(null);
+            previousLyric = null;
         }
 
         if(info.hasKey("elapsedTime")) {
@@ -487,6 +484,40 @@ public class MusicControlModule extends ReactContextBaseJavaModule implements Co
         } else {
             session.setPlaybackToLocal(AudioManager.STREAM_MUSIC);
         }
+    }
+
+    @ReactMethod
+    synchronized public void updateElapsedTime(double elapsedSeconds) {
+        init();
+        if (notification == null) return;
+
+        long positionInMillis = (long)(elapsedSeconds * 1000);
+
+        if (!isPlaying) {
+            nb.setTicker(null);
+            previousLyric = null;
+        }
+
+        pb.setState(state.getState(), positionInMillis, state.getPlaybackSpeed(), SystemClock.elapsedRealtime());
+        state = pb.build();
+        session.setPlaybackState(state);
+    }
+
+
+    @ReactMethod
+    synchronized public void setFlymeLyric(String lyric) {
+        init();
+        if (notification == null) return;
+
+        if (mflag_show_ticker > 0 && lyric != null) {
+            // Only update ticker if lyric has changed
+            if (!lyric.equals(previousLyric)) {
+                nb.setTicker(lyric);
+                previousLyric = lyric;
+            }
+        }
+
+        if(session.isActive()) notification.show(nb, isPlaying);
     }
 
     @ReactMethod

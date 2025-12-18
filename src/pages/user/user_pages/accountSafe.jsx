@@ -8,6 +8,9 @@ import {useUserStore} from '@store/userStore';
 import {getEmailCode, getImgCaptcha} from '@api/common';
 import {useTranslation} from 'react-i18next';
 import {SvgXml} from 'react-native-svg';
+import {clearLocalMateInfo} from '@utils/realm/useMateInfo';
+import {clearLocalSessions} from '@utils/realm/useSessionInfo';
+import {clearPlayHistory} from '@utils/realm/useMusicInfo';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FullScreenLoading from '@components/common/FullScreenLoading';
 import BaseDialog from '@components/common/BaseDialog';
@@ -175,7 +178,6 @@ const EditUser = ({route}) => {
       });
       showToast(res.message, res.code === 0 ? 'success' : 'error');
       if (res.code === 0) {
-        
       }
     } catch (error) {
       console.error(error);
@@ -201,10 +203,18 @@ const EditUser = ({route}) => {
   const [hideFlag, setHideFlag] = useState(true);
   const [hideFlagOld, setHideFlagOld] = useState(true);
 
+  // 清除本地数据
+  const clearLocalData = () => {
+    clearLocalMateInfo();
+    clearLocalSessions();
+    clearPlayHistory();
+  };
+
   // 退出登录
   const [showLoginOut, setShowLoginOut] = useState(false);
   const userLogout = () => {
     logout();
+    clearLocalData();
     showToast(t('user.log_out_success'), 'success');
   };
 
@@ -212,6 +222,7 @@ const EditUser = ({route}) => {
   const [showLogOff, setShowLogOff] = useState(false);
   const userLogoff = () => {
     logoff();
+    clearLocalData();
     showToast(t('user.log_off_success'), 'success');
   };
 

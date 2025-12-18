@@ -71,13 +71,9 @@ const styles = StyleSheet.create({
 const LyricModal = React.memo(props => {
   const {
     visible = false,
-    isPlaying = false,
     isLike = false,
     onPressLike = () => {},
-    playMode = 'order',
     onClose = () => {},
-    curPosition = 0,
-    duration = 0,
     onSliderChange = () => {},
     onModeChange = () => {},
     onBackWard = () => {},
@@ -89,8 +85,64 @@ const LyricModal = React.memo(props => {
   useKeepAwake();
   const {t} = useTranslation();
   const {envConfig} = useConfigStore();
-  const {playingMusic} = useMusicStore();
+  const {
+    playingMusic,
+    nowLyric,
+    playPosition,
+    musicDuration,
+    musicPlayMode,
+    isMusicPlaying,
+  } = useMusicStore();
   const musicExtra = playingMusic?.musicExtra;
+
+  // 艺术家字符串
+  const artistsString = useMemo(
+    () =>
+      Array.isArray(playingMusic?.artists)
+        ? playingMusic?.artists?.join(' / ')
+        : t('music.empty_artist'),
+    [playingMusic?.artists],
+  );
+
+  // 当前时间和总时长格式化
+  const currentTimeFormatted = useMemo(
+    () => formatMilliSeconds(playPosition),
+    [playPosition],
+  );
+
+  const durationFormatted = useMemo(
+    () => formatMilliSeconds(musicDuration),
+    [musicDuration],
+  );
+
+  const bgImgSource = useMemo(
+    () => ({uri: envConfig.THUMBNAIL_URL + musicExtra?.music_cover}),
+    [musicExtra?.music_cover],
+  );
+
+  const musicCoverSource = useMemo(() => {
+    if (musicExtra?.music_cover) {
+      return {uri: envConfig.STATIC_URL + musicExtra.music_cover};
+    }
+    return require('@assets/images/music_cover.jpg');
+  }, [musicExtra?.music_cover]);
+
+  // 歌词动画组件
+  const lyricAnimation = useMemo(() => {
+    if (isEmptyString(nowLyric)) {
+      return null;
+    }
+    return (
+      <Animated.View entering={FadeInUp} exiting={FadeOutDown} key={nowLyric}>
+        <Text
+          numberOfLines={1}
+          width={fullWidth * 0.8}
+          color={Colors.lyricColor}>
+          {nowLyric}
+        </Text>
+      </Animated.View>
+    );
+  }, [nowLyric]);
 
   // 屏幕变化监听
   const {width, height} = useWindowDimensions();
@@ -99,13 +151,11 @@ const LyricModal = React.memo(props => {
     setIsHorizontal(width > height);
   }, [width, height]);
 
-  const [nowLyric, setNowLyric] = useState('');
-
   // 颜色计算 - 只在相关依赖变化时执行
   useEffect(() => {
     if (musicExtra?.music_cover) {
       getColors(
-        (envConfig.STATIC_URL + musicExtra.music_cover).replace(/\\/g, '/'),
+        (envConfig.THUMBNAIL_URL + musicExtra.music_cover).replace(/\\/g, '/'),
         {
           fallback: Colors.black,
           cache: true, // 启用缓存
@@ -126,44 +176,6 @@ const LyricModal = React.memo(props => {
     }
   }, [musicExtra?.music_cover]);
 
-  // 艺术家字符串
-  const artistsString = useMemo(
-    () =>
-      Array.isArray(playingMusic?.artists)
-        ? playingMusic?.artists?.join(' / ')
-        : t('music.empty_artist'),
-    [playingMusic?.artists],
-  );
-
-  // 当前时间和总时长格式化
-  const currentTimeFormatted = useMemo(
-    () => formatMilliSeconds(curPosition),
-    [curPosition],
-  );
-
-  const durationFormatted = useMemo(
-    () => formatMilliSeconds(duration),
-    [duration],
-  );
-
-  // 歌词动画组件
-  const lyricAnimation = useMemo(() => {
-    if (isEmptyString(nowLyric)) {
-      return null;
-    }
-
-    return (
-      <Animated.View entering={FadeInUp} exiting={FadeOutDown} key={nowLyric}>
-        <Text
-          numberOfLines={1}
-          width={fullWidth * 0.8}
-          color={Colors.lyricColor}>
-          {nowLyric}
-        </Text>
-      </Animated.View>
-    );
-  }, [nowLyric]);
-
   return (
     <Modal
       animationType="slide"
@@ -178,7 +190,7 @@ const LyricModal = React.memo(props => {
         <BaseImageBackground
           blurRadius={50}
           style={styles.backImage}
-          source={{uri: envConfig.THUMBNAIL_URL + musicExtra?.music_cover}}
+          source={bgImgSource}
           resizeMode="cover">
           <TouchableOpacity paddingT-48 paddingL-22 onPress={onClose}>
             <Ionicons name="chevron-down" color={Colors.lyricColor} size={24} />
@@ -189,11 +201,7 @@ const LyricModal = React.memo(props => {
               <View width={'50%'} paddingH-50>
                 <View flexS center marginT-8>
                   <Image
-                    source={
-                      musicExtra?.music_cover
-                        ? {uri: envConfig.STATIC_URL + musicExtra.music_cover}
-                        : require('@assets/images/music_cover.jpg')
-                    }
+                    source={musicCoverSource}
                     style={[styles.HbigImage, {borderColor: Colors.lyricColor}]}
                   />
                 </View>
@@ -220,10 +228,10 @@ const LyricModal = React.memo(props => {
                     </View>
                     <View marginT-8>
                       <Slider
-                        value={curPosition}
+                        value={playPosition}
                         minimumValue={0}
-                        disabled={!duration}
-                        maximumValue={duration || 100}
+                        disabled={!musicDuration}
+                        maximumValue={musicDuration || 100}
                         maximumTrackTintColor={Colors.lyricColor}
                         thumbTintColor={Colors.primary}
                         thumbStyle={styles.thumbStyle}
@@ -246,19 +254,19 @@ const LyricModal = React.memo(props => {
                       <TouchableOpacity
                         style={styles.musicBut}
                         onPress={onModeChange}>
-                        {playMode === 'order' ? (
+                        {musicPlayMode === 'order' ? (
                           <Ionicons
                             name="repeat"
                             color={Colors.lyricColor}
                             size={30}
                           />
-                        ) : playMode === 'random' ? (
+                        ) : musicPlayMode === 'random' ? (
                           <Ionicons
                             name="shuffle"
                             color={Colors.lyricColor}
                             size={30}
                           />
-                        ) : playMode === 'single' ? (
+                        ) : musicPlayMode === 'single' ? (
                           <Ionicons
                             name="reload"
                             color={Colors.lyricColor}
@@ -278,7 +286,7 @@ const LyricModal = React.memo(props => {
                       <TouchableOpacity onPress={onPlay}>
                         <Ionicons
                           name={
-                            isPlaying
+                            isMusicPlaying
                               ? 'pause-circle-outline'
                               : 'play-circle-outline'
                           }
@@ -310,11 +318,7 @@ const LyricModal = React.memo(props => {
               </View>
               {/* 第二页：歌词视图 */}
               <View width={'50%'} paddingH-20 centerV>
-                <LrcView
-                  isHorizontal={true}
-                  currentTime={curPosition}
-                  onLyricsChange={setNowLyric}
-                />
+                <LrcView isHorizontal={true} />
               </View>
             </View>
           ) : (
@@ -332,13 +336,7 @@ const LyricModal = React.memo(props => {
               <View>
                 <View flexS center marginT-40>
                   <Image
-                    source={
-                      musicExtra?.music_cover
-                        ? {
-                            uri: envConfig.STATIC_URL + musicExtra.music_cover,
-                          }
-                        : require('@assets/images/music_cover.jpg')
-                    }
+                    source={musicCoverSource}
                     style={[styles.bigImage, {borderColor: Colors.lyricColor}]}
                   />
                 </View>
@@ -377,10 +375,10 @@ const LyricModal = React.memo(props => {
                   ) : null}
                   <View marginT-16>
                     <Slider
-                      value={curPosition}
+                      value={playPosition}
                       minimumValue={0}
-                      disabled={!duration}
-                      maximumValue={duration || 100}
+                      disabled={!musicDuration}
+                      maximumValue={musicDuration || 100}
                       maximumTrackTintColor={Colors.lyricColor}
                       thumbTintColor={Colors.primary}
                       thumbStyle={styles.thumbStyle}
@@ -403,19 +401,19 @@ const LyricModal = React.memo(props => {
                     <TouchableOpacity
                       style={styles.musicBut}
                       onPress={onModeChange}>
-                      {playMode === 'order' ? (
+                      {musicPlayMode === 'order' ? (
                         <Ionicons
                           name="repeat"
                           color={Colors.lyricColor}
                           size={30}
                         />
-                      ) : playMode === 'random' ? (
+                      ) : musicPlayMode === 'random' ? (
                         <Ionicons
                           name="shuffle"
                           color={Colors.lyricColor}
                           size={30}
                         />
-                      ) : playMode === 'single' ? (
+                      ) : musicPlayMode === 'single' ? (
                         <Ionicons
                           name="reload"
                           color={Colors.lyricColor}
@@ -435,7 +433,7 @@ const LyricModal = React.memo(props => {
                     <TouchableOpacity onPress={onPlay}>
                       <Ionicons
                         name={
-                          isPlaying
+                          isMusicPlaying
                             ? 'pause-circle-outline'
                             : 'play-circle-outline'
                         }
@@ -466,12 +464,7 @@ const LyricModal = React.memo(props => {
               </View>
 
               {/* 第二页：歌词视图 */}
-              <View>
-                <LrcView
-                  currentTime={curPosition}
-                  onLyricsChange={setNowLyric}
-                />
-              </View>
+              <LrcView />
             </Carousel>
           )}
         </BaseImageBackground>

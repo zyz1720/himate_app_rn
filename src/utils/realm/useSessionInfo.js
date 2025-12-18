@@ -143,3 +143,17 @@ export const updateSessionLastMsg = (session_id, lastMsg = {}) => {
     }
   });
 };
+
+/**
+ * 清除所有本地会话
+ */
+export const clearLocalSessions = () => {
+  try {
+    const sessionExtras = realm.objects('session_info');
+    realm.write(() => {
+      realm.delete(sessionExtras);
+    });
+  } catch (error) {
+    console.error('清除所有本地会话失败', error);
+  }
+};

@@ -2,10 +2,25 @@ import {getMusicDetail} from '@api/music';
 import {create} from 'zustand';
 import {persist, createJSONStorage} from 'zustand/middleware';
 import {isEmptyObject} from '@utils/common/object_utils';
+import {formatLrc} from '@utils/system/lyric_utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const defaultState = {
   playingMusic: {}, // 当前播放音乐
+  playPosition: 0, // 播放位置
+  nowLyric: '', // 当前歌词
+  nowLyricIndex: -1, // 当前歌词索引
+  lyrics: [], // 歌词列表
+  isHasYrc: false, // 是否有逐字歌词
+  isHasTrans: false, // 是否有翻译歌词
+  isHasRoma: false, // 是否有音译歌词
+  isMusicPlaying: false, // 音乐是否正在播放
+  isMusicLoading: false, // 音乐是否正在加载
+  musicDuration: 0, // 音乐总时长
+  playingMusicIndex: 0, // 当前播放音乐的索引
+  playingMusicProgress: 0, // 当前播放音乐的进度
+  musicPlayMode: 'order', // 列表播放类型 single order random
+
   playList: [], // 播放列表
   showMusicCtrl: false, // 是否显示音乐控制器
   closeTime: 0, // 关闭时间
@@ -13,14 +28,13 @@ const defaultState = {
   randomNum: {min: 0, max: 1}, // 随机数范围
   isRandomPlay: false, // 是否随机播放
   switchCount: 0, // 切换次数
-  playPosition: 0, // 播放位置
   isMusicResumePlay: false, // 是否恢复播放
-  isMusicPaused: false, // 是否暂停
+  isMusicBreak: false, // 是否暂停
 };
 
 export const useMusicStore = create(
   persist(
-    (set) => ({
+    set => ({
       ...defaultState,
       setPlayingMusic: music => {
         if (!music || isEmptyObject(music)) {
@@ -30,7 +44,20 @@ export const useMusicStore = create(
           return set({playingMusic: music});
         }
         getMusicDetail(music?.id).then(res => {
-          res.code === 0 && set({playingMusic: res.data || {}});
+          if (res.code === 0) {
+            set({playingMusic: res.data || {}});
+            const musicExtra = res.data?.musicExtra;
+            if (musicExtra) {
+              const {lyrics, haveTrans, haveRoma, haveYrc} =
+                formatLrc(musicExtra);
+              set({
+                lyrics,
+                isHasTrans: haveTrans,
+                isHasRoma: haveRoma,
+                isHasYrc: haveYrc,
+              });
+            }
+          }
         });
       },
       setPlayList: (list = []) => set({playList: list}),
@@ -74,15 +101,48 @@ export const useMusicStore = create(
       setRandomNum: (min = 0, max = 1) => set({randomNum: {min, max}}),
       setIsRandomPlay: flag => set({isRandomPlay: flag ?? false}),
       setSwitchCount: count => set({switchCount: count || 0}),
-      setPlayPosition: position => set({playPosition: position || 0}),
       setIsMusicResumePlay: flag => set({isMusicResumePlay: flag ?? false}),
-      setIsMusicPaused: flag => set({isMusicPaused: flag ?? false}),
+      setIsMusicBreak: flag => set({isMusicBreak: flag ?? false}),
+      setIsMusicPlaying: flag => set({isMusicPlaying: flag ?? false}),
+      setIsMusicLoading: flag => set({isMusicLoading: flag ?? false}),
+      setMusicDuration: duration => set({musicDuration: duration || 0}),
+      setPlayingMusicIndex: index => set({playingMusicIndex: index || 0}),
+      setPlayingMusicProgress: progress =>
+        set({playingMusicProgress: progress || 0}),
+      setMusicPlayMode: mode => set({musicPlayMode: mode || 'order'}),
+      setPlayPosition: position =>
+        set(state => {
+          if (position === state.playPosition) {
+            return state;
+          }
+          state.playPosition = position;
+          const _Lyrics = state.lyrics;
+          if (_Lyrics.length === 0) {
+            state.nowLyricIndex = -1;
+            state.nowLyric = _Lyrics[-1]?.lyric || '';
+            return state;
+          }
+          for (let i = 0; i < _Lyrics.length; i++) {
+            const matchTime = state.isHasYrc
+              ? _Lyrics[i].startTime
+              : _Lyrics[i].time;
+            if (matchTime > position) {
+              state.nowLyricIndex = i - 1;
+              state.nowLyric = _Lyrics[i - 1]?.lyric || '';
+              return state;
+            }
+          }
+          state.nowLyricIndex = _Lyrics.length - 1;
+          state.nowLyric = _Lyrics[-1]?.lyric || '';
+          return state;
+        }),
     }),
     {
       name: 'music-storage',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: state => ({
         switchCount: state.switchCount,
+        musicPlayMode: state.musicPlayMode,
       }),
     },
   ),

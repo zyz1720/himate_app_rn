@@ -7,7 +7,7 @@ import {useTranslation} from 'react-i18next';
 import {
   getLocalMates,
   setLocalMateInfo,
-  deleteLocalMateInfo,
+  clearLocalMateInfo,
 } from '@utils/realm/useMateInfo';
 import ListItem from '@components/common/ListItem';
 import MateList from '@components/mate/MateList';
@@ -44,7 +44,7 @@ const Mate = ({navigation}) => {
   useEffect(() => {
     if (list.length) {
       setMateList(list);
-      deleteLocalMateInfo();
+      clearLocalMateInfo();
       setLocalMateInfo(list);
     }
   }, [list]);

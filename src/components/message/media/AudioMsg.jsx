@@ -49,7 +49,7 @@ const AudioMsg = React.memo(props => {
     stopPlayer,
     seekToPlayer,
   } = useAudioPlayer();
-  const {setIsMusicResumePlay, setIsMusicPaused} = useMusicStore();
+  const {setIsMusicResumePlay, setIsMusicBreak} = useMusicStore();
 
   const [curPosition, setCurPosition] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
@@ -79,7 +79,7 @@ const AudioMsg = React.memo(props => {
 
   // 开始播放
   const startPlay = async () => {
-    setIsMusicPaused(true);
+    setIsMusicBreak(true);
     await stopPlay();
     await startPlayer(currentMessage.audio);
     setNowPlayAudioId(currentMessage._id);

@@ -1,6 +1,5 @@
 import React, {useState, useEffect, useRef, useMemo, useCallback} from 'react';
 import {FlatList, StyleSheet} from 'react-native';
-import {formatLrc} from '@utils/system/lyric_utils';
 import {View, Text, Colors, TouchableOpacity, Image} from 'react-native-ui-lib';
 import {fullHeight, fullWidth} from '@style/index';
 import {useToast} from '@components/common/useToast';
@@ -10,7 +9,6 @@ import {useTranslation} from 'react-i18next';
 import {renderArtists} from '@utils/system/lyric_utils';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LrcItem from './LrcItem';
-import {useMusicControl} from '@utils/hooks/useMusicControl';
 
 const styles = StyleSheet.create({
   lyricText: {
@@ -68,19 +66,24 @@ const styles = StyleSheet.create({
 });
 
 const LrcView = React.memo(props => {
-  const {isHorizontal = false, currentTime, onLyricsChange = () => {}} = props;
+  const {isHorizontal = false} = props;
   const {t} = useTranslation();
   const {envConfig} = useConfigStore();
-  const {switchCount, setSwitchCount, playingMusic} = useMusicStore();
+  const {
+    lyrics,
+    switchCount,
+    setSwitchCount,
+    playingMusic,
+    isHasYrc,
+    isHasTrans,
+    isHasRoma,
+    nowLyricIndex,
+    playPosition,
+  } = useMusicStore();
   const {musicExtra = {}} = playingMusic;
   const {showToast} = useToast();
-  const [parsedLrc, setParsedLrc] = useState([]);
   const flatListRef = useRef(null);
-  const {updateLyric} = useMusicControl();
 
-  const [haveYrc, setHaveYrc] = useState(false);
-  const [haveTrans, setHaveTrans] = useState(false);
-  const [haveRoma, setHaveRoma] = useState(false);
   const [availableModes, setAvailableModes] = useState([]);
   const [transVisible, setTransVisible] = useState(true);
   const [romaVisible, setRomaVisible] = useState(false);
@@ -96,26 +99,6 @@ const LrcView = React.memo(props => {
     {name: 'yrc+roma', label: t('music.yrc_roma')},
     {name: 'yrc', label: t('music.yrc')},
   ];
-
-  // 解析歌词
-  useEffect(() => {
-    const {
-      Lyrics,
-      haveTrans: _haveTrans,
-      haveRoma: _haveRoma,
-      haveYrc: _haveYrc,
-    } = formatLrc(musicExtra);
-    setParsedLrc(Lyrics);
-    setHaveYrc(_haveYrc);
-    setHaveRoma(_haveRoma);
-    setHaveTrans(_haveTrans);
-    const modes = filteredModes(_haveYrc, _haveTrans, _haveRoma);
-    setAvailableModes(modes);
-    showLyric(modes[switchCount]);
-
-    setItemHeights(new Map());
-    shouldSkip.current = false;
-  }, [musicExtra?.music_lyric]);
 
   // 过滤出可用的歌词模式
   const filteredModes = (_haveYrc, _haveTrans, _haveRoma) => {
@@ -139,17 +122,6 @@ const LrcView = React.memo(props => {
     });
     return modes;
   };
-
-  // 切换歌词
-  const switchLyric = useCallback(() => {
-    shouldSkip.current = false;
-
-    const currentModeIndex = (switchCount + 1) % availableModes.length;
-    const currentMode = availableModes[currentModeIndex];
-    showLyric(currentMode);
-    setSwitchCount(currentModeIndex);
-    showToast(t('music.switch_to', {mode: currentMode.label}), 'success', true);
-  }, [switchCount, availableModes]);
 
   // 显示对应歌词
   const showLyric = _mode => {
@@ -200,43 +172,23 @@ const LrcView = React.memo(props => {
     }
   };
 
-  // 查找当前行
-  const findCurrentLineIndex = useCallback(() => {
-    if (parsedLrc.length === 0) {
-      return -1;
-    }
+  // 切换歌词
+  const switchLyric = useCallback(() => {
+    shouldSkip.current = false;
 
-    for (let i = 0; i < parsedLrc.length; i++) {
-      const matchTime =
-        yrcVisible && haveYrc ? parsedLrc[i].startTime : parsedLrc[i].time;
-      if (matchTime > currentTime) {
-        return i - 1;
-      }
-    }
-    return parsedLrc.length - 1;
-  }, [parsedLrc, yrcVisible, haveYrc, currentTime]);
-
-  // 自动滚动到当前歌词
-  const [nowIndex, setNowIndex] = useState(-1);
-  useEffect(() => {
-    const index = findCurrentLineIndex();
-    setNowIndex(index);
-    if (flatListRef.current && index >= 0) {
-      flatListRef.current.scrollToIndex({index, animated: true});
-      const lyric = parsedLrc[index]?.lyric || '';
-      updateLyric(lyric);
-      onLyricsChange(lyric);
-    } else {
-      onLyricsChange('');
-    }
-  }, [findCurrentLineIndex, parsedLrc]);
+    const currentModeIndex = (switchCount + 1) % availableModes.length;
+    const currentMode = availableModes[currentModeIndex];
+    showLyric(currentMode);
+    setSwitchCount(currentModeIndex);
+    showToast(t('music.switch_to', {mode: currentMode.label}), 'success', true);
+  }, [switchCount, availableModes]);
 
   // 每行歌词高度变化
   const [itemHeights, setItemHeights] = useState(() => new Map());
   const shouldSkip = useRef(false);
   const onItemLayout = useCallback(
     (index, height) => {
-      if (shouldSkip.current || index === parsedLrc.length - 1) {
+      if (shouldSkip.current || index === lyrics.length - 1) {
         shouldSkip.current = true;
         return;
       }
@@ -255,18 +207,18 @@ const LrcView = React.memo(props => {
         return newMap;
       });
     },
-    [parsedLrc.length, shouldSkip.current, isTwoLines],
+    [lyrics.length, shouldSkip.current, isTwoLines],
   );
 
   const itemLayouts = useMemo(() => {
     const newLengths = new Map();
     const newOffsets = new Map();
-    if (!parsedLrc.length || itemHeights.size === 0 || !shouldSkip.current) {
+    if (!lyrics.length || itemHeights.size === 0 || !shouldSkip.current) {
       return {lengths: newLengths, offsets: newOffsets};
     }
 
     const defaultHeight = isTwoLines ? 68 : 48; // 动态默认高度
-    const maxIndex = parsedLrc.length - 1;
+    const maxIndex = lyrics.length - 1;
 
     for (let i = 0; i <= maxIndex; i++) {
       newLengths.set(i, itemHeights.get(i) || defaultHeight);
@@ -282,7 +234,12 @@ const LrcView = React.memo(props => {
       lengths: newLengths,
       offsets: newOffsets,
     };
-  }, [isTwoLines, itemHeights, parsedLrc.length, shouldSkip.current]);
+  }, [isTwoLines, itemHeights, lyrics.length, shouldSkip.current]);
+
+  const lrcHeight = useMemo(() => {
+    const h = isHorizontal ? fullHeight * 0.9 : fullHeight * 0.78;
+    return h - (h % 68);
+  }, [fullWidth, isHorizontal]);
 
   // 计算每行歌词高度
   const getItemLayout = useCallback(
@@ -300,18 +257,18 @@ const LrcView = React.memo(props => {
   // 渲染每行歌词
   const renderItem = useCallback(
     ({item, index}) => {
-      const isActive = nowIndex === index;
+      const isActive = nowLyricIndex === index;
       let progress = 0;
       let displayChars = '';
       const fullText = item?.words
         ? item.words.map(w => w.char).join('')
         : item?.text;
       if (isActive && item?.words) {
-        const lineTime = currentTime - item.startTime;
+        const lineTime = playPosition - item.startTime;
         progress = Math.min(Math.max(lineTime / item.duration, 0), 1);
 
         for (const word of item.words) {
-          if (currentTime >= word.startTime) {
+          if (playPosition >= word.startTime) {
             displayChars += word.char;
           } else {
             break;
@@ -323,34 +280,46 @@ const LrcView = React.memo(props => {
         <LrcItem
           item={item}
           index={index}
-          nowIndex={nowIndex}
+          nowIndex={nowLyricIndex}
           progress={progress}
           displayChars={displayChars}
           fullText={fullText}
-          yrcVisible={yrcVisible && haveYrc}
-          transVisible={transVisible && haveTrans}
-          romaVisible={romaVisible && haveRoma}
+          yrcVisible={yrcVisible && isHasYrc}
+          transVisible={transVisible && isHasTrans}
+          romaVisible={romaVisible && isHasRoma}
           onItemLayout={onItemLayout}
           isHorizontal={isHorizontal}
         />
       );
     },
     [
-      currentTime,
-      nowIndex,
+      playPosition,
+      nowLyricIndex,
       yrcVisible,
-      haveYrc,
+      isHasYrc,
       transVisible,
-      haveTrans,
+      isHasTrans,
       romaVisible,
-      haveRoma,
+      isHasRoma,
     ],
   );
 
-  const lrcHeight = useMemo(() => {
-    const h = isHorizontal ? fullHeight * 0.9 : fullHeight * 0.78;
-    return h - (h % 68);
-  }, [fullWidth, isHorizontal]);
+  // 自动滚动到当前歌词
+  useEffect(() => {
+    if (flatListRef.current && nowLyricIndex >= 0) {
+      flatListRef.current.scrollToIndex({index: nowLyricIndex, animated: true});
+    }
+  }, [nowLyricIndex]);
+
+  // 解析歌词
+  useEffect(() => {
+    const modes = filteredModes(isHasYrc, isHasTrans, isHasRoma);
+    setAvailableModes(modes);
+    showLyric(modes[switchCount]);
+
+    setItemHeights(new Map());
+    shouldSkip.current = false;
+  }, [isHasYrc, isHasTrans, isHasRoma]);
 
   return (
     <View>
@@ -387,10 +356,10 @@ const LrcView = React.memo(props => {
         </View>
       )}
       <View height={lrcHeight}>
-        {parsedLrc.length ? (
+        {lyrics.length ? (
           <FlatList
             ref={flatListRef}
-            data={parsedLrc}
+            data={lyrics}
             renderItem={renderItem}
             keyExtractor={item => item?.id || item?.time}
             contentContainerStyle={{
@@ -408,7 +377,7 @@ const LrcView = React.memo(props => {
           </View>
         )}
       </View>
-      {(haveRoma || haveTrans || haveYrc) && parsedLrc.length > 0 && (
+      {(isHasYrc || isHasTrans || isHasRoma) && lyrics.length > 0 && (
         <View style={styles.switchView}>
           <View backgroundColor={Colors.white4} style={styles.switchBut}>
             <TouchableOpacity style={styles.musicBut} onPress={switchLyric}>

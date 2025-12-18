@@ -161,6 +161,8 @@ RELEASE_KEY_PASSWORD=
 
 ### 优化
 
+node scripts/replace-packages.js 
+
 1，解决使用react-native-audio-recorder-player组件播放音乐时，在网络延迟时导致的卡顿问题
 
 ```kotlin

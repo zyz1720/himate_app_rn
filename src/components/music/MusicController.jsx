@@ -82,6 +82,7 @@ const MusicCtrlProvider = React.memo(props => {
   const {userInfo} = useUserStore();
   const {envConfig} = useConfigStore();
   const {
+    nowLyric,
     showMusicCtrl,
     playList,
     playingMusic,
@@ -97,23 +98,27 @@ const MusicCtrlProvider = React.memo(props => {
     isMusicResumePlay,
     playPosition,
     setPlayPosition,
-    isMusicPaused,
-    setIsMusicPaused,
+    isMusicBreak,
+    setIsMusicBreak,
+    isMusicLoading,
+    setIsMusicLoading,
+    musicDuration,
+    setMusicDuration,
+    playingMusicIndex,
+    setPlayingMusicIndex,
+    playingMusicProgress,
+    setPlayingMusicProgress,
+    musicPlayMode,
+    setMusicPlayMode,
+    isMusicPlaying,
+    setIsMusicPlaying,
   } = useMusicStore();
 
   const {t} = useTranslation();
-
   const [musicModalVisible, setMusicModalVisible] = useState(false);
   const [listModalVisible, setListModalVisible] = useState(false);
-  const [audioIsPlaying, setAudioIsPlaying] = useState(false); // 音频是否正在播放
-  const [curPosition, setCurPosition] = useState(0); // 当前播放进度
-  const [audioDuration, setAudioDuration] = useState(0); // 音频总时长
-  const [playingIndex, setPlayingIndex] = useState(0); // 当前播放音乐的索引
-  const [playProgress, setPlayProgress] = useState(0); // 进度条数值
-  const [playType, setPlayType] = useState('order'); // 列表播放类型 single order random
-  const lastPlayedId = useRef(null); // 记录上一次播放的音乐Id
-
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPlayFinished, setIsPlayFinished] = useState(false);
+  const lastPlayedMusicId = useRef(null); // 记录上一次播放的音乐Id
 
   const {
     addPlayBackListener,
@@ -135,99 +140,91 @@ const MusicCtrlProvider = React.memo(props => {
     onNextTrackCtrl,
     onPreviousTrackCtrl,
     onSeekCtrl,
+    setFlymeLyric,
   } = useMusicControl();
 
   // 音乐播放器
   addPlayBackListener(playbackMeta => {
     const {currentPosition, duration, elapsedTime, progress, isFinished} =
       playbackMeta;
-
-    setAudioIsPlaying(
-      currentPosition !== curPosition && currentPosition !== seekToPosition,
+    setIsMusicPlaying(
+      currentPosition !== playPosition && currentPosition !== seekToPosition,
     );
-    setCurPosition(currentPosition);
     setPlayPosition(currentPosition);
-    if (duration !== audioDuration) {
-      setAudioDuration(duration);
+    if (duration !== musicDuration) {
+      setMusicDuration(duration);
     }
     if (progress) {
-      setPlayProgress(progress);
+      setPlayingMusicProgress(progress);
     }
-
     seekToPlayerCtrl(elapsedTime);
-
     if (isFinished) {
+      setIsPlayFinished(true);
       autoPlayNext();
     }
   });
 
   // 自动播放下一首
   const autoPlayNext = useCallback(() => {
-    restMusicStatus().then(() => {
-      if (isRandomPlay) {
-        getRandMusic();
-      } else if (playList.length > 0) {
-        if (playType === 'single') {
-          setPlayingMusic(playList[playingIndex]);
-        } else if (playType === 'order') {
-          setPlayingMusic(
-            playingIndex === playList.length - 1
-              ? playList[0]
-              : playList[playingIndex + 1],
-          );
-        } else if (playType === 'random') {
-          setPlayingMusic(
-            playList[Math.floor(Math.random() * playList.length)],
-          );
-        }
-      } else {
-        setPlayingMusic({});
+    if (isRandomPlay) {
+      getRandMusic();
+    } else if (playList.length > 0) {
+      if (musicPlayMode === 'single') {
+        setPlayingMusic(playList[playingMusicIndex]);
+      } else if (musicPlayMode === 'order') {
+        setPlayingMusic(
+          playingMusicIndex === playList.length - 1
+            ? playList[0]
+            : playList[playingMusicIndex + 1],
+        );
+      } else if (musicPlayMode === 'random') {
+        setPlayingMusic(playList[Math.floor(Math.random() * playList.length)]);
       }
-    });
-  }, [isRandomPlay, playList, playingIndex, playType]);
+    } else {
+      setPlayingMusic({});
+      restMusicStatus();
+    }
+  }, [isRandomPlay, playList, playingMusicIndex, musicPlayMode]);
 
   // 上一首
   const previousTrack = useCallback(() => {
-    if (playingIndex === 0 && playList.length > 0) {
+    if (playingMusicIndex === 0 && playList.length > 0) {
       setPlayingMusic(playList[playList.length - 1]);
       showToast(t('music.already_first'), 'warning');
       return;
     }
     if (playList.length > 0) {
-      setPlayingMusic(playList[playingIndex - 1]);
+      setPlayingMusic(playList[playingMusicIndex - 1]);
     } else {
       showToast(t('music.no_music'), 'warning');
     }
-  }, [playList, playingIndex]);
+  }, [playList, playingMusicIndex]);
 
   // 播放或暂停
   const playOrPauseTrack = useCallback(async () => {
-    if (isLoading) {
+    if (isMusicLoading) {
       showToast(t('music.loading'), 'warning', true);
     }
-    if (audioIsPlaying) {
+    if (isMusicPlaying) {
       await pausePlayer();
-      setAudioIsPlaying(false);
     } else {
       if (isEmptyObject(playingMusic)) {
         showToast(t('music.no_music'), 'warning');
         return;
       }
       await resumePlayer();
-      setAudioIsPlaying(true);
     }
-  }, [audioIsPlaying, playingMusic, isLoading]);
+  }, [playingMusic, isMusicLoading, isMusicPlaying]);
 
   // 播放或暂停
   const pauseTrack = useCallback(async () => {
     if (isEmptyObject(playingMusic)) {
       return;
     }
-    if (audioIsPlaying || isLoading) {
+    if (isMusicPlaying || isMusicLoading) {
       await pausePlayer();
-      setAudioIsPlaying(false);
     }
-  }, [audioIsPlaying, playingMusic, isLoading]);
+  }, [playingMusic, isMusicLoading, isMusicPlaying]);
 
   // 下一首
   const nextTrack = useCallback(() => {
@@ -235,69 +232,39 @@ const MusicCtrlProvider = React.memo(props => {
       getRandMusic();
       return;
     }
-    if (playingIndex === playList.length - 1) {
+    if (playingMusicIndex === playList.length - 1) {
       setPlayingMusic(playList[0]);
       showToast(t('music.already_last'), 'warning');
       return;
     }
     if (playList.length > 0) {
-      setPlayingMusic(playList[playingIndex + 1]);
+      setPlayingMusic(playList[playingMusicIndex + 1]);
       return;
     } else {
       showToast(t('music.no_music'), 'warning');
       return;
     }
-  }, [isRandomPlay, playList, playingIndex]);
+  }, [isRandomPlay, playList, playingMusicIndex]);
 
   // 调整播放进度
   const [seekToPosition, setSeekToPosition] = useState(0);
   const onSliderChange = useCallback(async position => {
     setSeekToPosition(parseInt(position, 10));
-    setAudioIsPlaying(false);
-    setIsLoading(true);
+    setIsMusicLoading(true);
     await seekToPlayer(position);
   }, []);
-
-  // 监听音乐播放状态
-  useEffect(() => {
-    if (isEmptyObject(playingMusic)) {
-      return;
-    }
-    if (audioIsPlaying) {
-      setIsLoading(false);
-      setSeekToPosition(0);
-      resumePlayerCtrl();
-    } else {
-      pausePlayerCtrl();
-    }
-  }, [audioIsPlaying]);
 
   // 重置音乐播放所有状态
   const restMusicStatus = async () => {
     stopPlayerCtrl();
-    setCurPosition(0);
-    setAudioDuration(0);
-    setPlayProgress(0);
+    setPlayPosition(0);
+    setMusicDuration(0);
+    setPlayingMusicProgress(0);
     setSeekToPosition(0);
-    setIsLoading(false);
-    setAudioIsPlaying(false);
+    setIsMusicLoading(false);
+    setIsPlayFinished(false);
     await stopPlayer();
   };
-
-  // 是否要定时关闭音乐
-  let playerTimer = null;
-  useEffect(() => {
-    if (closeTime) {
-      playerTimer = setTimeout(() => {
-        pausePlayer();
-        pausePlayerCtrl();
-        setIsClosed(true);
-        clearTimeout(playerTimer);
-      }, closeTime * 60000);
-    } else {
-      clearTimeout(playerTimer);
-    }
-  }, [closeTime]);
 
   // 获取随机歌曲
   const getRandMusic = useCallback(async () => {
@@ -314,13 +281,6 @@ const MusicCtrlProvider = React.memo(props => {
     }
   }, [randomNum]);
 
-  // 随机播放
-  useEffect(() => {
-    if (isRandomPlay) {
-      getRandMusic();
-    }
-  }, [isRandomPlay]);
-
   // 播放新音乐的方法
   const playNewMusic = async () => {
     try {
@@ -328,8 +288,7 @@ const MusicCtrlProvider = React.memo(props => {
         return;
       }
       await restMusicStatus();
-      setIsLoading(true);
-
+      setIsMusicLoading(true);
       let url = '';
       if (typeof playingMusic?.id === 'number') {
         setCloudMusicId(playingMusic?.id);
@@ -340,53 +299,23 @@ const MusicCtrlProvider = React.memo(props => {
 
       await startPlayer(url);
       const index = playList.findIndex(item => item.id === playingMusic.id);
-      lastPlayedId.current = playingMusic.id;
-      setPlayingIndex(index);
+      lastPlayedMusicId.current = playingMusic.id;
+      setPlayingMusicIndex(index);
       setNowPlayingCtrl(playingMusic);
       recordPlayHistory(playingMusic);
-      setIsLoading(false);
+      setIsMusicLoading(false);
     } catch (error) {
       console.error(error);
       showToast(t('music.unable_to_play'), 'error');
       restMusicStatus();
-      setIsLoading(false);
     }
   };
-
-  // 是否播放新的音乐
-  useEffect(() => {
-    if (
-      lastPlayedId.current !== playingMusic?.id ||
-      playType === 'single' ||
-      !audioIsPlaying
-    ) {
-      playNewMusic();
-    }
-  }, [playingMusic?.id]);
-
-  useEffect(() => {
-    if (isMusicResumePlay) {
-      setIsMusicResumePlay(false);
-      setIsMusicPaused(false);
-      playNewMusic().then(() => {
-        if (playPosition) {
-          onSliderChange();
-        }
-      });
-    }
-  }, [isMusicResumePlay]);
-
-  useEffect(() => {
-    if (isMusicPaused) {
-      pauseTrack();
-    }
-  }, [isMusicPaused]);
 
   // 加载音乐名
   const renderMarquee = useCallback(() => {
     const {id} = playingMusic;
     let musicText = renderMusicTitle(playingMusic);
-    if (isLoading) {
+    if (isMusicLoading) {
       musicText = t('music.loading');
     }
     const speed = musicText.length > 16 ? 0.4 : 0;
@@ -395,7 +324,7 @@ const MusicCtrlProvider = React.memo(props => {
       <View>
         <Marquee
           withGesture={false}
-          key={id + String(isLoading)}
+          key={id + String(isMusicLoading)}
           speed={speed}
           spacing={spacing}
           style={styles.marquee}>
@@ -403,7 +332,7 @@ const MusicCtrlProvider = React.memo(props => {
         </Marquee>
       </View>
     );
-  }, [isLoading, playingMusic?.id]);
+  }, [isMusicLoading, playingMusic?.id]);
 
   // 编辑用户收藏的音乐
   const [isLike, setIsLike] = useState(false);
@@ -440,27 +369,6 @@ const MusicCtrlProvider = React.memo(props => {
     }
   };
 
-  // 通知栏控件操作
-  onPauseCtrl(() => {
-    playOrPauseTrack();
-  });
-
-  onPlayCtrl(() => {
-    playOrPauseTrack();
-  });
-
-  onNextTrackCtrl(() => {
-    nextTrack();
-  });
-
-  onPreviousTrackCtrl(() => {
-    previousTrack();
-  });
-
-  onSeekCtrl(position => {
-    onSliderChange(position);
-  });
-
   const ctrlWidth = useSharedValue(fullWidth - 32);
   const expandAnimatedStyle = useAnimatedStyle(() => ({
     width: ctrlWidth.value,
@@ -476,6 +384,13 @@ const MusicCtrlProvider = React.memo(props => {
     transform: [{translateY: translateY.value}],
   }));
 
+  // 通知栏控件操作
+  onPauseCtrl(playOrPauseTrack);
+  onPlayCtrl(playOrPauseTrack);
+  onNextTrackCtrl(nextTrack);
+  onPreviousTrackCtrl(previousTrack);
+  onSeekCtrl(onSliderChange);
+
   useEffect(() => {
     if (showMusicCtrl) {
       display.value = 'flex';
@@ -487,6 +402,79 @@ const MusicCtrlProvider = React.memo(props => {
       translateY.value = withTiming(50);
     }
   }, [showMusicCtrl]);
+
+  // 是否播放新的音乐
+  useEffect(() => {
+    if (
+      playingMusic?.id &&
+      (lastPlayedMusicId.current !== playingMusic?.id ||
+        musicPlayMode === 'single' ||
+        !isMusicPlaying)
+    ) {
+      playNewMusic();
+    }
+  }, [playingMusic?.id, isPlayFinished]);
+
+  useEffect(() => {
+    if (isMusicResumePlay) {
+      setIsMusicResumePlay(false);
+      setIsMusicBreak(false);
+      playNewMusic().then(() => {
+        if (playPosition) {
+          onSliderChange(playPosition);
+        }
+      });
+    }
+  }, [isMusicResumePlay]);
+
+  // 是否被其它组件中断播放
+  useEffect(() => {
+    if (isMusicBreak) {
+      pauseTrack();
+    }
+  }, [isMusicBreak]);
+
+  // 随机播放
+  useEffect(() => {
+    if (isRandomPlay) {
+      getRandMusic();
+    }
+  }, [isRandomPlay]);
+
+  // 监听音乐播放状态
+  useEffect(() => {
+    if (isEmptyObject(playingMusic)) {
+      return;
+    }
+    if (isMusicPlaying) {
+      setIsMusicLoading(false);
+      setSeekToPosition(0);
+      resumePlayerCtrl();
+    } else {
+      pausePlayerCtrl();
+    }
+  }, [isMusicPlaying]);
+
+  // 是否要定时关闭音乐
+  let playerTimer = null;
+  useEffect(() => {
+    if (closeTime) {
+      playerTimer = setTimeout(() => {
+        pausePlayer();
+        pausePlayerCtrl();
+        setIsClosed(true);
+        clearTimeout(playerTimer);
+      }, closeTime * 60000);
+    } else {
+      clearTimeout(playerTimer);
+    }
+  }, [closeTime]);
+
+  useEffect(() => {
+    if (nowLyric) {
+      setFlymeLyric(nowLyric);
+    }
+  }, [nowLyric]);
 
   useEffect(() => {
     return () => {
@@ -526,7 +514,7 @@ const MusicCtrlProvider = React.memo(props => {
                       key={playingMusic?.id}
                       size={47}
                       width={3}
-                      fill={playProgress}
+                      fill={playingMusicProgress}
                       tintColor={Colors.red40}
                       rotation={0}
                       lineCap="square">
@@ -561,7 +549,7 @@ const MusicCtrlProvider = React.memo(props => {
                       onPress={() => {
                         playOrPauseTrack();
                       }}>
-                      {audioIsPlaying ? (
+                      {isMusicPlaying ? (
                         <AntDesign
                           name="pausecircleo"
                           color={Colors.white}
@@ -596,30 +584,26 @@ const MusicCtrlProvider = React.memo(props => {
       <LyricModal
         visible={musicModalVisible}
         onClose={() => setMusicModalVisible(false)}
-        isPlaying={audioIsPlaying}
         isLike={isLike}
         onPressLike={editMyFavorite}
-        playMode={playType}
-        curPosition={curPosition}
-        duration={audioDuration}
         onSliderChange={value => {
           onSliderChange(value);
         }}
         onModeChange={() => {
-          setPlayType(prev => {
-            if (prev === 'order') {
-              showToast(t('music.random_play'), 'success', true);
-              return 'random';
-            }
-            if (prev === 'random') {
-              showToast(t('music.single_play'), 'success', true);
-              return 'single';
-            }
-            if (prev === 'single') {
-              showToast(t('music.order_play'), 'success', true);
-              return 'order';
-            }
-          });
+          let newPlayMode;
+          if (musicPlayMode === 'order') {
+            showToast(t('music.random_play'), 'success', true);
+            newPlayMode = 'random';
+          }
+          if (musicPlayMode === 'random') {
+            showToast(t('music.single_play'), 'success', true);
+            newPlayMode = 'single';
+          }
+          if (musicPlayMode === 'single') {
+            showToast(t('music.order_play'), 'success', true);
+            newPlayMode = 'order';
+          }
+          setMusicPlayMode(newPlayMode);
         }}
         onBackWard={previousTrack}
         onPlay={playOrPauseTrack}

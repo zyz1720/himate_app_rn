@@ -47,10 +47,8 @@ export const useMusicControl = () => {
   );
 
   // 更新歌词
-  const updateLyric = useCallback((lyric = '') => {
-    MusicControl.updatePlayback({
-      lyric: lyric || '',
-    });
+  const setFlymeLyric = useCallback((lyric = '') => {
+    MusicControl.setFlymeLyric(lyric);
   }, []);
 
   // 恢复播放
@@ -68,10 +66,8 @@ export const useMusicControl = () => {
   }, []);
 
   // 跳转到指定位置播放
-  const seekToPlayerCtrl = useCallback((time = 0) => {
-    MusicControl.updatePlayback({
-      elapsedTime: time,
-    });
+  const seekToPlayerCtrl = useCallback((seconds = 0) => {
+    MusicControl.updateElapsedTime(seconds);
   }, []);
 
   // 停止播放
@@ -128,6 +124,6 @@ export const useMusicControl = () => {
     onNextTrackCtrl,
     onPreviousTrackCtrl,
     onSeekCtrl,
-    updateLyric,
+    setFlymeLyric,
   };
 };
