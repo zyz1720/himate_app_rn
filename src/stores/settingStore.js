@@ -20,6 +20,9 @@ const defaultState = {
   isFastStatic: false, // 是否快速静态
   isMusicApp: false, // 是否为音乐应用
   ringtone: 'default_1.mp3', // 铃声
+  isShowStatusBarLyric: true, // 是否显示状态栏歌词
+  isShowDesktopLyric: false, // 是否显示桌面歌词
+  statusBarLyricType: 'lrc', // 状态栏歌词类型lrc/trans/roma
 };
 
 export const useSettingStore = create(
@@ -73,6 +76,15 @@ export const useSettingStore = create(
         if (get().isFollowSystemLanguage) {
           set({language: systemLanguage === 'zh' ? 'zh' : 'en'});
         }
+      },
+      setIsShowStatusBarLyric: flag => {
+        set({isShowStatusBarLyric: flag ?? true});
+      },
+      setIsShowDesktopLyric: flag => {
+        set({isShowDesktopLyric: flag ?? false});
+      },
+      setStatusBarLyricType: type => {
+        set({statusBarLyricType: type || 'lrc'});
       },
     }),
     {

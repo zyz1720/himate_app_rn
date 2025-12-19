@@ -83,5 +83,9 @@
   "no_new_music": "No new music found",
   "scan_no_permission": "No permission to access this directory",
   "unable_to_play": "Unable to play this music",
-  "clear_list": "Clear Playlist"
+  "clear_list": "Clear Playlist",
+  "lyric_setting": "Lyric Setting",
+  "statusBar_lyric": "Status Bar Lyric",
+  "lyric_tips": "Enable to display lyrics on the status bar (if supported)",
+  "desktop_lyric": "Desktop Lyric"
 }

@@ -28,16 +28,16 @@ const ListItem = props => {
         paddingV-12
         onPress={() => onConfirm()}>
         <View flexS centerV row>
-          <View width={22} center>
-            <FontAwesome
-              name={iconName}
-              color={iconColor}
-              size={iconSize ? iconSize : 22}
-            />
-          </View>
-          <Text text70 marginL-8>
-            {itemName}
-          </Text>
+          {iconName ? (
+            <View width={22} center marginR-8>
+              <FontAwesome
+                name={iconName}
+                color={iconColor}
+                size={iconSize ? iconSize : 22}
+              />
+            </View>
+          ) : null}
+          <Text text70>{itemName}</Text>
         </View>
         {renderRight ? (
           renderRight

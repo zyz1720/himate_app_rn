@@ -321,6 +321,13 @@ const LrcView = React.memo(props => {
     shouldSkip.current = false;
   }, [isHasYrc, isHasTrans, isHasRoma]);
 
+  const musicCoverSource = useMemo(() => {
+    if (musicExtra?.music_cover) {
+      return {uri: envConfig.THUMBNAIL_URL + musicExtra.music_cover};
+    }
+    return require('@assets/images/music_cover.jpg');
+  }, [musicExtra?.music_cover]);
+
   return (
     <View>
       {isHorizontal ? null : (
@@ -328,11 +335,7 @@ const LrcView = React.memo(props => {
           {playingMusic?.title ? (
             <>
               <Image
-                source={
-                  musicExtra?.music_cover
-                    ? {uri: envConfig.STATIC_URL + musicExtra.music_cover}
-                    : require('@assets/images/music_cover.jpg')
-                }
+                source={musicCoverSource}
                 style={[styles.image, {borderColor: Colors.lyricColor}]}
               />
               <View>

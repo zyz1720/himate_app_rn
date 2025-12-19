@@ -15,6 +15,7 @@ import {
   PanningProvider,
   Dialog,
   Slider,
+  SegmentedControl,
 } from 'react-native-ui-lib';
 import {FlatList, StyleSheet, Vibration} from 'react-native';
 import {useToast} from '@components/common/useToast';
@@ -30,15 +31,19 @@ import {getMusic, getMusicFromDefaultFavorites} from '@api/music';
 import {useConfigStore} from '@store/configStore';
 import {useMusicStore} from '@store/musicStore';
 import {useUserStore} from '@store/userStore';
+import {useSettingStore} from '@store/settingStore';
 import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
 import {useTranslation} from 'react-i18next';
 import {getPlayHistory} from '@utils/realm/useMusicInfo';
 import {getLocalMusic} from '@utils/realm/useLocalMusic';
 import {useIsFocused} from '@react-navigation/native';
+import Animated, {FadeInUp, FadeOut} from 'react-native-reanimated';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import MaterialDesignIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import BaseDialog from '@components/common/BaseDialog';
+import ListItem from '@components/common/ListItem';
 import dayjs from 'dayjs';
 
 const Music = ({navigation}) => {
@@ -50,6 +55,14 @@ const Music = ({navigation}) => {
   const {isClosed, randomNum, setRandomNum, setCloseTime, setIsRandomPlay} =
     useMusicStore();
   const {envConfig} = useConfigStore();
+  const {
+    isShowStatusBarLyric,
+    setIsShowStatusBarLyric,
+    isShowDesktopLyric,
+    setIsShowDesktopLyric,
+    statusBarLyricType,
+    setStatusBarLyricType,
+  } = useSettingStore();
 
   const {list, total, onEndReached, refreshData} =
     useInfiniteScroll(getOneselfFavorites);
@@ -232,6 +245,8 @@ const Music = ({navigation}) => {
     }
   };
 
+  const [showLyricSetting, setShowLyricSetting] = useState(true);
+
   useEffect(() => {
     if (isFocused) {
       getDefaultFavoritesCount();
@@ -265,34 +280,46 @@ const Music = ({navigation}) => {
         </View>
       </Card>
       <Card marginT-16 padding-12>
-        <View row centerV marginB-12>
-          <View>
+        <View flexS row centerV spread marginB-12>
+          <View row centerV>
             <Image
               source={{uri: envConfig.STATIC_URL + userInfo?.user_avatar}}
               errorSource={require('@assets/images/empty.jpg')}
               style={styles.image}
             />
-          </View>
-          <View marginL-12 flexG>
-            <View row centerV>
-              <Text grey20 text70BO>
-                {userInfo?.user_name}
+            <View marginL-12>
+              <View row centerV>
+                <Text grey20 text70BO>
+                  {userInfo?.user_name}
+                </Text>
+              </View>
+              <Text grey20 text100L marginT-6>
+                {latelyDay > 0 ? (
+                  <Text grey20 text100L marginT-6>
+                    {t('music.recent_play_tips')}
+                    <Text blue60 text80L marginT-6>
+                      {latelyDay}
+                    </Text>
+                    {t('music.recent_play_day')}
+                  </Text>
+                ) : (
+                  t('music.welcome')
+                )}
               </Text>
             </View>
-            <Text grey20 text100L marginT-6>
-              {latelyDay > 0 ? (
-                <Text grey20 text100L marginT-6>
-                  {t('music.recent_play_tips')}
-                  <Text blue60 text80L marginT-6>
-                    {latelyDay}
-                  </Text>
-                  {t('music.recent_play_day')}
-                </Text>
-              ) : (
-                t('music.welcome')
-              )}
-            </Text>
           </View>
+
+          <TouchableOpacity
+            padding-12
+            onPress={() => {
+              setShowLyricSetting(true);
+            }}>
+            <MaterialDesignIcons
+              name="card-text"
+              color={Colors.grey50}
+              size={20}
+            />
+          </TouchableOpacity>
         </View>
         <View paddingT-12 row centerV style={styles.funBox}>
           <View width={'50%'} center>
@@ -696,6 +723,62 @@ const Music = ({navigation}) => {
                 setRandomNum(values.min, values.max);
               }}
             />
+          </View>
+        </Card>
+      </Dialog>
+      <Dialog
+        visible={showLyricSetting}
+        useSafeArea={true}
+        width={'90%'}
+        onDismiss={() => setShowLyricSetting(false)}
+        panDirection={PanningProvider.Directions.UP}>
+        <Card flexS>
+          <View paddingH-16 paddingT-16>
+            <Text text70BL>{t('music.lyric_setting')}</Text>
+          </View>
+          <ListItem
+            itemName={t('music.desktop_lyric')}
+            renderRight={
+              <Switch
+                onColor={Colors.primary}
+                offColor={Colors.grey50}
+                value={isShowDesktopLyric}
+                onValueChange={value => setIsShowDesktopLyric(value)}
+              />
+            }
+          />
+
+          <ListItem
+            itemName={t('music.statusBar_lyric')}
+            renderRight={
+              <Switch
+                onColor={Colors.primary}
+                offColor={Colors.grey50}
+                value={isShowStatusBarLyric}
+                onValueChange={value => setIsShowStatusBarLyric(value)}
+              />
+            }
+          />
+          {isShowStatusBarLyric ? (
+            <Animated.View entering={FadeInUp}>
+              <ListItem
+                itemName={t('music.desktop_lyric')}
+                renderRight={
+                  <SegmentedControl
+                    segments={[{label: '1st'}, {label: '2nd'}, {label: '3rd'}]}
+                    borderRadius={12}
+                    outlineColor={Colors.yellow30}
+                    outlineWidth={3}
+                    activeColor={Colors.yellow20}
+                  />
+                }
+              />
+            </Animated.View>
+          ) : null}
+          <View paddingH-16 paddingB-16>
+            <Text grey30 text90L>
+              {t('music.lyric_tips')}
+            </Text>
           </View>
         </Card>
       </Dialog>

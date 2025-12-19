@@ -31,7 +31,7 @@ const BaseDialog = props => {
       visible={visible}
       useSafeArea={true}
       onDismiss={() => {
-        setVisible(false)
+        setVisible(false);
         onCancel();
       }}
       width={width}

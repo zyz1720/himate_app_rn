@@ -5,6 +5,7 @@ import React, {
   useEffect,
   createContext,
   useContext,
+  useMemo,
 } from 'react';
 import {StyleSheet} from 'react-native';
 import {Image, View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
@@ -27,7 +28,10 @@ import {recordPlayHistory} from '@utils/realm/useMusicInfo';
 import Animated, {
   useSharedValue,
   withTiming,
+  withRepeat,
+  Easing,
   useAnimatedStyle,
+  cancelAnimation,
 } from 'react-native-reanimated';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import BaseImageBackground from '@components/common/BaseImageBackground';
@@ -113,6 +117,14 @@ const MusicCtrlProvider = React.memo(props => {
     isMusicPlaying,
     setIsMusicPlaying,
   } = useMusicStore();
+
+  // 旋转动画共享值
+  const rotation = useSharedValue(0);
+
+  // 旋转动画样式
+  const rotateAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{rotate: `${rotation.value}deg`}],
+  }));
 
   const {t} = useTranslation();
   const [musicModalVisible, setMusicModalVisible] = useState(false);
@@ -369,6 +381,7 @@ const MusicCtrlProvider = React.memo(props => {
     }
   };
 
+  const [isExpand, setIsExpand] = useState(true);
   const ctrlWidth = useSharedValue(fullWidth - 32);
   const expandAnimatedStyle = useAnimatedStyle(() => ({
     width: ctrlWidth.value,
@@ -383,6 +396,26 @@ const MusicCtrlProvider = React.memo(props => {
     opacity: opacity.value,
     transform: [{translateY: translateY.value}],
   }));
+
+  const musicCoverSource = useMemo(() => {
+    if (playingMusic?.musicExtra?.music_cover) {
+      return {
+        uri: envConfig.THUMBNAIL_URL + playingMusic.musicExtra.music_cover,
+      };
+    }
+    return require('@assets/images/music_cover.jpg');
+  }, [playingMusic?.musicExtra?.music_cover]);
+
+  const rotateAnimate = () => {
+    const currentRotation = rotation.value;
+    rotation.value = withRepeat(
+      withTiming(currentRotation + 360, {
+        duration: 6000,
+        easing: Easing.linear,
+      }),
+      -1,
+    );
+  };
 
   // 通知栏控件操作
   onPauseCtrl(playOrPauseTrack);
@@ -476,6 +509,16 @@ const MusicCtrlProvider = React.memo(props => {
     }
   }, [nowLyric]);
 
+  // 监听音乐播放状态，控制旋转动画
+  useEffect(() => {
+    if (isMusicPlaying && playingMusic?.id && !isExpand) {
+      rotateAnimate();
+    } else {
+      rotation.value = withTiming(0);
+      cancelAnimation(rotation);
+    }
+  }, [isMusicPlaying, playingMusic?.id, isExpand]);
+
   useEffect(() => {
     return () => {
       removePlayBackListener();
@@ -505,32 +548,27 @@ const MusicCtrlProvider = React.memo(props => {
                   row
                   centerV
                   onPress={() => {
+                    setIsExpand(!isExpand);
                     ctrlWidth.value = withTiming(
-                      ctrlWidth.value === 47 ? fullWidth - 32 : 47,
+                      ctrlWidth.value === 50 ? fullWidth - 32 : 50,
                     );
                   }}>
                   <View>
                     <AnimatedCircularProgress
                       key={playingMusic?.id}
-                      size={47}
+                      size={50}
                       width={3}
                       fill={playingMusicProgress}
                       tintColor={Colors.red40}
                       rotation={0}
                       lineCap="square">
                       {() => (
-                        <Image
-                          source={
-                            playingMusic?.musicExtra?.music_cover
-                              ? {
-                                  uri:
-                                    envConfig.THUMBNAIL_URL +
-                                    playingMusic.musicExtra.music_cover,
-                                }
-                              : require('@assets/images/music_cover.jpg')
-                          }
-                          style={styles.image}
-                        />
+                        <Animated.View style={rotateAnimatedStyle}>
+                          <Image
+                            source={musicCoverSource}
+                            style={styles.image}
+                          />
+                        </Animated.View>
                       )}
                     </AnimatedCircularProgress>
                   </View>

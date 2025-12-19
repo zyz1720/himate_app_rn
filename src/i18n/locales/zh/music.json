@@ -83,5 +83,9 @@
   "no_new_music": "没有找到新音乐",
   "scan_no_permission": "没有权限访问该目录",
   "unable_to_play": "无法播放的音乐！",
-  "clear_list": "清空列表"
+  "clear_list": "清空列表",
+  "lyric_setting": "歌词设置",
+  "statusBar_lyric": "状态栏歌词",
+  "lyric_tips": "开启后，歌词将显示在状态栏上(如果设备支持)",
+  "desktop_lyric": "桌面歌词"
 }

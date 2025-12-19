@@ -2,11 +2,14 @@ import MusicControl, {Command} from 'react-native-music-control';
 import {useCallback, useState} from 'react';
 import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
+import {useSettingStore} from '@store/settingStore';
 import {cancelNotification, deleteChannel} from '@utils/system/notification';
 
 export const useMusicControl = () => {
   const {userInfo} = useUserStore();
   const {envConfig} = useConfigStore();
+  const {isShowStatusBarLyric} = useSettingStore();
+
   const [isInit, setIsInit] = useState(false);
 
   const initMusicControl = () => {
@@ -47,9 +50,14 @@ export const useMusicControl = () => {
   );
 
   // 更新歌词
-  const setFlymeLyric = useCallback((lyric = '') => {
-    MusicControl.setFlymeLyric(lyric);
-  }, []);
+  const setFlymeLyric = useCallback(
+    (lyric = '') => {
+      if (isShowStatusBarLyric) {
+        MusicControl.setFlymeLyric(lyric);
+      }
+    },
+    [isShowStatusBarLyric],
+  );
 
   // 恢复播放
   const resumePlayerCtrl = useCallback(() => {
