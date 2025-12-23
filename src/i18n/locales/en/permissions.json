@@ -17,5 +17,8 @@
     "go_settings": "Go to Settings",
     "settings_error": "Failed to open settings, please manually enable permissions",
     "settings_desc": "If authorization is not successful, please manually enable it in app permission management",
-    "photo": "Photo Gallery"
+    "photo": "Photo Gallery",
+    "overlay": "Overlay",
+    "overlay_please": "Please grant overlay permission to the app",
+    "overlay_desc": "After authorization, the app can display overlays on the screen"
 }

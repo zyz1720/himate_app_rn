@@ -12,6 +12,7 @@ import MyFavorites from '@pages/music/music_pages/myFavorites';
 import SearchMusic from '@pages/music/music_pages/searchMusic';
 import FavoritesDetail from '@pages/music/music_pages/favoritesDetail';
 import EditFavorites from '@pages/music/music_pages/editFavorites';
+import LyricController from '@pages/music/music_pages/lyricController';
 
 const Stack = createStackNavigator();
 
@@ -96,6 +97,13 @@ function MusicScreen() {
           component={EditFavorites}
           options={{
             title: t('screen.EditFavorites'),
+          }}
+        />
+        <Stack.Screen
+          name="LyricController"
+          component={LyricController}
+          options={{
+            title: t('screen.LyricController'),
           }}
         />
       </Stack.Group>

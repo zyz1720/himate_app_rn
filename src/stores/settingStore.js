@@ -102,6 +102,14 @@ export const useSettingStore = create(
       setDesktopTransFontSize: size => {
         set({desktopTransFontSize: size || 18});
       },
+      resetDesktopLyric: () => {
+        set({
+          desktopLyricColor: defaultState.desktopLyricColor,
+          desktopLyricFontSize: defaultState.desktopLyricFontSize,
+          desktopTransColor: defaultState.desktopTransColor,
+          desktopTransFontSize: defaultState.desktopTransFontSize,
+        });
+      },
     }),
     {
       name: 'setting-storage',

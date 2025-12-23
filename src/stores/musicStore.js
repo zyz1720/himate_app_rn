@@ -7,12 +7,25 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const defaultState = {
   playingMusic: {}, // 当前播放音乐
+  playList: [], // 播放列表
+  showMusicCtrl: false, // 是否显示音乐控制器
+  closeTime: 0, // 关闭时间
+  isClosed: false, // 是否关闭
+  randomNum: {min: 0, max: 1}, // 随机数范围
+  switchCount: 0, // 切换次数
+  isRandomPlay: false, // 是否随机播放
+  musicPlayMode: 'order', // 列表播放类型 single order random
+  isMusicResumePlay: false, // 是否恢复播放
+  isMusicBreak: false, // 是否暂停
+};
+
+const defaultPlayingMusicState = {
   playPosition: 0, // 播放位置
+  lyrics: [], // 歌词列表
   nowLyric: '', // 当前歌词
   nowTrans: '', // 当前翻译歌词
   nowRoma: '', // 当前音译歌词
   nowLyricIndex: -1, // 当前歌词索引
-  lyrics: [], // 歌词列表
   isHasYrc: false, // 是否有逐字歌词
   isHasTrans: false, // 是否有翻译歌词
   isHasRoma: false, // 是否有音译歌词
@@ -21,23 +34,13 @@ const defaultState = {
   musicDuration: 0, // 音乐总时长
   playingMusicIndex: 0, // 当前播放音乐的索引
   playingMusicProgress: 0, // 当前播放音乐的进度
-  musicPlayMode: 'order', // 列表播放类型 single order random
-
-  playList: [], // 播放列表
-  showMusicCtrl: false, // 是否显示音乐控制器
-  closeTime: 0, // 关闭时间
-  isClosed: false, // 是否关闭
-  randomNum: {min: 0, max: 1}, // 随机数范围
-  isRandomPlay: false, // 是否随机播放
-  switchCount: 0, // 切换次数
-  isMusicResumePlay: false, // 是否恢复播放
-  isMusicBreak: false, // 是否暂停
 };
 
 export const useMusicStore = create(
   persist(
     set => ({
       ...defaultState,
+      ...defaultPlayingMusicState,
       setPlayingMusic: music => {
         if (!music || isEmptyObject(music)) {
           return set({playingMusic: {}});
@@ -147,6 +150,7 @@ export const useMusicStore = create(
           state.nowRoma = nowLyrics?.roma || '';
           return state;
         }),
+      resetPlayingMusic: () => set(defaultPlayingMusicState),
     }),
     {
       name: 'music-storage',

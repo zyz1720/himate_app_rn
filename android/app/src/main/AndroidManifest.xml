@@ -61,7 +61,7 @@
 
     <!-- 悬浮歌词服务声明 -->
     <service
-      android:name=".WidgetService"
+      android:name=".floatinglyric.WidgetService"
       android:exported="true"
       android:permission="android.permission.BIND_JOB_SERVICE">
     </service>

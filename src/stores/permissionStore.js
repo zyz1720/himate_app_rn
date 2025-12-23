@@ -5,6 +5,7 @@ import {
   requestCameraPermission,
   requestMicrophonePermission,
   requestFolderPermission,
+  requestOverlayPermission,
 } from '@utils/system/permissions_utils';
 
 const defaultState = {
@@ -12,6 +13,7 @@ const defaultState = {
   accessMicrophone: false, // 麦克风权限
   accessFolder: false, // 文件夹权限
   accessNotify: false, // 通知权限
+  accessOverlay: false, // 悬浮窗权限
 };
 
 export const usePermissionStore = create(set => ({
@@ -40,6 +42,10 @@ export const usePermissionStore = create(set => ({
   setAccessFolder: async () => {
     const status = await requestFolderPermission();
     set({accessFolder: status});
+  },
+  setAccessOverlay: async () => {
+    const status = await requestOverlayPermission();
+    set({accessOverlay: status});
   },
 }));
 

@@ -1,4 +1,4 @@
-package com.himate
+package com.himate.floatinglyric
 
 import android.app.Service
 import android.content.Intent
@@ -12,6 +12,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.TextView
+import com.himate.R
 
 class WidgetService : Service() {
     private lateinit var windowManager: WindowManager

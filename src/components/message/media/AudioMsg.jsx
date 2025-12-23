@@ -7,7 +7,14 @@ import {
   Slider,
   Text,
 } from 'react-native-ui-lib';
-import {useAudioPlayer} from '@utils/hooks/useAudioPlayer';
+import {
+  addPlayBackListener,
+  startPlayer,
+  pausePlayer,
+  resumePlayer,
+  stopPlayer,
+  seekToPlayer,
+} from '@utils/system/audioPlayer';
 import {useMusicStore} from '@store/musicStore';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -41,14 +48,6 @@ const AudioMsg = React.memo(props => {
     setNowPlayAudioId = () => {},
   } = props;
 
-  const {
-    addPlayBackListener,
-    startPlayer,
-    pausePlayer,
-    resumePlayer,
-    stopPlayer,
-    seekToPlayer,
-  } = useAudioPlayer();
   const {setIsMusicResumePlay, setIsMusicBreak} = useMusicStore();
 
   const [curPosition, setCurPosition] = useState(0);

@@ -31,20 +31,6 @@ export const useFloatingLyric = () => {
     FloatingLyric.updateLyric(lyric, translation);
   };
 
-  // 检查悬浮窗权限
-  const checkOverlayPermission = () => {
-    return new Promise(resolve => {
-      FloatingLyric.checkOverlayPermission(hasPermission => {
-        resolve(hasPermission);
-      });
-    });
-  };
-
-  // 请求悬浮窗权限
-  const requestOverlayPermission = () => {
-    FloatingLyric.requestOverlayPermission();
-  };
-
   // 添加点击事件监听器
   const addOnClickListener = callback => {
     return floatingLyricEmitter.addListener('onFloatingLyricClick', callback);
@@ -74,8 +60,6 @@ export const useFloatingLyric = () => {
     showWidget,
     hideWidget,
     updateLyric,
-    checkOverlayPermission,
-    requestOverlayPermission,
     addOnClickListener,
     setLyricColor,
     setLyricFontSize,

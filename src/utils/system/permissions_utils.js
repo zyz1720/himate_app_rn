@@ -1,4 +1,4 @@
-import {Platform} from 'react-native';
+import {Platform, NativeModules} from 'react-native';
 import {
   requestNotifications,
   request,
@@ -8,6 +8,17 @@ import {
   openSettings,
   requestMultiple,
 } from 'react-native-permissions';
+
+const {FloatingLyric} = NativeModules;
+
+// 检查悬浮窗权限
+const checkOverlayPermission = () => {
+  return new Promise(resolve => {
+    FloatingLyric.checkOverlayPermission(hasPermission => {
+      resolve(hasPermission);
+    });
+  });
+};
 
 /* 检查系统所有所需权限 */
 export const checkPermissions = async () => {
@@ -37,6 +48,8 @@ export const checkPermissions = async () => {
     }
     const statuses = await checkMultiple(permissions);
     const {status: notificationStatus} = await checkNotifications();
+    const overlayPermission = await checkOverlayPermission();
+
     if (Platform.OS === 'android') {
       permissionObj.accessCamera =
         statuses[PERMISSIONS.ANDROID.CAMERA] === 'granted';
@@ -47,6 +60,7 @@ export const checkPermissions = async () => {
           statuses[PERMISSIONS.ANDROID.READ_MEDIA_AUDIO] === 'granted');
       permissionObj.accessMicrophone =
         statuses[PERMISSIONS.ANDROID.RECORD_AUDIO] === 'granted';
+      permissionObj.accessOverlay = overlayPermission;
     }
     if (Platform.OS === 'ios') {
       permissionObj.accessCamera =
@@ -165,4 +179,11 @@ export const requestNotifyPermission = async () => {
     console.error('请求通知权限失败', error);
     return false;
   }
+};
+
+// 请求悬浮窗权限
+export const requestOverlayPermission = async () => {
+  FloatingLyric.requestOverlayPermission();
+  const isGranted = await checkOverlayPermission();
+  return isGranted;
 };

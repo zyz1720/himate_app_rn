@@ -1,4 +1,4 @@
-package com.himate
+package com.himate.floatinglyric
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule

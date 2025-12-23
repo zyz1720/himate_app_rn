@@ -1,4 +1,4 @@
-package com.himate
+package com.himate.floatinglyric
 
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
@@ -13,7 +13,7 @@ import android.content.BroadcastReceiver
 import android.content.IntentFilter
 
 // 导入WidgetService类，用于使用ACTION_CLICK_EVENT常量
-import com.himate.WidgetService
+import com.himate.floatinglyric.WidgetService
 
 class FloatingLyricModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 

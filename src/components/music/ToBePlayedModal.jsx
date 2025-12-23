@@ -36,16 +36,10 @@ const styles = StyleSheet.create({
 });
 
 const ToBePlayedModal = React.memo(props => {
-  const {
-    visible = false,
-    list = [],
-    onClose = () => {},
-    onClear = () => {},
-    onPressItem = () => {},
-    onPressRemove = () => {},
-  } = props;
+  const {visible = false, onClose = () => {}} = props;
   const {t} = useTranslation();
-  const {playingMusic} = useMusicStore();
+  const {playingMusic, playList, setPlayingMusic, setPlayList, removePlayList} =
+    useMusicStore();
   const {envConfig} = useConfigStore();
   const {userInfo} = useUserStore();
 
@@ -77,7 +71,7 @@ const ToBePlayedModal = React.memo(props => {
         <View row centerV>
           <View flexG marginB-6>
             <TouchableOpacity
-              onPress={() => onPressItem(item)}
+              onPress={() => setPlayingMusic(item)}
               flexS
               centerV
               style={styles.playingStyle}
@@ -94,7 +88,7 @@ const ToBePlayedModal = React.memo(props => {
                 </View>
                 <TouchableOpacity
                   style={styles.musicBut}
-                  onPress={() => onPressRemove(item)}>
+                  onPress={() => removePlayList([item])}>
                   <AntDesign name="close" color={Colors.white} size={20} />
                 </TouchableOpacity>
               </View>
@@ -103,7 +97,7 @@ const ToBePlayedModal = React.memo(props => {
         </View>
       );
     },
-    [playingMusic?.id, onPressItem, onPressRemove],
+    [playingMusic?.id, setPlayingMusic, removePlayList],
   );
 
   return (
@@ -120,20 +114,20 @@ const ToBePlayedModal = React.memo(props => {
         <BaseImageBackground
           blurRadius={40}
           style={styles.listBackImage}
-          source={{uri: envConfig.STATIC_URL + userInfo?.user_bg_img}}
+          source={{uri: envConfig.THUMBNAIL_URL + userInfo?.user_bg_img}}
           resizeMode="cover">
           <View padding-12>
             <View row centerV spread>
               <TouchableOpacity onPress={onClose}>
                 <AntDesign name="close" color={Colors.white} size={24} />
               </TouchableOpacity>
-              <TouchableOpacity onPress={onClear}>
+              <TouchableOpacity onPress={() => setPlayList([])}>
                 <Text white>{t('music.clear_list')}</Text>
               </TouchableOpacity>
             </View>
             {currentMusicInfo}
             <FlatList
-              data={list}
+              data={playList}
               keyExtractor={(item, index) => `${item.id}_${index}`}
               renderItem={renderItem}
               ListEmptyComponent={

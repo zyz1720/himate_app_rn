@@ -94,5 +94,7 @@
   "desktop_lyric_font_size": "Desktop Lyric Font Size",
   "desktop_trans_font_size": "Desktop Trans Lyric Font Size",
   "desktop_lyric_color": "Desktop Lyric Color",
-  "desktop_trans_color": "Desktop Trans Lyric Color"
+  "desktop_trans_color": "Desktop Trans Lyric Color",
+  "reset": "Reset",
+  "reset_confirm": "Are you sure you want to reset to default settings?"
 }

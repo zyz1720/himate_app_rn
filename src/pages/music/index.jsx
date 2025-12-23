@@ -15,10 +15,8 @@ import {
   PanningProvider,
   Dialog,
   Slider,
-  SegmentedControl,
-  ColorPicker,
 } from 'react-native-ui-lib';
-import {FlatList, StyleSheet, Vibration} from 'react-native';
+import {FlatList, StyleSheet, Vibration, Platform} from 'react-native';
 import {useToast} from '@components/common/useToast';
 import {fullHeight, fullWidth} from '@style/index';
 import {
@@ -32,23 +30,18 @@ import {getMusic, getMusicFromDefaultFavorites} from '@api/music';
 import {useConfigStore} from '@store/configStore';
 import {useMusicStore} from '@store/musicStore';
 import {useUserStore} from '@store/userStore';
-import {useSettingStore} from '@store/settingStore';
 import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
 import {useTranslation} from 'react-i18next';
 import {getPlayHistory} from '@utils/realm/useMusicInfo';
 import {getLocalMusic} from '@utils/realm/useLocalMusic';
 import {useIsFocused} from '@react-navigation/native';
-import {lyricColors} from '@style/index';
-import Animated, {FadeInUp} from 'react-native-reanimated';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialDesignIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import BaseDialog from '@components/common/BaseDialog';
-import ListItem from '@components/common/ListItem';
 import dayjs from 'dayjs';
 
-const LYRIC_TYPE = ['lrc', 'trans', 'roma'];
 const MOMENTS = ['00:00', '00:30', '01:00', '01:30', '02:00'];
 
 const Music = ({navigation}) => {
@@ -60,28 +53,11 @@ const Music = ({navigation}) => {
   const {isClosed, randomNum, setRandomNum, setCloseTime, setIsRandomPlay} =
     useMusicStore();
   const {envConfig} = useConfigStore();
-  const {
-    isShowStatusBarLyric,
-    setIsShowStatusBarLyric,
-    isShowDesktopLyric,
-    setIsShowDesktopLyric,
-    statusBarLyricType,
-    setStatusBarLyricType,
-    desktopLyricFontSize,
-    desktopTransFontSize,
-    setDesktopLyricFontSize,
-    setDesktopTransFontSize,
-    desktopLyricColor,
-    setDesktopLyricColor,
-    desktopTransColor,
-    setDesktopTransColor,
-  } = useSettingStore();
 
   const {list, total, onEndReached, refreshData} =
     useInfiniteScroll(getOneselfFavorites);
 
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [showLyricSetting, setShowLyricSetting] = useState(false);
 
   const menuItems = [
     {
@@ -318,18 +294,19 @@ const Music = ({navigation}) => {
               </Text>
             </View>
           </View>
-
-          <TouchableOpacity
-            padding-12
-            onPress={() => {
-              setShowLyricSetting(true);
-            }}>
-            <MaterialDesignIcons
-              name="card-text"
-              color={Colors.grey50}
-              size={20}
-            />
-          </TouchableOpacity>
+          {Platform.OS === 'android' ? (
+            <TouchableOpacity
+              padding-12
+              onPress={() => {
+                navigation.navigate('LyricController');
+              }}>
+              <MaterialDesignIcons
+                name="card-text"
+                color={Colors.grey50}
+                size={22}
+              />
+            </TouchableOpacity>
+          ) : null}
         </View>
         <View paddingT-12 row centerV style={styles.funBox}>
           <View width={'50%'} center>
@@ -733,138 +710,6 @@ const Music = ({navigation}) => {
                 setRandomNum(values.min, values.max);
               }}
             />
-          </View>
-        </Card>
-      </Dialog>
-      <Dialog
-        visible={showLyricSetting}
-        useSafeArea={true}
-        width={'90%'}
-        onDismiss={() => setShowLyricSetting(false)}
-        panDirection={PanningProvider.Directions.DOWN}>
-        <Card flexS>
-          <View paddingH-16 paddingT-16>
-            <Text text70BL>{t('music.lyric_setting')}</Text>
-          </View>
-          <ListItem
-            itemName={t('music.desktop_lyric')}
-            renderRight={
-              <Switch
-                onColor={Colors.primary}
-                offColor={Colors.grey50}
-                value={isShowDesktopLyric}
-                onValueChange={value => setIsShowDesktopLyric(value)}
-              />
-            }
-          />
-          {isShowDesktopLyric ? (
-            <Animated.View entering={FadeInUp}>
-              <View paddingH-16 marginT-8>
-                <View>
-                  <Text text90L grey30 marginV-4>
-                    {t('music.desktop_lyric_font_size')}&nbsp;
-                    {desktopLyricFontSize}
-                  </Text>
-                  <Slider
-                    thumbTintColor={Colors.primary}
-                    minimumTrackTintColor={Colors.primary}
-                    minimumValue={12}
-                    maximumValue={48}
-                    value={desktopLyricFontSize}
-                    step={1}
-                    onValueChange={value => {
-                      setDesktopLyricFontSize(value);
-                    }}
-                  />
-                  <Text text90L grey30 marginV-4>
-                    {t('music.desktop_lyric_color')}
-                  </Text>
-                  <ColorPicker
-                    colors={[desktopLyricColor, ...lyricColors]}
-                    initialColor={desktopLyricColor}
-                    value={desktopLyricColor}
-                    showCloseButton={true}
-                    onValueChange={color => {
-                      setDesktopLyricColor(color);
-                    }}
-                    onSubmit={color => {
-                      setDesktopLyricColor(color);
-                    }}
-                  />
-                </View>
-                <View>
-                  <Text text90L grey30 marginV-4>
-                    {t('music.desktop_trans_font_size')}&nbsp;
-                    {desktopTransFontSize}
-                  </Text>
-                  <Slider
-                    thumbTintColor={Colors.primary}
-                    minimumTrackTintColor={Colors.primary}
-                    minimumValue={12}
-                    maximumValue={36}
-                    value={desktopTransFontSize}
-                    step={1}
-                    onValueChange={value => {
-                      setDesktopTransFontSize(value);
-                    }}
-                  />
-                  <Text text90L grey30 marginV-4>
-                    {t('music.desktop_trans_color')}
-                  </Text>
-                  <ColorPicker
-                    colors={[desktopTransColor, ...lyricColors]}
-                    initialColor={desktopTransColor}
-                    value={desktopTransColor}
-                    showCloseButton={true}
-                    onValueChange={color => {
-                      setDesktopTransColor(color);
-                    }}
-                    onSubmit={color => {
-                      setDesktopTransColor(color);
-                    }}
-                  />
-                </View>
-              </View>
-            </Animated.View>
-          ) : null}
-          <ListItem
-            itemName={t('music.statusBar_lyric')}
-            renderRight={
-              <Switch
-                onColor={Colors.primary}
-                offColor={Colors.grey50}
-                value={isShowStatusBarLyric}
-                onValueChange={value => setIsShowStatusBarLyric(value)}
-              />
-            }
-          />
-          {isShowStatusBarLyric ? (
-            <Animated.View entering={FadeInUp}>
-              <ListItem
-                renderRight={
-                  <SegmentedControl
-                    segments={[
-                      {label: t('music.lrc')},
-                      {label: t('music.trans')},
-                      {label: t('music.roma')},
-                    ]}
-                    initialIndex={LYRIC_TYPE.indexOf(statusBarLyricType)}
-                    borderRadius={12}
-                    outlineColor={Colors.primary}
-                    outlineWidth={2}
-                    activeColor={Colors.primary}
-                    onChangeIndex={value => {
-                      setStatusBarLyricType(LYRIC_TYPE[value]);
-                    }}
-                  />
-                }
-              />
-            </Animated.View>
-          ) : null}
-          <View paddingH-16 paddingB-16>
-            <Text grey30 text90L>
-              {t('music.lyric_tips')}
-            </Text>
           </View>
         </Card>
       </Dialog>

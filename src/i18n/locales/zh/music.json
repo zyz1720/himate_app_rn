@@ -94,5 +94,7 @@
   "desktop_lyric_font_size": "桌面歌词字体大小",
   "desktop_trans_font_size": "桌面翻译歌词字体大小",
   "desktop_lyric_color": "桌面歌词颜色",
-  "desktop_trans_color": "桌面翻译歌词颜色"
+  "desktop_trans_color": "桌面翻译歌词颜色",
+  "reset": "恢复默认",
+  "reset_confirm": "您确定要恢复为默认设置吗？"
 }

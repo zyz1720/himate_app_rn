@@ -1,7 +1,6 @@
 import React, {
   useCallback,
   useState,
-  useRef,
   useEffect,
   createContext,
   useContext,
@@ -24,11 +23,19 @@ import {useSettingStore} from '@store/settingStore';
 import {useTranslation} from 'react-i18next';
 import {renderMusicTitle} from '@utils/system/lyric_utils';
 import {useMusicControl} from '@utils/hooks/useMusicControl';
-import {useAudioPlayer} from '@utils/hooks/useAudioPlayer';
 import {recordPlayHistory} from '@utils/realm/useMusicInfo';
 import {useAppStateStore} from '@store/appStateStore';
 import {isEmptyString} from '@/utils/common/string_utils';
 import {useFloatingLyric} from '@utils/hooks/useFloatingLyric';
+import {
+  addPlayBackListener,
+  startPlayer,
+  pausePlayer,
+  resumePlayer,
+  stopPlayer,
+  seekToPlayer,
+  removePlayBackListener,
+} from '@utils/system/audioPlayer';
 import Animated, {
   useSharedValue,
   withTiming,
@@ -68,11 +75,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   image: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    borderColor: Colors.white,
-    borderWidth: 1,
+    width: 47,
+    height: 47,
+    borderRadius: 25,
   },
   marquee: {
     flex: 1,
@@ -102,8 +107,6 @@ const MusicCtrlProvider = React.memo(props => {
     setPlayingMusic,
     setIsClosed,
     addPlayList,
-    setPlayList,
-    removePlayList,
     setIsMusicResumePlay,
     isMusicResumePlay,
     playPosition,
@@ -122,6 +125,7 @@ const MusicCtrlProvider = React.memo(props => {
     setMusicPlayMode,
     isMusicPlaying,
     setIsMusicPlaying,
+    resetPlayingMusic,
   } = useMusicStore();
   const {statusBarLyricType, isShowDesktopLyric} = useSettingStore();
   const {isAppActive} = useAppStateStore();
@@ -137,17 +141,8 @@ const MusicCtrlProvider = React.memo(props => {
   const {t} = useTranslation();
   const [musicModalVisible, setMusicModalVisible] = useState(false);
   const [listModalVisible, setListModalVisible] = useState(false);
-  const lastPlayedMusicId = useRef(null); // 记录上一次播放的音乐Id
+  const [seekToPosition, setSeekToPosition] = useState(0);
 
-  const {
-    addPlayBackListener,
-    startPlayer,
-    pausePlayer,
-    resumePlayer,
-    stopPlayer,
-    seekToPlayer,
-    removePlayBackListener,
-  } = useAudioPlayer();
   const {
     setNowPlayingCtrl,
     resumePlayerCtrl,
@@ -174,16 +169,25 @@ const MusicCtrlProvider = React.memo(props => {
   addPlayBackListener(playbackMeta => {
     const {currentPosition, duration, elapsedTime, progress, isFinished} =
       playbackMeta;
-    setIsMusicPlaying(
-      currentPosition !== playPosition && currentPosition !== seekToPosition,
-    );
-    setPlayPosition(currentPosition);
+
+    setIsMusicPlaying(currentPosition !== playPosition);
+
+    if (currentPosition === seekToPosition) {
+      setIsMusicLoading(true);
+    }
+
+    if (currentPosition !== playPosition) {
+      setPlayPosition(currentPosition);
+    }
+
     if (duration !== musicDuration) {
       setMusicDuration(duration);
     }
-    if (progress) {
+
+    if (progress !== playingMusicProgress) {
       setPlayingMusicProgress(progress);
     }
+
     seekToPlayerCtrl(elapsedTime);
     if (isFinished) {
       autoPlayNext();
@@ -192,7 +196,7 @@ const MusicCtrlProvider = React.memo(props => {
 
   // 自动播放下一首
   const autoPlayNext = useCallback(() => {
-    setPlayingMusic({});
+    resetPlayingMusic();
 
     if (isRandomPlay) {
       getRandMusic();
@@ -209,7 +213,7 @@ const MusicCtrlProvider = React.memo(props => {
         setPlayingMusic(playList[Math.floor(Math.random() * playList.length)]);
       }
     } else {
-      restMusicStatus();
+      setPlayingMusic({});
     }
   }, [isRandomPlay, playList, playingMusicIndex, musicPlayMode]);
 
@@ -249,6 +253,7 @@ const MusicCtrlProvider = React.memo(props => {
       return;
     }
     if (isMusicPlaying || isMusicLoading) {
+      pausePlayerCtrl();
       await pausePlayer();
     }
   }, [playingMusic, isMusicLoading, isMusicPlaying]);
@@ -274,21 +279,15 @@ const MusicCtrlProvider = React.memo(props => {
   }, [isRandomPlay, playList, playingMusicIndex]);
 
   // 调整播放进度
-  const [seekToPosition, setSeekToPosition] = useState(0);
   const onSliderChange = useCallback(async position => {
     setSeekToPosition(parseInt(position, 10));
-    setIsMusicLoading(true);
     await seekToPlayer(position);
   }, []);
 
   // 重置音乐播放所有状态
   const restMusicStatus = async () => {
     stopPlayerCtrl();
-    setPlayPosition(0);
-    setMusicDuration(0);
-    setPlayingMusicProgress(0);
-    setSeekToPosition(0);
-    setIsMusicLoading(false);
+    resetPlayingMusic();
     await stopPlayer();
   };
 
@@ -325,7 +324,6 @@ const MusicCtrlProvider = React.memo(props => {
 
       await startPlayer(url);
       const index = playList.findIndex(item => item.id === playingMusic.id);
-      lastPlayedMusicId.current = playingMusic.id;
       setPlayingMusicIndex(index);
       setNowPlayingCtrl(playingMusic);
       recordPlayHistory(playingMusic);
@@ -452,12 +450,7 @@ const MusicCtrlProvider = React.memo(props => {
 
   // 是否播放新的音乐
   useEffect(() => {
-    if (
-      playingMusic?.id &&
-      (lastPlayedMusicId.current !== playingMusic?.id ||
-        musicPlayMode === 'single' ||
-        !isMusicPlaying)
-    ) {
+    if (playingMusic?.id) {
       playNewMusic();
     }
   }, [playingMusic?.id]);
@@ -494,8 +487,8 @@ const MusicCtrlProvider = React.memo(props => {
       return;
     }
     if (isMusicPlaying) {
-      setIsMusicLoading(false);
       setSeekToPosition(0);
+      setIsMusicLoading(false);
       resumePlayerCtrl();
     } else {
       pausePlayerCtrl();
@@ -535,11 +528,10 @@ const MusicCtrlProvider = React.memo(props => {
   // 添加悬浮歌词点击事件监听
   useEffect(() => {
     const clickListener = addOnClickListener(() => {
-      console.log('click lyric');
       playOrPauseTrack();
     });
     return () => clickListener.remove();
-  }, []);
+  }, [playOrPauseTrack]);
 
   useEffect(() => {
     if (isAppActive) {
@@ -692,16 +684,6 @@ const MusicCtrlProvider = React.memo(props => {
       <ToBePlayedModal
         visible={listModalVisible}
         onClose={() => setListModalVisible(false)}
-        onClear={() => {
-          setPlayList([]);
-        }}
-        list={playList}
-        onPressItem={item => {
-          setPlayingMusic(item);
-        }}
-        onPressRemove={item => {
-          removePlayList([item]);
-        }}
       />
     </MusicCtrlContext.Provider>
   );
