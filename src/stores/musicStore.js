@@ -9,6 +9,8 @@ const defaultState = {
   playingMusic: {}, // 当前播放音乐
   playPosition: 0, // 播放位置
   nowLyric: '', // 当前歌词
+  nowTrans: '', // 当前翻译歌词
+  nowRoma: '', // 当前音译歌词
   nowLyricIndex: -1, // 当前歌词索引
   lyrics: [], // 歌词列表
   isHasYrc: false, // 是否有逐字歌词
@@ -118,8 +120,11 @@ export const useMusicStore = create(
           state.playPosition = position;
           const _Lyrics = state.lyrics;
           if (_Lyrics.length === 0) {
+            const nowLyrics = _Lyrics[-1] || {};
             state.nowLyricIndex = -1;
-            state.nowLyric = _Lyrics[-1]?.lyric || '';
+            state.nowLyric = nowLyrics?.lyric || '';
+            state.nowTrans = nowLyrics?.trans || '';
+            state.nowRoma = nowLyrics?.roma || '';
             return state;
           }
           for (let i = 0; i < _Lyrics.length; i++) {
@@ -127,13 +132,19 @@ export const useMusicStore = create(
               ? _Lyrics[i].startTime
               : _Lyrics[i].time;
             if (matchTime > position) {
+              const nowLyrics = _Lyrics[i - 1] || {};
               state.nowLyricIndex = i - 1;
-              state.nowLyric = _Lyrics[i - 1]?.lyric || '';
+              state.nowLyric = nowLyrics?.lyric || '';
+              state.nowTrans = nowLyrics?.trans || '';
+              state.nowRoma = nowLyrics?.roma || '';
               return state;
             }
           }
+          const nowLyrics = _Lyrics[-1] || {};
           state.nowLyricIndex = _Lyrics.length - 1;
-          state.nowLyric = _Lyrics[-1]?.lyric || '';
+          state.nowLyric = nowLyrics?.lyric || '';
+          state.nowTrans = nowLyrics?.trans || '';
+          state.nowRoma = nowLyrics?.roma || '';
           return state;
         }),
     }),

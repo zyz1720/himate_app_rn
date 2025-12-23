@@ -20,11 +20,15 @@ import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
 import {useMusicStore} from '@store/musicStore';
+import {useSettingStore} from '@store/settingStore';
 import {useTranslation} from 'react-i18next';
 import {renderMusicTitle} from '@utils/system/lyric_utils';
 import {useMusicControl} from '@utils/hooks/useMusicControl';
 import {useAudioPlayer} from '@utils/hooks/useAudioPlayer';
 import {recordPlayHistory} from '@utils/realm/useMusicInfo';
+import {useAppStateStore} from '@store/appStateStore';
+import {isEmptyString} from '@/utils/common/string_utils';
+import {useFloatingLyric} from '@utils/hooks/useFloatingLyric';
 import Animated, {
   useSharedValue,
   withTiming,
@@ -87,6 +91,8 @@ const MusicCtrlProvider = React.memo(props => {
   const {envConfig} = useConfigStore();
   const {
     nowLyric,
+    nowTrans,
+    nowRoma,
     showMusicCtrl,
     playList,
     playingMusic,
@@ -117,6 +123,8 @@ const MusicCtrlProvider = React.memo(props => {
     isMusicPlaying,
     setIsMusicPlaying,
   } = useMusicStore();
+  const {statusBarLyricType, isShowDesktopLyric} = useSettingStore();
+  const {isAppActive} = useAppStateStore();
 
   // 旋转动画共享值
   const rotation = useSharedValue(0);
@@ -129,7 +137,6 @@ const MusicCtrlProvider = React.memo(props => {
   const {t} = useTranslation();
   const [musicModalVisible, setMusicModalVisible] = useState(false);
   const [listModalVisible, setListModalVisible] = useState(false);
-  const [isPlayFinished, setIsPlayFinished] = useState(false);
   const lastPlayedMusicId = useRef(null); // 记录上一次播放的音乐Id
 
   const {
@@ -155,6 +162,14 @@ const MusicCtrlProvider = React.memo(props => {
     setFlymeLyric,
   } = useMusicControl();
 
+  const {
+    showWidget,
+    hideWidget,
+    updateLyric,
+    addOnClickListener,
+    setLyricFontSize,
+  } = useFloatingLyric();
+
   // 音乐播放器
   addPlayBackListener(playbackMeta => {
     const {currentPosition, duration, elapsedTime, progress, isFinished} =
@@ -171,13 +186,14 @@ const MusicCtrlProvider = React.memo(props => {
     }
     seekToPlayerCtrl(elapsedTime);
     if (isFinished) {
-      setIsPlayFinished(true);
       autoPlayNext();
     }
   });
 
   // 自动播放下一首
   const autoPlayNext = useCallback(() => {
+    setPlayingMusic({});
+
     if (isRandomPlay) {
       getRandMusic();
     } else if (playList.length > 0) {
@@ -193,7 +209,6 @@ const MusicCtrlProvider = React.memo(props => {
         setPlayingMusic(playList[Math.floor(Math.random() * playList.length)]);
       }
     } else {
-      setPlayingMusic({});
       restMusicStatus();
     }
   }, [isRandomPlay, playList, playingMusicIndex, musicPlayMode]);
@@ -274,7 +289,6 @@ const MusicCtrlProvider = React.memo(props => {
     setPlayingMusicProgress(0);
     setSeekToPosition(0);
     setIsMusicLoading(false);
-    setIsPlayFinished(false);
     await stopPlayer();
   };
 
@@ -446,7 +460,7 @@ const MusicCtrlProvider = React.memo(props => {
     ) {
       playNewMusic();
     }
-  }, [playingMusic?.id, isPlayFinished]);
+  }, [playingMusic?.id]);
 
   useEffect(() => {
     if (isMusicResumePlay) {
@@ -504,10 +518,37 @@ const MusicCtrlProvider = React.memo(props => {
   }, [closeTime]);
 
   useEffect(() => {
-    if (nowLyric) {
+    if (!isEmptyString(nowLyric) && statusBarLyricType === 'lrc') {
       setFlymeLyric(nowLyric);
     }
-  }, [nowLyric]);
+    if (!isEmptyString(nowTrans) && statusBarLyricType === 'trans') {
+      setFlymeLyric(nowTrans);
+    }
+    if (!isEmptyString(nowRoma) && statusBarLyricType === 'roma') {
+      setFlymeLyric(nowRoma);
+    }
+    if (isShowDesktopLyric) {
+      updateLyric(nowLyric, nowTrans);
+    }
+  }, [nowLyric, statusBarLyricType]);
+
+  // 添加悬浮歌词点击事件监听
+  useEffect(() => {
+    const clickListener = addOnClickListener(() => {
+      console.log('click lyric');
+      playOrPauseTrack();
+    });
+    return () => clickListener.remove();
+  }, []);
+
+  useEffect(() => {
+    if (isAppActive) {
+      hideWidget();
+    } else {
+      setLyricFontSize(32);
+      showWidget();
+    }
+  }, [isAppActive]);
 
   // 监听音乐播放状态，控制旋转动画
   useEffect(() => {

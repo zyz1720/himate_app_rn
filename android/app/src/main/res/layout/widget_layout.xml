@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="12dp"
+    android:background="@android:color/transparent">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/lyric_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:maxWidth="300dp"
+            android:singleLine="false"
+            android:gravity="center"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/trans_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#80FFFFFF"
+            android:textSize="14sp"
+            android:layout_marginTop="8dp"
+            android:maxWidth="300dp"
+            android:singleLine="false"
+            android:gravity="center"
+            android:ellipsize="end" />
+
+    </LinearLayout>
+
+</FrameLayout>

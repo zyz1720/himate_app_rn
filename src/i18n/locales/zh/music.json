@@ -3,6 +3,8 @@
   "lrc_trans": "普通+翻译歌词",
   "lrc_roma": "普通+音译歌词",
   "lrc": "普通歌词",
+  "trans": "翻译歌词",
+  "roma": "音译歌词",
   "yrc_trans": "逐字+翻译歌词",
   "yrc_roma": "逐字+音译歌词",
   "yrc": "逐字歌词",
@@ -87,5 +89,10 @@
   "lyric_setting": "歌词设置",
   "statusBar_lyric": "状态栏歌词",
   "lyric_tips": "开启后，歌词将显示在状态栏上(如果设备支持)",
-  "desktop_lyric": "桌面歌词"
+  "desktop_lyric": "桌面歌词",
+  "lyric_type": "显示歌词类型",
+  "desktop_lyric_font_size": "桌面歌词字体大小",
+  "desktop_trans_font_size": "桌面翻译歌词字体大小",
+  "desktop_lyric_color": "桌面歌词颜色",
+  "desktop_trans_color": "桌面翻译歌词颜色"
 }

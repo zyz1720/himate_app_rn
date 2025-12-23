@@ -5,6 +5,8 @@ export const fullWidth = Dimensions.get('window').width;
 export const fullHeight = Dimensions.get('window').height;
 export const statusBarHeight = StatusBar.currentHeight;
 
+export const lyricColors = ['#f5222d', '#52c41a', '#1677ff'];
+
 export const colorList = [
   {id: 1, color: '#f5222d'},
   {id: 2, color: '#fa541c'},

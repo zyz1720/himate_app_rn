@@ -22,6 +22,10 @@ const defaultState = {
   ringtone: 'default_1.mp3', // 铃声
   isShowStatusBarLyric: true, // 是否显示状态栏歌词
   isShowDesktopLyric: false, // 是否显示桌面歌词
+  desktopLyricColor: '#ffffff', // 桌面歌词颜色
+  desktopLyricFontSize: 16, // 桌面歌词字体大小
+  desktopTransColor: '#80ffffff', // 桌面歌词翻译颜色
+  desktopTransFontSize: 12, // 桌面歌词翻译字体大小
   statusBarLyricType: 'lrc', // 状态栏歌词类型lrc/trans/roma
 };
 
@@ -85,6 +89,18 @@ export const useSettingStore = create(
       },
       setStatusBarLyricType: type => {
         set({statusBarLyricType: type || 'lrc'});
+      },
+      setDesktopLyricColor: color => {
+        set({desktopLyricColor: color || defaultState.desktopLyricColor});
+      },
+      setDesktopTransColor: color => {
+        set({desktopTransColor: color || defaultState.desktopTransColor});
+      },
+      setDesktopLyricFontSize: size => {
+        set({desktopLyricFontSize: size || 24});
+      },
+      setDesktopTransFontSize: size => {
+        set({desktopTransFontSize: size || 18});
       },
     }),
     {

@@ -27,7 +27,7 @@ const RootView = () => {
   const {envConfig, configLoading, updateEnvConfig} = useConfigStore();
   const {isFastStatic, themeColor, language, isFullScreen} = useSettingStore();
   const {errorMsg, clearMsgStore} = useErrorMsgStore();
-  const {setNetworkIsConnected, setAppIsActive} = useAppStateStore();
+  const {setNetworkIsConnected, setIsAppActive} = useAppStateStore();
 
   const {socketInit} = useSocketStore();
   const {sseInit} = useSse(UNREAD);
@@ -42,7 +42,7 @@ const RootView = () => {
   const unsubscribeAppState = AppState.addEventListener(
     'change',
     nextAppState => {
-      setAppIsActive(nextAppState === 'active');
+      setIsAppActive(nextAppState === 'active');
     },
   );
 

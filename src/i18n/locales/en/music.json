@@ -3,6 +3,8 @@
   "lrc_trans": "Normal + Translated Lyrics",
   "lrc_roma": "Normal + Romanized Lyrics",
   "lrc": "Normal Lyrics",
+  "trans": "Translated Lyrics",
+  "roma": "Romanized Lyrics",
   "yrc_trans": "Word-by-Word + Translated Lyrics",
   "yrc_roma": "Word-by-Word + Romanized Lyrics",
   "yrc": "Word-by-Word Lyrics",
@@ -87,5 +89,10 @@
   "lyric_setting": "Lyric Setting",
   "statusBar_lyric": "Status Bar Lyric",
   "lyric_tips": "Enable to display lyrics on the status bar (if supported)",
-  "desktop_lyric": "Desktop Lyric"
+  "desktop_lyric": "Desktop Lyric",
+  "lyric_type": "Lyric Type",
+  "desktop_lyric_font_size": "Desktop Lyric Font Size",
+  "desktop_trans_font_size": "Desktop Trans Lyric Font Size",
+  "desktop_lyric_color": "Desktop Lyric Color",
+  "desktop_trans_color": "Desktop Trans Lyric Color"
 }

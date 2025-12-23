@@ -26,7 +26,7 @@ export const onDisplayRealMsg = async message => {
 
   const channelId = await notifee.createChannel({
     id: session_id,
-    name: '实时消息',
+    name: session_name,
     lights: true,
     vibration: false,
     importance: AndroidImportance.HIGH,
@@ -38,15 +38,19 @@ export const onDisplayRealMsg = async message => {
       ? `(${i18n.t('chat.unread_count', {count: unread_count})})`
       : '';
 
+  const toBeDisplayedText =
+    (lastSenderRemarks ? lastSenderRemarks + ': ' : '') + text;
+
   await notifee.displayNotification({
     title: session_name + unReadText,
-    body: (lastSenderRemarks ? lastSenderRemarks + ': ' : '') + text,
+    body: toBeDisplayedText,
     android: {
       channelId,
       importance: AndroidImportance.HIGH,
       timestamp: Date.now(), // 8 minutes ago
       showTimestamp: true,
       largeIcon: envConfig.STATIC_URL + session_avatar,
+      ticker: toBeDisplayedText,
       pressAction: {
         id: session_id,
         mainComponent: appName,
@@ -59,12 +63,12 @@ export const onDisplayRealMsg = async message => {
 export const batchDisplayMsgNotifications = async messages => {
   const {notRemindSessionIds, nowJoinSessions} = useChatMsgStore.getState();
   const {isPlaySound} = useSettingStore.getState();
-  const {appIsActive} = useAppStateStore.getState();
+  const {isAppActive} = useAppStateStore.getState();
   const {userInfo} = useUserStore.getState();
   const toBeDisplayedMsgs = formatSessionToNotification(messages);
 
   const reminder = item => {
-    if (!appIsActive) {
+    if (!isAppActive) {
       onDisplayRealMsg(item);
     }
     if (isPlaySound) {

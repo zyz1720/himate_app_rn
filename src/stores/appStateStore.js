@@ -2,7 +2,7 @@ import {create} from 'zustand';
 
 const defaultState = {
   networkIsConnected: true,
-  appIsActive: true,
+  isAppActive: true,
 };
 
 export const useAppStateStore = create((set, get) => ({
@@ -13,11 +13,11 @@ export const useAppStateStore = create((set, get) => ({
     }
     set({networkIsConnected: status ?? true});
   },
-  setAppIsActive: status => {
-    if (status === get().appIsActive) {
+  setIsAppActive: status => {
+    if (status === get().isAppActive) {
       return;
     }
-    set({appIsActive: status ?? true});
+    set({isAppActive: status ?? true});
   },
   clearAppState: () => set(defaultState),
 }));
