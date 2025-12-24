@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {Vibration, StyleSheet, Modal, FlatList} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {FlatList} from 'react-native';
 import {
   View,
   Card,
@@ -13,23 +13,16 @@ import {
 import {useToast} from '@components/common/useToast';
 import {searchUsers} from '@api/user';
 import {addMate} from '@api/mate';
-import {
-  Camera,
-  useCameraDevice,
-  useCodeScanner,
-} from 'react-native-vision-camera';
-import {fullHeight} from '@style/index';
 import {usePermissionStore} from '@store/permissionStore';
-import {useSettingStore} from '@store/settingStore';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
 import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import BaseDialog from '@components/common/BaseDialog';
 
-const AddMate = ({navigation}) => {
+const AddMate = ({navigation, route}) => {
+  const {account} = route?.params || {};
   const {showToast} = useToast();
-  const {isFullScreen} = useSettingStore();
   const {accessCamera, setAccessCamera} = usePermissionStore();
   const {envConfig} = useConfigStore();
   const {t} = useTranslation();
@@ -67,21 +60,13 @@ const AddMate = ({navigation}) => {
     setMessage('');
   };
 
-  /* 扫描二维码 */
-  const [modalVisible, setModalVisible] = useState(false);
-  const device = useCameraDevice('back');
-  const codeScanner = useCodeScanner({
-    codeTypes: ['qr', 'ean-13'],
-    onCodeScanned: codes => {
-      if (codes[0]?.value) {
-        Vibration.vibrate(50);
-        refreshData({keyword: codes[0].value});
-        setModalVisible(false);
-      } else {
-        showToast(t('common.scan_qrcode_failed'), 'error');
-      }
-    },
-  });
+  useEffect(() => {
+    if (account) {
+      refreshData({
+        keyword: account,
+      });
+    }
+  }, [account]);
 
   const renderItem = ({item}) => (
     <Card marginT-16 padding-12 paddingB-16>
@@ -153,11 +138,7 @@ const AddMate = ({navigation}) => {
                 setAccessCamera();
                 return;
               }
-              if (device) {
-                setModalVisible(true);
-              } else {
-                showToast(t('mate.camera_error'), 'error');
-              }
+              navigation.navigate('CodeScanner');
             }}>
             <AntDesign name="scan1" size={24} color={Colors.primary} />
           </TouchableOpacity>
@@ -224,72 +205,8 @@ const AddMate = ({navigation}) => {
           </View>
         }
       />
-      {/* 扫描二维码弹窗 */}
-      <Modal
-        animationType="fade"
-        transparent={false}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}>
-        <View bg-white>
-          {!isFullScreen ? (
-            <View padding-12 row center backgroundColor={Colors.primary}>
-              <TouchableOpacity
-                style={styles.BackBut}
-                onPress={() => setModalVisible(false)}>
-                <AntDesign name="close" size={24} color={Colors.white} />
-              </TouchableOpacity>
-              <View paddingT-4>
-                <Text white>{t('mate.scan_qrcode')}</Text>
-              </View>
-            </View>
-          ) : null}
-          <Camera
-            style={styles.Camera}
-            device={device}
-            codeScanner={codeScanner}
-            isActive={true}
-          />
-          <Text center white style={styles.tipText}>
-            {t('mate.scan_qrcode_tip')}
-          </Text>
-          <View marginT-16>
-            <TouchableOpacity
-              center
-              onPress={() => {
-                setModalVisible(false);
-                navigation.navigate('QrCode');
-              }}>
-              <View style={styles.selfCode}>
-                <AntDesign name="qrcode" size={32} color={Colors.black} />
-              </View>
-              <Text grey30 marginT-4 text80>
-                {t('mate.my_qrcode')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 };
-const styles = StyleSheet.create({
-  Camera: {width: '100%', height: fullHeight * 0.8, zIndex: -1},
-  tipText: {
-    position: 'absolute',
-    width: '100%',
-    bottom: fullHeight * 0.2,
-  },
-  selfCode: {
-    padding: 2,
-    backgroundColor: Colors.grey60,
-    borderRadius: 6,
-  },
-  BackBut: {
-    position: 'absolute',
-    left: 12,
-    top: 12,
-  },
-});
+
 export default AddMate;

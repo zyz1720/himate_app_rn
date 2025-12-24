@@ -142,27 +142,26 @@ const User = ({navigation}) => {
                   </Text>
                   <View width={166}>
                     <Text white text80 numberOfLines={1}>
-                      {t('user.account')}
-                      {userInfo?.self_account}
+                      {t('user.account')}: {userInfo?.self_account}
                     </Text>
                   </View>
                 </View>
                 <TouchableOpacity
                   paddingV-16
-                  paddingL-16
+                  paddingL-20
                   onPress={() => {
                     navigation.navigate('QrCode');
                   }}>
                   <FontAwesome name="qrcode" color={Colors.white} size={32} />
                 </TouchableOpacity>
                 <TouchableOpacity
-                  padding-18
+                  padding-16
                   onPress={() => {
                     navigation.navigate('EditUser');
                   }}>
                   <FontAwesome
                     name="angle-right"
-                    color={Colors.grey50}
+                    color={Colors.white}
                     size={26}
                   />
                 </TouchableOpacity>

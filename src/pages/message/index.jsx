@@ -1,5 +1,5 @@
-import React, {useState, useEffect, useRef} from 'react';
-import {AppState, FlatList, RefreshControl} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {FlatList, RefreshControl} from 'react-native';
 import {
   View,
   Text,

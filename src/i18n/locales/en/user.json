@@ -61,5 +61,7 @@
   "cloud_data": "Cloud Data",
   "version_update": "Version Update",
   "ios_not_support": "Not supported on iOS",
-  "download_pkg_progress": "Installing package..."
+  "download_pkg_progress": "Installing package...",
+  "qr_code_login_tips": "Are you sure you want to authorize login to Himate on this app?",
+  "qr_code_login": "Login Authorization"
 }

@@ -31,5 +31,7 @@
   "Msg": "Messages",
   "Mate": "Mates",
   "User": "Me",
-  "UserCenter": "User Center"
+  "UserCenter": "User Center",
+  "CodeScanner": "Scan Code",
+  "QrCodeLogin": "Login Authorization"
 }

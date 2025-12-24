@@ -7,6 +7,7 @@ import Mate from '@pages/mate/index';
 import User from '@pages/user/index';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import {Colors, TouchableOpacity} from 'react-native-ui-lib';
 
@@ -100,9 +101,17 @@ const TabScreen = () => {
       />
       <Tab.Screen
         name="User"
-        options={{
+        options={({navigation}) => ({
           title: t('screen.UserCenter'),
-        }}
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerRight: () => (
+            <TouchableOpacity
+              paddingR-16
+              onPress={() => navigation.navigate('CodeScanner')}>
+              <Ionicons name="scan" color={Colors.white} size={22} />
+            </TouchableOpacity>
+          ),
+        })}
         component={User}
       />
     </Tab.Navigator>

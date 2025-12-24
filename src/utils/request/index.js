@@ -74,7 +74,9 @@ instance.interceptors.response.use(
 
     if (status === 401) {
       setRefreshToken();
+      return Promise.reject(error);
     }
+
     if (resMessage) {
       message = resMessage;
     }

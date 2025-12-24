@@ -12,6 +12,7 @@ import AddMate from '@pages/mate/mate_pages/addMate';
 import SearchMsg from '@pages/message/msg_pages/searchMsg';
 import BaseWebView from '@pages/common/baseWebView';
 import Permissions from '@pages/common/permissions';
+import CodeScanner from '@pages/common/codeScanner';
 import Setting from '@pages/setting/index';
 
 const Drawer = createDrawerNavigator();
@@ -59,6 +60,13 @@ const DrawerScreen = () => {
         {isFullScreen ? (
           <>
             <Drawer.Screen
+              name="CodeScanner"
+              options={{
+                title: t('screen.CodeScanner'),
+              }}
+              component={CodeScanner}
+            />
+            <Drawer.Screen
               name="AddMate"
               options={{
                 title: t('screen.AddMate'),
@@ -80,13 +88,6 @@ const DrawerScreen = () => {
             title: t('screen.Setting'),
           }}
           component={Setting}
-        />
-        <Drawer.Screen
-          name="Permissions"
-          component={Permissions}
-          options={{
-            title: t('screen.Permissions'),
-          }}
         />
         <Drawer.Screen
           name="WebView"

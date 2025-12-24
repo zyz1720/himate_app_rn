@@ -8,3 +8,6 @@ export const userLoginCode = data => instance.post('login/code', data);
 
 // 刷新token
 export const userRefreshToken = data => instance.post('login/refresh', data);
+
+// 二维码登录
+export const qrCodeLogin = data => instance.post('qrcode/login', data);

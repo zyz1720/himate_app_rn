@@ -22,5 +22,7 @@
   "change_code": "看不清？换一张",
   "password_invalid": "请输入至少6位密码！",
   "register_success": "注册成功！已自动登录",
-  "agree_terms": "请先阅读并同意用户使用协议！"
+  "agree_terms": "请先阅读并同意用户使用协议！",
+  "auth_success": "授权成功！",
+  "auth_failed": "授权失败！"
 }

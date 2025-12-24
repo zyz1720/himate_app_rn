@@ -23,6 +23,8 @@ import SearchMsg from '@pages/message/msg_pages/searchMsg';
 import ChatMsg from '@pages/user/user_pages/chatMsg';
 import DataManager from '@pages/user/user_pages/dataManager';
 import BasePdfView from '@pages/common/basePdfView';
+import CodeScanner from '@pages/common/codeScanner';
+import QrCodeLogin from '@pages/user/user_pages/qrCodeLogin';
 
 const Stack = createStackNavigator();
 
@@ -88,6 +90,13 @@ function StackScreen() {
             component={DataManager}
             options={{
               title: t('screen.DataManager'),
+            }}
+          />
+          <Stack.Screen
+            name="QrCodeLogin"
+            component={QrCodeLogin}
+            options={{
+              title: t('screen.QrCodeLogin'),
             }}
           />
         </Stack.Group>
@@ -198,6 +207,13 @@ function StackScreen() {
           component={BasePdfView}
           options={{
             title: t('screen.PdfView'),
+          }}
+        />
+        <Stack.Screen
+          name="CodeScanner"
+          component={CodeScanner}
+          options={{
+            title: t('screen.CodeScanner'),
           }}
         />
       </Stack.Group>

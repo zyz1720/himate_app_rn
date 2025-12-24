@@ -21,5 +21,8 @@
     "user_protocol": "User Agreement",
     "change_code": "Can't see clearly? Change one",
     "password_invalid": "Please enter at least 6 digits for password!",
-    "register_success": "Registration successful! Logged in automatically"
+    "register_success": "Registration successful! Logged in automatically",
+    "agree_terms": "Please read and agree to the User Agreement!",
+    "auth_success": "Authorization successful!",
+    "auth_failed": "Authorization failed!"
 }

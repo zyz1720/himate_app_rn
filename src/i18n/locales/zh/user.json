@@ -61,5 +61,7 @@
   "cloud_data": "云端数据",
   "version_update": "版本更新",
   "ios_not_support": "IOS暂不支持",
-  "download_pkg_progress": "安装包下载中..."
+  "download_pkg_progress": "安装包下载中...",
+  "qr_code_login_tips": "您正在授权登录Himate的其它应用，请确认",
+  "qr_code_login": "授权登录"
 }

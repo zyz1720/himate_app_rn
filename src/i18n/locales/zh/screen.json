@@ -4,7 +4,7 @@
     "AddMate": "添加好友",
     "SearchMsg": "搜索消息",
     "Permissions": "权限设置",
-    "Setting": "设置",
+    "Setting": "通用设置",
     "Login": "登录/注册",
     "FindFavorites": "发现歌单",
     "LatelyMusic": "最近播放",
@@ -31,5 +31,7 @@
     "Msg": "消息",
     "Mate": "好友",
     "User": "我的",
-    "UserCenter": "个人中心"
+    "UserCenter": "个人中心",
+    "CodeScanner": "扫一扫",
+    "QrCodeLogin": "登录授权"
 }
