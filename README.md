@@ -1,10 +1,9 @@
 # Himate
-![输入图片说明](src/assets/images/logo.png)
-### 简介
+![Himate Logo](src/assets/images/logo.png)
 
-使用react native 0.75.5 开发的一款轻量的聊天和音乐播放器软件。
+## 项目简介
 
-如何使用react native：https://reactnative.dev/
+Himate是一款基于React Native 0.75.5开发的轻量级聊天和音乐移动应用。
 
 ### 项目截图
 
@@ -13,182 +12,175 @@
 ![输入图片说明](public/screenshot/screenshot_5.jpg)  ![输入图片说明](public/screenshot/screenshot_6.jpg)  ![输入图片说明](public/screenshot/screenshot_7.jpg)  ![输入图片说明](public/screenshot/screenshot_8.jpg)
 
 
+## 功能特点
 
-### 平台适配
+### 📱 聊天功能
+- 实时消息通信
+- 支持文字、图片、音频、视频等多种消息类型
+- 会话管理与历史记录
+- 群聊功能
+- 消息搜索与管理
 
-已适配Android，ios端
+### 🎵 音乐功能
+- 本地音乐播放
+- 音乐收藏与分类
+- 歌词显示与控制
+- 最近播放记录
+- 悬浮歌词功能
+- 音乐搜索
 
-已知问题：ios不能播放.ogg格式音频，同时安卓无法播放ios默认的.m4a格式音频，ios部分UI有压缩。
+### 🌍 国际化
+- 支持中文和英文多语言切换
+- 自适应系统语言
 
+### 🎨 用户体验
+- 流畅的动画效果
+- 响应式设计
+- 直观的用户界面
+- 实时通知
 
+## 技术栈
 
-### 开始
+### 核心框架
+- **React Native**: 0.75.5
+- **React**: 18.3.1
 
-#### 项目环境
+### 导航与路由
+- **React Navigation**: 6.x
+  - Stack Navigator
+  - Tab Navigator
+  - Drawer Navigator
 
-- nodejs > 18
-- android端  java JDK17  android SDK 34
-- ios端  Homebrew  ruby  CocoaPods
+### 状态管理
+- **Zustand**: 5.x
 
-详见https://reactnative.dev/docs/0.75/set-up-your-environment
+### 数据库
+- **Realm**: 12.x
 
-#### 运行项目
+### 国际化
+- **i18next**: 25.x
+- **react-i18next**: 16.x
 
-配置项目环境：项目目录.env文件
+### 聊天功能
+- **react-native-gifted-chat**: 2.6.5
+- **socket.io-client**: 4.7.5
 
-```
-1
-BASE_URL=你的服务地址
-STATIC_URL=你的静态资源服务地址
-SOCKET_URL=你的socket服务地址
-FAST_STATIC_URL=你的静态资源服务地址
-MSG_SECRET=你的加密消息秘钥
+### 音乐功能
+- **react-native-audio-recorder-player**: 3.6.12
+- **react-native-music-control**: 1.4.1
 
-2
-COULD_URL=获取所有服务接口
-COULD_SECRET=获取所有服务的秘钥（如有）
-```
+### UI组件
+- **react-native-ui-lib**: 7.x
+- **react-native-vector-icons**: 10.x
 
-选择一种方式作为你的环境配置：
+### 网络与API
+- **axios**: 1.6.x
+- **react-native-sse**: 1.x
 
-- 如果你的每个服务都是独立的 ，使用配置 1
-- 如果你使用一个的接口统一的获取你的所有服务，使用配置 2
+### 工具库
+- **dayjs**: 1.11.x
+- **pinyin-pro**: 3.x
+- **@react-native-async-storage/async-storage**: 2.x
 
+## 安装与设置
 
-若使用 配置 2 需要保证 COULD_URL 接口返回配置1的json数据
+### 环境要求
+- Node.js: >= 18.x
+- npm/yarn: 最新版本
+- React Native CLI: 最新版本
+- Android Studio/Xcode: 用于原生开发
+- Java Development Kit (JDK): >= 11.x
 
-```json
-{
-   BASE_URL:你的服务地址
-   STATIC_URL:你的静态资源服务地址
-   SOCKET_URL:你的socket服务地址
-   FAST_STATIC_URL:你的静态资源服务地址
-   MSG_SECRET=你的加密消息秘钥
-}
-```
+### 安装步骤
 
-**注意**
+1. **安装依赖**
+   ```bash
+   yarn
+   ```
 
-.env文件主要用于作为配置示例，不建议直接配置.env文件作为您的项目环境，建议新建如.env.local这样的多个.env文件进行多环境配置，若配置不生效可尝试使用其它命名，同时注意添加到.gitignore，以免造成隐私泄露。
+2. **配置环境变量**
+   - 文件为 `.env`
+   - 根据需要修改环境变量
 
-然后使用例如以下命令启动Metro，或自行配置启动命令
+3. **运行脚本替换包**（如果需要）
+   - react-native-audio-recorder-player: 优化网络卡顿时加载音乐导致的UI极其卡顿的问题。
+   - react-native-music-control: 增加flyme状态栏歌词，优化对Android14的支持。
+   ```bash
+   node scripts/replace-packages.js
+   ```
 
-```
-yarn start:dev
-```
+## 运行应用
 
-安装项目依赖
-
-```
-yarn
-```
-
-##### android端
-
-启动安卓模拟器后或连接真机后使用以下命令进行编译
-
-```
+### Android
+```bash
+# 或使用yarn
 yarn android
 ```
 
-如果使用Android14运行先进行如下修改
-
-```java
-./node_modules/react-native-musicontrol/android/src/main/java/com/tanguyantoine/react/MusicControlModule.java:204
-原代码：context.registerReceiver(receiver, filter);
-修改为：context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED);
-```
-
-##### ios端
-
-进入 项目目录/ios 文件夹下使用以下命令安装项目依赖
-
-```
-pod install
-```
-
-启动ios模拟器后或连接真机后使用以下命令进行编译
-
-```
+### iOS
+```bash
+# 或使用yarn
 yarn ios
 ```
 
-推荐使用Xcode打开/ios/himate.xcworkspace文件夹，并使用Xcode进行编译
+### 启动Metro服务器
+```bash
+# 默认启动
+npm start
 
-#### 构建安装包
+# 清除缓存后启动
+npm run start:clean
 
-##### android端
+# 开发环境启动
+npm run start:dev
 
-```
-cd android
-```
-
-debug（测试）版本
-
-```
-./gradlew assembleDebug
-```
-
-release（正式）版本
-
-1. 使用java生成你自己的签名证书(.keystore)
-2. 将.keystore文件放到 项目目录/android/app 文件夹下
-3. 配置 项目目录/android/gradle.properties 文件的以下字段
-
-```
-RELEASE_STORE_FILE=您的keystore
-RELEASE_KEY_ALIAS=
-RELEASE_STORE_PASSWORD=
-RELEASE_KEY_PASSWORD=
+# 生产环境启动
+npm run start:prod
 ```
 
-再执行
+## 项目结构
 
 ```
-./gradlew assembleRelease
-```
-构建完成的安装包位于：项目目录\android\app\build\outputs\apk\release、
-
-其它详见https://reactnative.dev/docs/0.75/signed-apk-android
-
-##### ios端
-
-使用xcode 设备选择Any ios Device (arm64) 打开Product ---> Archive 进行构建，前提是你拥有Provisioning Profile描述文件。
-
-其它详见https://reactnative.dev/docs/0.75/publishing-to-app-store
-
-
-
-### 优化
-
-node scripts/replace-packages.js 
-
-1，解决使用react-native-audio-recorder-player组件播放音乐时，在网络延迟时导致的卡顿问题
-
-```kotlin
-./node_modules/react-native-audio-recorder-player/android/src/main/java/com/dooboolab.audiorecorderplayer/RNAudioRecorderPlayerModule.kt:311
-
-// 使用prepareAsync()替代prepare()
-            mediaPlayer!!.setOnErrorListener { mp, what, extra ->
-                Log.e(tag, "MediaPlayer error occurred. what: $what, extra: $extra")
-                promise.reject("startPlay", "MediaPlayer error occurred. what: $what, extra: $extra")
-                true
-            }
-        
-            mediaPlayer!!.prepareAsync()
-
-324       Log.e(tag, "startPlay() null exception")
-          + promise.reject("startPlay", "Null pointer exception occurred")
-
-
+himate/
+├── __tests__/           # 测试文件
+├── android/             # Android原生代码
+├── ios/                 # iOS原生代码
+├── packages/            # 自定义包
+├── public/              # 静态资源
+│   └── screenshot/      # 项目截图
+├── scripts/             # 脚本文件
+├── src/                 # 源代码
+│   ├── api/             # API请求
+│   ├── assets/          # 资源文件
+│   ├── components/      # 组件
+│   ├── config/          # 配置
+│   ├── constants/       # 常量
+│   ├── i18n/            # 国际化
+│   ├── pages/           # 页面
+│   ├── router/          # 路由
+│   ├── stores/          # 状态管理
+│   ├── styles/          # 样式
+│   └── utils/           # 工具函数
+├── App.jsx              # 应用入口
+├── index.js             # 项目入口
+├── package.json         # 项目配置
+└── README.md            # 项目说明
 ```
 
+## 核心模块说明
 
+### 聊天模块
+- **聊天页面**: `src/pages/message/msg_pages/chat.jsx`
+- **消息存储**: 使用Realm数据库存储聊天记录
+- **实时通信**: 通过Socket.io实现实时消息，使用Server-Sent Events (SSE) 实现消息推送
 
-### 其它
+### 音乐模块
+- **音乐控制器**: `src/components/music/MusicController.jsx`
 
-后端服务：https://gitee.com/zyz1720/himate_nest_sever
+## 许可证
 
-后台管理：https://gitee.com/zyz1720/himate_vue_backend
+本项目采用MIT许可证 - 查看[LICENSE](LICENSE)文件了解详情
 
-项目演示：https://www.bilibili.com/video/BV1gBcVeEErs
+### 关联项目
+- **后端**: [Himate NestJS Server](https://gitee.com/zyz1720/himate_server_nest)
+- **后台管理**: [Himate React Backend](https://gitee.com/zyz1720/himate_backend_react)

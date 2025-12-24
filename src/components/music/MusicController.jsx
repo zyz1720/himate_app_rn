@@ -197,6 +197,7 @@ const MusicCtrlProvider = React.memo(props => {
   // 自动播放下一首
   const autoPlayNext = useCallback(() => {
     resetPlayingMusic();
+    setPlayingMusic({});
 
     if (isRandomPlay) {
       getRandMusic();
@@ -212,8 +213,6 @@ const MusicCtrlProvider = React.memo(props => {
       } else if (musicPlayMode === 'random') {
         setPlayingMusic(playList[Math.floor(Math.random() * playList.length)]);
       }
-    } else {
-      setPlayingMusic({});
     }
   }, [isRandomPlay, playList, playingMusicIndex, musicPlayMode]);
 
@@ -556,6 +555,7 @@ const MusicCtrlProvider = React.memo(props => {
     return () => {
       removePlayBackListener();
       restMusicStatus();
+      setPlayingMusic({});
     };
   }, []);
 

@@ -1,94 +1,186 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Himate
+![Himate Logo](src/assets/images/logo.png)
 
-# Getting Started
+## Project Introduction
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+Himate is a lightweight chat and music mobile application developed based on React Native 0.75.5.
 
-## Step 1: Start the Metro Server
+### Project Screenshots
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+![Screenshot 1](public/screenshot/screenshot_1.jpg)  ![Screenshot 2](public/screenshot/screenshot_2.jpg)  ![Screenshot 3](public/screenshot/screenshot_3.jpg)  ![Screenshot 4](public/screenshot/screenshot_4.jpg)
 
-To start Metro, run the following command from the _root_ of your React Native project:
+![Screenshot 5](public/screenshot/screenshot_5.jpg)  ![Screenshot 6](public/screenshot/screenshot_6.jpg)  ![Screenshot 7](public/screenshot/screenshot_7.jpg)  ![Screenshot 8](public/screenshot/screenshot_8.jpg)
 
+
+## Features
+
+### 📱 Chat Features
+- Real-time message communication
+- Support for multiple message types: text, images, audio, video, etc.
+- Conversation management and history
+- Group chat functionality
+- Message search and management
+
+### 🎵 Music Features
+- Local music playback
+- Music favorites and categorization
+- Lyrics display and control
+- Recently played history
+- Floating lyrics functionality
+- Music search
+
+### 🌍 Internationalization
+- Support for Chinese and English language switching
+- Auto-adaptive to system language
+
+### 🎨 User Experience
+- Smooth animation effects
+- Responsive design
+- Intuitive user interface
+- Real-time notifications
+
+## Technology Stack
+
+### Core Frameworks
+- **React Native**: 0.75.5
+- **React**: 18.3.1
+
+### Navigation and Routing
+- **React Navigation**: 6.x
+  - Stack Navigator
+  - Tab Navigator
+  - Drawer Navigator
+
+### State Management
+- **Zustand**: 5.x
+
+### Database
+- **Realm**: 12.x
+
+### Internationalization
+- **i18next**: 25.x
+- **react-i18next**: 16.x
+
+### Chat Functionality
+- **react-native-gifted-chat**: 2.6.5
+- **socket.io-client**: 4.7.5
+
+### Music Functionality
+- **react-native-audio-recorder-player**: 3.6.12
+- **react-native-music-control**: 1.4.1
+
+### UI Components
+- **react-native-ui-lib**: 7.x
+- **react-native-vector-icons**: 10.x
+
+### Network and API
+- **axios**: 1.6.x
+- **react-native-sse**: 1.x
+
+### Utility Libraries
+- **dayjs**: 1.11.x
+- **pinyin-pro**: 3.x
+- **@react-native-async-storage/async-storage**: 2.x
+
+## Installation and Setup
+
+### Environment Requirements
+- Node.js: >= 18.x
+- npm/yarn: Latest version
+- React Native CLI: Latest version
+- Android Studio/Xcode: For native development
+- Java Development Kit (JDK): >= 11.x
+
+### Installation Steps
+
+1. **Install Dependencies**
+   ```bash
+   yarn
+   ```
+
+2. **Configure Environment Variables**
+   - File: `.env`
+   - Modify environment variables as needed
+
+3. **Run Script to Replace Packages** (if needed)
+   - react-native-audio-recorder-player: Optimize extreme UI lag when loading music during network congestion.
+   - react-native-music-control: Add Flyme status bar lyrics, improve support for Android 14.
+   ```bash
+   node scripts/replace-packages.js
+   ```
+
+## Running the Application
+
+### Android
 ```bash
-# using npm
-npm start
-
-# OR using Yarn
-yarn start --reset-cache
-```
-
-## Step 2: Start your Application
-
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
-
-### For Android
-
-```bash
-# using npm
-npm run android
-
-# OR using Yarn
+# Or use yarn
 yarn android
 ```
-### A Warning for Android 14
-If you bulid for android 14, follow the instructions here:
-./node_modules/react-native-music-control/android/java/com/tanguyantoine/react/MusicControlModule.java:204:  
-update to: context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED);
 
-### For iOS
-
+### iOS
 ```bash
-# in /ios
-pod install
-
-# using npm
-npm run ios
-
-# OR using Yarn
+# Or use yarn
 yarn ios
 ```
-### android build
 
+### Start Metro Server
 ```bash
-./gradlew assembleDebug
+# Default start
+npm start
 
-./gradlew assembleRelease
+# Start with cache cleared
+npm run start:clean
 
-./gradlew bundleRelease
+# Start development environment
+npm run start:dev
+
+# Start production environment
+npm run start:prod
 ```
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
 
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
+## Project Structure
 
-## Step 3: Modifying your App
+```
+himate/
+├── __tests__/           # Test files
+├── android/             # Android native code
+├── ios/                 # iOS native code
+├── packages/            # Custom packages
+├── public/              # Static resources
+│   └── screenshot/      # Project screenshots
+├── scripts/             # Script files
+├── src/                 # Source code
+│   ├── api/             # API requests
+│   ├── assets/          # Resource files
+│   ├── components/      # Components
+│   ├── config/          # Configuration
+│   ├── constants/       # Constants
+│   ├── i18n/            # Internationalization
+│   ├── pages/           # Pages
+│   ├── router/          # Routing
+│   ├── stores/          # State management
+│   ├── styles/          # Styles
+│   └── utils/           # Utility functions
+├── App.jsx              # Application entry
+├── index.js             # Project entry
+├── package.json         # Project configuration
+└── README.md            # Project documentation
+```
 
-Now that you have successfully run the app, let's modify it.
+## Core Module Description
 
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
+### Chat Module
+- **Chat Page**: `src/pages/message/msg_pages/chat.jsx`
+- **Message Storage**: Uses Realm database to store chat records
+- **Real-time Communication**: Implements real-time messaging through Socket.io, uses Server-Sent Events (SSE) for message push
 
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
+### Music Module
+- **Music Controller**: `src/components/music/MusicController.jsx`
 
-## Congratulations! :tada:
+## License
 
-You've successfully run and modified your React Native App. :partying_face:
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
 
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+### Related Projects
+- **Backend**: [Himate NestJS Server](https://gitee.com/zyz1720/himate_server_nest)
+- **Backend Management**: [Himate React Backend](https://gitee.com/zyz1720/himate_backend_react)

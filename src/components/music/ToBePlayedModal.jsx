@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const ToBePlayedModal = React.memo(props => {
+const ToBePlayedModal = props => {
   const {visible = false, onClose = () => {}} = props;
   const {t} = useTranslation();
   const {playingMusic, playList, setPlayingMusic, setPlayList, removePlayList} =
@@ -148,6 +148,6 @@ const ToBePlayedModal = React.memo(props => {
       </View>
     </Modal>
   );
-});
+};
 
 export default ToBePlayedModal;
