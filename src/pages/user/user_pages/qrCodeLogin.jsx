@@ -20,8 +20,6 @@ const QrCodeLogin = ({navigation, route}) => {
         qrcode_id: qrcode_id,
         refresh_token: refresh_token,
       });
-      console.log('qrCodeLogin', loginRes);
-
       if (loginRes.code === 0) {
         login(loginRes.data);
         showToast(t('login.auth_success'), 'success');
@@ -30,6 +28,8 @@ const QrCodeLogin = ({navigation, route}) => {
       showToast(t('login.auth_failed'), 'error');
     } catch (error) {
       console.error(error);
+    } finally {
+      navigation.navigate('User');
     }
   };
 

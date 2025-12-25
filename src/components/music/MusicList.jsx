@@ -492,7 +492,7 @@ const MusicList = props => {
           }
           ListFooterComponent={
             list.length > 6 ? (
-              <View marginB-280 padding-12 center>
+              <View marginB-380 padding-12 center>
                 <Text text90L grey40>
                   {t('common.footer')}
                 </Text>
