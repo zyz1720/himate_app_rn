@@ -18,7 +18,7 @@ import {
   Dialog,
   ProgressBar,
 } from 'react-native-ui-lib';
-import {statusBarHeight, fullHeight} from '@style/index';
+import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {useToast} from '@components/common/useToast';
@@ -51,7 +51,9 @@ const MusicList = props => {
     heightScale = 1,
     loading = false,
     onRefresh = () => {},
+    listHeader = null,
   } = props;
+  const {fullHeight, statusBarHeight} = useScreenDimensionsContext();
   const {t} = useTranslation();
   const {showToast} = useToast();
   const {envConfig} = useConfigStore();
@@ -470,6 +472,7 @@ const MusicList = props => {
       </View>
       <View height={fullHeight * heightScale}>
         <FlatList
+          ListHeaderComponent={listHeader}
           refreshControl={
             <RefreshControl
               refreshing={loading}
@@ -492,7 +495,7 @@ const MusicList = props => {
           }
           ListFooterComponent={
             list.length > 6 ? (
-              <View marginB-380 padding-12 center>
+              <View marginB-280 padding-12 center>
                 <Text text90L grey40>
                   {t('common.footer')}
                 </Text>

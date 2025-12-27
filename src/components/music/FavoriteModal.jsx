@@ -8,7 +8,7 @@ import {
   Colors,
   TouchableOpacity,
 } from 'react-native-ui-lib';
-import {fullHeight, statusBarHeight} from '@style/index';
+import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
 import {useConfigStore} from '@store/configStore';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import BaseImageBackground from '@components/common/BaseImageBackground';
@@ -16,7 +16,6 @@ import BaseImageBackground from '@components/common/BaseImageBackground';
 const styles = StyleSheet.create({
   listBackImage: {
     width: '100%',
-    height: fullHeight + statusBarHeight,
     position: 'absolute',
     bottom: 0,
     left: 0,
@@ -47,6 +46,7 @@ const FavoriteModal = React.memo(props => {
     userAvatar = '',
     userName = '',
   } = props;
+  const {fullHeight, statusBarHeight} = useScreenDimensionsContext();
 
   const {envConfig} = useConfigStore();
 
@@ -63,7 +63,7 @@ const FavoriteModal = React.memo(props => {
         backgroundColor={Colors.black4}>
         <BaseImageBackground
           blurRadius={50}
-          style={styles.listBackImage}
+          style={[styles.listBackImage, {height: fullHeight + statusBarHeight}]}
           source={{uri: envConfig.THUMBNAIL_URL + backgroundImg}}
           resizeMode="cover">
           <TouchableOpacity paddingT-48 paddingL-22 onPress={onClose}>

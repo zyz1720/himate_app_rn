@@ -1,13 +1,10 @@
 import {Colors} from 'react-native-ui-lib';
-import {Dimensions, StatusBar} from 'react-native';
 
-export const fullWidth = Dimensions.get('window').width;
-export const fullHeight = Dimensions.get('window').height;
-export const statusBarHeight = StatusBar.currentHeight;
+// 歌词颜色
+export const LYRIC_COLORS = ['#f5222d', '#52c41a', '#1677ff'];
 
-export const lyricColors = ['#f5222d', '#52c41a', '#1677ff'];
-
-export const colorList = [
+// 可选择颜色
+export const PICKER_COLORS = [
   {id: 1, color: '#f5222d'},
   {id: 2, color: '#fa541c'},
   {id: 3, color: '#ffa940'},
@@ -22,10 +19,11 @@ export const colorList = [
   {id: 12, color: '#eb2f96'},
 ];
 
-export const themeColors = {
-  primary: colorList[9].color,
-  geekBlue: colorList[8].color,
-  magenta: colorList[11].color,
+// 主题颜色
+export const THEME_COLORS = {
+  primary: PICKER_COLORS[9].color,
+  geekBlue: PICKER_COLORS[8].color,
+  magenta: PICKER_COLORS[11].color,
   success: Colors.green40,
   warning: Colors.yellow40,
   error: Colors.red40,

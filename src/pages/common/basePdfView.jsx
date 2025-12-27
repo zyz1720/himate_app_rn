@@ -2,7 +2,6 @@ import React from 'react';
 import {StyleSheet} from 'react-native';
 import {Colors} from 'react-native-ui-lib';
 import {useTranslation} from 'react-i18next';
-import {fullWidth, fullHeight} from '@style/index';
 import {useToast} from '@components/common/useToast';
 import Pdf from 'react-native-pdf';
 
@@ -26,8 +25,8 @@ const BasePdfView = ({route}) => {
 const styles = StyleSheet.create({
   pdfView: {
     flex: 1,
-    width: fullWidth,
-    height: fullHeight,
+    width: '100%',
+    height: '100%',
     backgroundColor: Colors.background,
   },
 });

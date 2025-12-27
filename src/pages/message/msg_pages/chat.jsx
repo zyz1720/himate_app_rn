@@ -37,7 +37,7 @@ import {
 import {useTranslation} from 'react-i18next';
 import {downloadFile} from '@utils/system/file_utils';
 import {extractMentions} from '@utils/common/string_utils';
-import {fullHeight} from '@style/index';
+import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
 import {deleteChannel} from '@utils/system/notification';
 import BaseSheet from '@components/common/BaseSheet';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -65,6 +65,7 @@ const Chat = ({navigation, route}) => {
 
   const {t} = useTranslation();
   const {showToast} = useToast();
+  const {fullHeight} = useScreenDimensionsContext();
 
   const {
     setNowJoinSession,

@@ -174,7 +174,6 @@ himate/
 │   ├── pages/           # 页面
 │   ├── router/          # 路由
 │   ├── stores/          # 状态管理
-│   ├── styles/          # 样式
 │   └── utils/           # 工具函数
 ├── App.jsx              # 应用入口
 ├── index.js             # 项目入口

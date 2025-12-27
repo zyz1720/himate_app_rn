@@ -13,7 +13,7 @@ import {
 import {ScrollView} from 'react-native';
 import {useSettingStore} from '@store/settingStore';
 import {useTranslation} from 'react-i18next';
-import {lyricColors} from '@style/index';
+import {LYRIC_COLORS} from '@const/custom_colors';
 import {usePermissionStore} from '@store/permissionStore';
 import {useToast} from '@components/common/useToast';
 import Animated, {FadeInUp} from 'react-native-reanimated';
@@ -95,7 +95,7 @@ const LyricController = () => {
                     {t('music.desktop_lyric_color')}
                   </Text>
                   <ColorPicker
-                    colors={[desktopLyricColor, ...lyricColors]}
+                    colors={[desktopLyricColor, ...LYRIC_COLORS]}
                     initialColor={desktopLyricColor}
                     value={desktopLyricColor}
                     showCloseButton={true}
@@ -127,7 +127,7 @@ const LyricController = () => {
                     {t('music.desktop_trans_color')}
                   </Text>
                   <ColorPicker
-                    colors={[desktopTransColor, ...lyricColors]}
+                    colors={[desktopTransColor, ...LYRIC_COLORS]}
                     initialColor={desktopTransColor}
                     value={desktopTransColor}
                     showCloseButton={true}

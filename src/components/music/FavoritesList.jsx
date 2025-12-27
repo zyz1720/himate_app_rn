@@ -11,7 +11,7 @@ import {
   Image,
 } from 'react-native-ui-lib';
 import {useConfigStore} from '@store/configStore';
-import {fullHeight, fullWidth} from '@style/index';
+import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
 import {useTranslation} from 'react-i18next';
 
 const FavoritesList = props => {
@@ -24,6 +24,7 @@ const FavoritesList = props => {
   } = props;
 
   const {t} = useTranslation();
+  const {fullHeight, fullWidth} = useScreenDimensionsContext();
 
   const {envConfig} = useConfigStore();
 
@@ -85,7 +86,9 @@ const FavoritesList = props => {
                       source={{
                         uri: envConfig.STATIC_URL + item?.user?.user_avatar,
                       }}
-                      imageProps={{errorSource: require('@assets/images/empty.jpg')}}
+                      imageProps={{
+                        errorSource: require('@assets/images/empty.jpg'),
+                      }}
                       backgroundColor={Colors.transparent}
                     />
                   </View>
@@ -103,7 +106,7 @@ const FavoritesList = props => {
         }
         ListFooterComponent={
           list.length > 8 ? (
-            <View marginB-120 padding-12 center>
+            <View marginB-240 padding-12 center>
               <Text text90L grey40>
                 {t('common.footer')}
               </Text>

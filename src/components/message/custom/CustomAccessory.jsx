@@ -14,7 +14,6 @@ import Animated, {
   withSpring,
   runOnJS,
 } from 'react-native-reanimated';
-import {fullWidth, fullHeight} from '@style/index';
 import {usePermissionStore} from '@store/permissionStore';
 import {useTranslation} from 'react-i18next';
 import {
@@ -50,8 +49,8 @@ const styles = StyleSheet.create({
   },
   radioTips: {
     position: 'absolute',
-    width: fullWidth,
-    height: fullHeight,
+    width: '100%',
+    height: '100%',
     bottom: 0,
     left: 0,
     justifyContent: 'center',

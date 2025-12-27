@@ -32,7 +32,8 @@ const FavoritesDetail = ({navigation, route}) => {
     return getMusicFromFavorites(favoritesId, params);
   };
 
-  const {list,total, onEndReached, refreshData} = useInfiniteScroll(getMusicList);
+  const {list, total, onEndReached, refreshData} =
+    useInfiniteScroll(getMusicList);
 
   /* 获取收藏夹详情 */
   const [loading, setLoading] = useState(false);
@@ -93,9 +94,12 @@ const FavoritesDetail = ({navigation, route}) => {
                       size={26}
                       source={{
                         uri:
-                          envConfig.STATIC_URL + favoritesInfo?.user?.user_avatar,
+                          envConfig.STATIC_URL +
+                          favoritesInfo?.user?.user_avatar,
                       }}
-                      imageProps={{errorSource: require('@assets/images/empty.jpg')}}
+                      imageProps={{
+                        errorSource: require('@assets/images/empty.jpg'),
+                      }}
                       backgroundColor={Colors.transparent}
                     />
                     <Text text90 marginL-4 grey20>
@@ -145,6 +149,7 @@ const FavoritesDetail = ({navigation, route}) => {
         <MusicList
           list={list}
           total={total}
+          heightScale={0.8}
           favoriteId={favoritesId}
           refreshList={refreshData}
           onEndReached={onEndReached}

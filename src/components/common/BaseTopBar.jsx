@@ -1,13 +1,24 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {StyleSheet, ScrollView} from 'react-native';
 import {View, TouchableOpacity, Text, Colors} from 'react-native-ui-lib';
-import {fullWidth} from '@style/index';
 import Animated, {FadeInLeft, FadeOutRight} from 'react-native-reanimated';
+import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
 
 const BaseTopBar = props => {
   const {routes = [], initialIndex = 0, onChange = () => {}} = props;
 
   const [focusedIndex, setFocusedIndex] = useState(initialIndex);
+  const {fullWidth} = useScreenDimensionsContext();
+
+  const [isOverflow, setIsOverflow] = useState(false);
+
+  useEffect(() => {
+    if (fullWidth / routes.length < 100) {
+      setIsOverflow(true);
+    } else {
+      setIsOverflow(false);
+    }
+  }, [routes.length, fullWidth]);
 
   return (
     <View width={fullWidth}>
@@ -16,7 +27,7 @@ const BaseTopBar = props => {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={
-            routes.length <= 4 ? styles.flexContainerStyle : null
+            !isOverflow ? styles.flexContainerStyle : null
           }>
           {routes.map((item, index) => {
             return (
@@ -59,6 +70,7 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.grey70,
   },
   barStyle: {
+    minWidth: 100,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 12,

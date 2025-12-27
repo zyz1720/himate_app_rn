@@ -9,7 +9,7 @@ import React, {
 import {StyleSheet} from 'react-native';
 import {Image, View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
-import {fullWidth} from '@style/index';
+import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
 import {Marquee} from '@animatereactnative/marquee';
 import {isEmptyObject} from '@utils/common/object_utils';
 import {getRandomInt} from '@utils/common/number_utils';
@@ -81,7 +81,6 @@ const styles = StyleSheet.create({
   },
   marquee: {
     flex: 1,
-    width: fullWidth * 0.56,
     overflow: 'hidden',
   },
 });
@@ -92,6 +91,7 @@ export const useMusicCtrl = () => useContext(MusicCtrlContext);
 const MusicCtrlProvider = React.memo(props => {
   const {children} = props;
   const {showToast} = useToast();
+  const {fullWidth} = useScreenDimensionsContext();
   const {userInfo} = useUserStore();
   const {envConfig} = useConfigStore();
   const {
@@ -353,7 +353,7 @@ const MusicCtrlProvider = React.memo(props => {
           key={id + String(isMusicLoading)}
           speed={speed}
           spacing={spacing}
-          style={styles.marquee}>
+          style={[styles.marquee, {width: fullWidth * 0.56}]}>
           <Text white>{musicText}</Text>
         </Marquee>
       </View>

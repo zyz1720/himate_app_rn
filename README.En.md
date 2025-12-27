@@ -174,7 +174,6 @@ himate/
 │   ├── pages/           # Pages
 │   ├── router/          # Routing
 │   ├── stores/          # State management
-│   ├── styles/          # Styles
 │   └── utils/           # Utility functions
 ├── App.jsx              # Application entry
 ├── index.js             # Project entry

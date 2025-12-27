@@ -1,5 +1,5 @@
-import React, {useState, useEffect, useMemo} from 'react';
-import {StyleSheet, Modal, useWindowDimensions} from 'react-native';
+import React, {useEffect, useMemo} from 'react';
+import {StyleSheet, Modal} from 'react-native';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   Slider,
   Carousel,
 } from 'react-native-ui-lib';
-import {fullHeight, fullWidth, statusBarHeight} from '@style/index';
+import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
 import {isEmptyString} from '@utils/common/string_utils';
 import {formatMilliSeconds} from '@utils/common/time_utils';
 import Animated, {FadeInUp, FadeOutDown} from 'react-native-reanimated';
@@ -35,7 +35,6 @@ const styles = StyleSheet.create({
   backImage: {
     backgroundColor: Colors.black,
     width: '100%',
-    height: fullHeight + statusBarHeight,
     position: 'absolute',
     bottom: 0,
     left: 0,
@@ -44,20 +43,16 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   HbigImage: {
-    width: (fullWidth / 2) * 0.6,
-    height: (fullWidth / 2) * 0.6,
     borderRadius: 20,
     borderWidth: 1,
   },
   bigImage: {
-    width: fullWidth * 0.86,
-    height: fullWidth * 0.86,
     borderRadius: 20,
     borderWidth: 1,
   },
   trackStyle: {
     height: 3,
-    maxWidth: fullWidth * 0.9,
+    maxWidth: '100%',
   },
   thumbStyle: {
     width: 12,
@@ -84,6 +79,9 @@ const LyricModal = React.memo(props => {
 
   useKeepAwake();
   const {t} = useTranslation();
+  const {fullWidth, fullHeight, isHorizontal, statusBarHeight} =
+    useScreenDimensionsContext();
+
   const {envConfig} = useConfigStore();
   const {
     playingMusic,
@@ -144,13 +142,6 @@ const LyricModal = React.memo(props => {
     );
   }, [nowLyric]);
 
-  // 屏幕变化监听
-  const {width, height} = useWindowDimensions();
-  const [isHorizontal, setIsHorizontal] = useState(width > height);
-  useEffect(() => {
-    setIsHorizontal(width > height);
-  }, [width, height]);
-
   // 颜色计算 - 只在相关依赖变化时执行
   useEffect(() => {
     if (musicExtra?.music_cover) {
@@ -189,7 +180,7 @@ const LyricModal = React.memo(props => {
         backgroundColor={Colors.black4}>
         <BaseImageBackground
           blurRadius={50}
-          style={styles.backImage}
+          style={[styles.backImage, {height: fullHeight + statusBarHeight}]}
           source={bgImgSource}
           resizeMode="cover">
           <TouchableOpacity paddingT-48 paddingL-22 onPress={onClose}>
@@ -202,7 +193,14 @@ const LyricModal = React.memo(props => {
                 <View flexS center marginT-8>
                   <Image
                     source={musicCoverSource}
-                    style={[styles.HbigImage, {borderColor: Colors.lyricColor}]}
+                    style={[
+                      styles.HbigImage,
+                      {
+                        borderColor: Colors.lyricColor,
+                        width: (fullWidth / 2) * 0.6,
+                        height: (fullWidth / 2) * 0.6,
+                      },
+                    ]}
                   />
                 </View>
                 <View flexS centerH>
@@ -337,7 +335,14 @@ const LyricModal = React.memo(props => {
                 <View flexS center marginT-40>
                   <Image
                     source={musicCoverSource}
-                    style={[styles.bigImage, {borderColor: Colors.lyricColor}]}
+                    style={[
+                      styles.bigImage,
+                      {
+                        borderColor: Colors.lyricColor,
+                        width: fullWidth * 0.86,
+                        height: fullWidth * 0.86,
+                      },
+                    ]}
                   />
                 </View>
                 <View padding-26>

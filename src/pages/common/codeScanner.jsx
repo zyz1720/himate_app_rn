@@ -7,18 +7,17 @@ import {
   useCodeScanner,
 } from 'react-native-vision-camera';
 import {usePermissionStore} from '@store/permissionStore';
-import {fullHeight} from '@style/index';
 import {useTranslation} from 'react-i18next';
 import {useToast} from '@components/common/useToast';
 import {validate} from 'uuid';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
 const styles = StyleSheet.create({
-  Camera: {width: '100%', height: fullHeight * 0.8, zIndex: -1},
+  Camera: {width: '100%', height: '80%', zIndex: -1},
   tipText: {
     position: 'absolute',
     width: '100%',
-    bottom: fullHeight * 0.2,
+    bottom: '30%',
   },
   BackBut: {
     position: 'absolute',

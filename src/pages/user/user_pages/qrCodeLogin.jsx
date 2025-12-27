@@ -1,4 +1,5 @@
 import React from 'react';
+import {ScrollView} from 'react-native';
 import {View, Text, Card, Colors, Button, Avatar} from 'react-native-ui-lib';
 import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
@@ -34,36 +35,38 @@ const QrCodeLogin = ({navigation, route}) => {
   };
 
   return (
-    <View flexS top padding-16>
-      <Card flexS centerV enableShadow={false} paddingV-32 center>
-        <Avatar
-          source={{
-            uri: envConfig.STATIC_URL + userInfo?.user_avatar,
-          }}
-          imageProps={{errorSource: require('@assets/images/empty.jpg')}}
-          backgroundColor={Colors.transparent}
-          size={80}
-        />
-        <Text text60 marginT-12>
-          {userInfo?.user_name}
-        </Text>
-        {userInfo?.self_account ? (
-          <Text text80 grey30>
-            {t('user.account')}: {userInfo.self_account}
+    <ScrollView>
+      <View flexS top padding-16>
+        <Card flexS centerV enableShadow={false} paddingV-32 center>
+          <Avatar
+            source={{
+              uri: envConfig.STATIC_URL + userInfo?.user_avatar,
+            }}
+            imageProps={{errorSource: require('@assets/images/empty.jpg')}}
+            backgroundColor={Colors.transparent}
+            size={80}
+          />
+          <Text text60 marginT-12>
+            {userInfo?.user_name}
           </Text>
-        ) : null}
-        <Text grey30 marginT-16>
-          {t('user.qr_code_login_tips')}
-        </Text>
-      </Card>
+          {userInfo?.self_account ? (
+            <Text text80 grey30>
+              {t('user.account')}: {userInfo.self_account}
+            </Text>
+          ) : null}
+          <Text grey30 marginT-16>
+            {t('user.qr_code_login_tips')}
+          </Text>
+        </Card>
 
-      <Button
-        marginT-16
-        backgroundColor={Colors.primary}
-        label={t('user.qr_code_login')}
-        onPress={() => loginFunc()}
-      />
-    </View>
+        <Button
+          marginT-16
+          backgroundColor={Colors.primary}
+          label={t('user.qr_code_login')}
+          onPress={() => loginFunc()}
+        />
+      </View>
+    </ScrollView>
   );
 };
 

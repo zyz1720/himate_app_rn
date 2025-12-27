@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import {Colors, TouchableOpacity} from 'react-native-ui-lib';
-import {fullWidth} from '@style/index';
+import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
 import {useSettingStore} from '@store/settingStore';
 import {displayName} from '@root/app.json';
 import {useTranslation} from 'react-i18next';
@@ -19,6 +19,7 @@ const Drawer = createDrawerNavigator();
 const DrawerScreen = () => {
   const {themeColor, isFullScreen, isMusicApp} = useSettingStore();
   const {t} = useTranslation();
+  const {fullWidth} = useScreenDimensionsContext();
 
   return (
     <Drawer.Navigator

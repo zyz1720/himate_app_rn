@@ -213,11 +213,11 @@ const DataManager = ({navigation}) => {
           <FontAwesome name="file-video-o" color={Colors.white} size={32} />
         ) : type === 'audio' ? (
           <FontAwesome name="file-audio-o" color={Colors.white} size={32} />
-        ) : type === 'other' ? (
+        ) : (
           <Text white text70BO>
             {getFileExt(name).toUpperCase()}
           </Text>
-        ) : null}
+        )}
       </View>
     );
   };

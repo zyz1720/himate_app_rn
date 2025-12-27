@@ -2,7 +2,7 @@ import React from 'react';
 import {StyleSheet} from 'react-native';
 import {View, Text, TouchableOpacity} from 'react-native-ui-lib';
 import {useTranslation} from 'react-i18next';
-import {colorList} from '@style/index';
+import {PICKER_COLORS} from '@const/custom_colors';
 
 const styles = StyleSheet.create({
   smallBox: {
@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
 const BaseColorPicker = ({onConfirm, selectedColor}) => {
   const {t} = useTranslation();
 
-  return colorList.map(item => (
+  return PICKER_COLORS.map(item => (
     <TouchableOpacity
       key={item.id}
       onPress={() =>

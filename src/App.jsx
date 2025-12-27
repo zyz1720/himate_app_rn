@@ -12,19 +12,22 @@ import {
 import i18n from './i18n/index';
 import ToastProvider from '@components/common/useToast';
 import MusicCtrlProvider from '@components/music/MusicController';
+import ScreenDimensionsProvider from '@components/contexts/ScreenDimensionsContext';
 
 const App = () => {
   return (
-    <I18nextProvider i18n={i18n}>
-      <ToastProvider>
-        <RealmProvider
-          schema={[SessionInfo, ChatMsg, MusicInfo, LocalMusic, MateInfo]}>
-          <MusicCtrlProvider>
-            <RootView />
-          </MusicCtrlProvider>
-        </RealmProvider>
-      </ToastProvider>
-    </I18nextProvider>
+    <ScreenDimensionsProvider>
+      <I18nextProvider i18n={i18n}>
+        <ToastProvider>
+          <RealmProvider
+            schema={[SessionInfo, ChatMsg, MusicInfo, LocalMusic, MateInfo]}>
+            <MusicCtrlProvider>
+              <RootView />
+            </MusicCtrlProvider>
+          </RealmProvider>
+        </ToastProvider>
+      </I18nextProvider>
+    </ScreenDimensionsProvider>
   );
 };
 

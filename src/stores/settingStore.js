@@ -1,7 +1,7 @@
 import {create} from 'zustand';
 import {persist, createJSONStorage} from 'zustand/middleware';
 import {Colors} from 'react-native-ui-lib';
-import {themeColors} from '@style/index';
+import {THEME_COLORS} from '@const/custom_colors';
 import {getLocales} from 'react-native-localize';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -9,7 +9,7 @@ const locales = getLocales();
 const systemLanguage = locales[0].languageCode;
 
 const defaultState = {
-  themeColor: themeColors.primary, // 主题色
+  themeColor: THEME_COLORS.primary, // 主题色
   language: 'zh', // 语言
   isFollowSystemLanguage: true, // 是否跟随系统语言
   toastType: 'system', // 通知类型
@@ -35,10 +35,10 @@ export const useSettingStore = create(
       ...defaultState,
       setThemeColor: color => {
         Colors.loadColors({
-          ...themeColors,
-          primary: color || themeColors.primary,
+          ...THEME_COLORS,
+          primary: color || THEME_COLORS.primary,
         });
-        set({themeColor: color || themeColors.primary});
+        set({themeColor: color || THEME_COLORS.primary});
       },
       setToastType: type => {
         set({toastType: type || 'system'});
@@ -74,7 +74,7 @@ export const useSettingStore = create(
         }
       },
       initThemeColors: () => {
-        Colors.loadColors({...themeColors, primary: get().themeColor});
+        Colors.loadColors({...THEME_COLORS, primary: get().themeColor});
       },
       initLanguage: async () => {
         if (get().isFollowSystemLanguage) {

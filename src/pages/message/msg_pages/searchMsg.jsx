@@ -9,7 +9,7 @@ import {
   TextField,
 } from 'react-native-ui-lib';
 import {showMessageText} from '@utils/system/chat_utils';
-import {fullHeight, fullWidth} from '@style/index';
+import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
 import {useConfigStore} from '@store/configStore';
 import {
   searchLocalMessagesById,
@@ -24,6 +24,7 @@ const SearchMsg = ({navigation, route}) => {
   const {session_id} = route.params || {};
   const {envConfig} = useConfigStore();
   const {t} = useTranslation();
+  const {fullHeight, fullWidth} = useScreenDimensionsContext();
 
   // 群聊列表
   const [localMessages, setLocalMessages] = useState([]);

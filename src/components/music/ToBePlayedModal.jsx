@@ -1,7 +1,7 @@
 import React, {useMemo, useCallback} from 'react';
 import {StyleSheet, Modal, FlatList} from 'react-native';
 import {View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
-import {fullHeight, statusBarHeight} from '@style/index';
+import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
 import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
 import {useMusicStore} from '@store/musicStore';
@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
   },
   listBackImage: {
     width: '100%',
-    height: fullHeight * 0.8,
+    height: '80%',
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     position: 'absolute',
@@ -38,6 +38,8 @@ const styles = StyleSheet.create({
 const ToBePlayedModal = props => {
   const {visible = false, onClose = () => {}} = props;
   const {t} = useTranslation();
+  const {fullHeight, statusBarHeight} = useScreenDimensionsContext();
+
   const {playingMusic, playList, setPlayingMusic, setPlayList, removePlayList} =
     useMusicStore();
   const {envConfig} = useConfigStore();

@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef, useMemo, useCallback} from 'react';
 import {FlatList, StyleSheet} from 'react-native';
 import {View, Text, Colors, TouchableOpacity, Image} from 'react-native-ui-lib';
-import {fullHeight, fullWidth} from '@style/index';
+import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
 import {useToast} from '@components/common/useToast';
 import {useMusicStore} from '@store/musicStore';
 import {useConfigStore} from '@store/configStore';
@@ -68,6 +68,8 @@ const styles = StyleSheet.create({
 const LrcView = React.memo(props => {
   const {isHorizontal = false} = props;
   const {t} = useTranslation();
+  const {fullWidth, fullHeight} = useScreenDimensionsContext();
+
   const {envConfig} = useConfigStore();
   const {
     lyrics,

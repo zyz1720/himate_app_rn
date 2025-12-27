@@ -1,7 +1,7 @@
 import React, {useEffect, useCallback, useState} from 'react';
 import {StyleSheet} from 'react-native';
 import {View, Text, Colors} from 'react-native-ui-lib';
-import {fullWidth} from '@style/index';
+import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -35,6 +35,8 @@ const LrcItem = React.memo(
       onItemLayout = () => {},
       isHorizontal = false,
     } = props;
+
+    const {fullWidth} = useScreenDimensionsContext();
 
     // 共享动画值
     const scale = useSharedValue(1);
