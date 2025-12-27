@@ -70,35 +70,39 @@ const FavoriteModal = React.memo(props => {
             <AntDesign name="close" color={Colors.white} size={24} />
           </TouchableOpacity>
           <ScrollView>
-            <View flexS center marginT-20>
-              <Image
-                source={{uri: envConfig.STATIC_URL + backgroundImg}}
-                errorSource={require('@assets/images/favorites_cover.jpg')}
-                style={styles.image}
-              />
-            </View>
-            <View row center marginT-20>
-              <Avatar
-                size={26}
-                source={{
-                  uri: envConfig.STATIC_URL + userAvatar,
-                }}
-                imageProps={{errorSource: require('@assets/images/empty.jpg')}}
-                backgroundColor={Colors.transparent}
-              />
-              <Text text70 marginL-6 white>
-                {userName}
-              </Text>
-            </View>
-            <View center marginT-20 paddingH-20>
-              <Text text60 marginL-6 white>
-                {title}
-              </Text>
-            </View>
-            <View marginT-20 paddingH-20>
-              <Text text80 marginL-6 white>
-                {remarks}
-              </Text>
+            <View marginB-46>
+              <View flexS center marginT-20>
+                <Image
+                  source={{uri: envConfig.STATIC_URL + backgroundImg}}
+                  errorSource={require('@assets/images/favorites_cover.jpg')}
+                  style={styles.image}
+                />
+              </View>
+              <View row center marginT-20>
+                <Avatar
+                  size={26}
+                  source={{
+                    uri: envConfig.STATIC_URL + userAvatar,
+                  }}
+                  imageProps={{
+                    errorSource: require('@assets/images/empty.jpg'),
+                  }}
+                  backgroundColor={Colors.transparent}
+                />
+                <Text text70 marginL-6 white>
+                  {userName}
+                </Text>
+              </View>
+              <View center marginT-20 paddingH-20>
+                <Text text60 marginL-6 white>
+                  {title}
+                </Text>
+              </View>
+              <View marginT-20 paddingH-20>
+                <Text text80 marginL-6 white>
+                  {remarks}
+                </Text>
+              </View>
             </View>
           </ScrollView>
         </BaseImageBackground>

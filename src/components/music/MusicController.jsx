@@ -68,7 +68,6 @@ const styles = StyleSheet.create({
   CtrlContainer: {
     position: 'absolute',
     backgroundColor: 'transparent',
-    width: '100%',
     bottom: 16,
     justifyContent: 'center',
     alignItems: 'center',
@@ -566,7 +565,7 @@ const MusicCtrlProvider = React.memo(props => {
   return (
     <MusicCtrlContext.Provider value={{}}>
       {children}
-      <View style={styles.CtrlContainer}>
+      <View style={[styles.CtrlContainer, {width: fullWidth}]}>
         <Animated.View
           style={[
             expandAnimatedStyle,

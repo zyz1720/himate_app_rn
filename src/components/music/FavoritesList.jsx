@@ -105,13 +105,11 @@ const FavoritesList = props => {
           </View>
         }
         ListFooterComponent={
-          list.length > 8 ? (
-            <View marginB-240 padding-12 center>
-              <Text text90L grey40>
-                {t('common.footer')}
-              </Text>
-            </View>
-          ) : null
+          <View marginB-240 padding-12 center>
+            <Text text90L grey40>
+              {t('common.footer')}
+            </Text>
+          </View>
         }
       />
     </View>

@@ -16,7 +16,6 @@ const styles = StyleSheet.create({
   },
   listBackImage: {
     width: '100%',
-    height: '80%',
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     position: 'absolute',
@@ -115,7 +114,7 @@ const ToBePlayedModal = props => {
         backgroundColor={Colors.black4}>
         <BaseImageBackground
           blurRadius={40}
-          style={styles.listBackImage}
+          style={[styles.listBackImage, {height: fullHeight * 0.8}]}
           source={{uri: envConfig.THUMBNAIL_URL + userInfo?.user_bg_img}}
           resizeMode="cover">
           <View padding-12>
