@@ -1,3 +1,5 @@
+<a href="./README.EN.md" >English</a> | <a href="./README.md" >简体中文</a>
+
 # Himate
 ![Himate Logo](src/assets/images/logo.png)
 
