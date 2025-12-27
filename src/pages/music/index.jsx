@@ -16,7 +16,13 @@ import {
   Dialog,
   Slider,
 } from 'react-native-ui-lib';
-import {FlatList, StyleSheet, Vibration, Platform} from 'react-native';
+import {
+  FlatList,
+  StyleSheet,
+  Vibration,
+  Platform,
+  ScrollView,
+} from 'react-native';
 import {useToast} from '@components/common/useToast';
 import {fullHeight, fullWidth} from '@style/index';
 import {
@@ -603,7 +609,9 @@ const Music = ({navigation}) => {
         }}
         visible={delVisible}
         setVisible={setDelVisible}
-        description={t('music.delete_batch_confirm', {num: selectedIds.length})}
+        description={t('music.delete_batch_confirm', {
+          num: selectedIds.length,
+        })}
       />
       <Dialog
         visible={showAlarmDialog}

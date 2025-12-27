@@ -1,4 +1,4 @@
-import React, {useRef} from 'react';
+import React, {useRef, useEffect} from 'react';
 import {StyleSheet, Vibration} from 'react-native';
 import {View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
 import {
@@ -6,6 +6,7 @@ import {
   useCameraDevice,
   useCodeScanner,
 } from 'react-native-vision-camera';
+import {usePermissionStore} from '@store/permissionStore';
 import {fullHeight} from '@style/index';
 import {useTranslation} from 'react-i18next';
 import {useToast} from '@components/common/useToast';
@@ -29,6 +30,7 @@ const styles = StyleSheet.create({
 const CodeScanner = ({navigation}) => {
   const {showToast} = useToast();
   const {t} = useTranslation();
+  const {accessCamera, setAccessCamera} = usePermissionStore();
 
   const codeRef = useRef(null);
 
@@ -56,6 +58,13 @@ const CodeScanner = ({navigation}) => {
       }
     },
   });
+
+  useEffect(() => {
+    if (!accessCamera) {
+      showToast(t('permissions.camera_please'), 'warning');
+      setAccessCamera();
+    }
+  }, [accessCamera]);
 
   return (
     <View bg-white height={'100%'}>

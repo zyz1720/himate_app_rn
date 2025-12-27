@@ -7,6 +7,8 @@ import {useSettingStore} from '@store/settingStore.js';
 import {API_PREFIX} from '@env';
 import i18n from 'i18next';
 
+const KNOW_ERROR_CODES = ['401', '403', '404', '429', '500'];
+
 // 创建axios实例
 const instance = axios.create();
 
@@ -69,7 +71,11 @@ instance.interceptors.response.use(
       message = i18n.t('httpError.timeout');
     } else if (message.includes('Request failed with status code')) {
       const errCode = message.substr(message.length - 3);
-      message = i18n.t('httpError.status', {code: errCode});
+      if (KNOW_ERROR_CODES.includes(errCode)) {
+        message = i18n.t(`httpError.${errCode}`);
+      } else {
+        message = i18n.t('httpError.status', {code: errCode});
+      }
     }
 
     if (status === 401) {

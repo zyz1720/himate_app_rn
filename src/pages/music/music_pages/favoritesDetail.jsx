@@ -32,7 +32,7 @@ const FavoritesDetail = ({navigation, route}) => {
     return getMusicFromFavorites(favoritesId, params);
   };
 
-  const {list, onEndReached, refreshData} = useInfiniteScroll(getMusicList);
+  const {list,total, onEndReached, refreshData} = useInfiniteScroll(getMusicList);
 
   /* 获取收藏夹详情 */
   const [loading, setLoading] = useState(false);
@@ -144,6 +144,7 @@ const FavoritesDetail = ({navigation, route}) => {
       <View paddingH-12 marginT-12>
         <MusicList
           list={list}
+          total={total}
           favoriteId={favoritesId}
           refreshList={refreshData}
           onEndReached={onEndReached}

@@ -64,7 +64,7 @@ const FavoriteModal = React.memo(props => {
         <BaseImageBackground
           blurRadius={50}
           style={styles.listBackImage}
-          source={{uri: envConfig.STATIC_URL + backgroundImg}}
+          source={{uri: envConfig.THUMBNAIL_URL + backgroundImg}}
           resizeMode="cover">
           <TouchableOpacity paddingT-48 paddingL-22 onPress={onClose}>
             <AntDesign name="close" color={Colors.white} size={24} />

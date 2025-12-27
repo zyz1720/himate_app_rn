@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import {ScrollView} from 'react-native';
 import {View, Button, TextField, Card, Colors, Text} from 'react-native-ui-lib';
 import {useToast} from '@components/common/useToast';
 import {encryptAES, decryptAES} from '@utils/system/crypto_utils';
@@ -91,8 +92,8 @@ const ChatMsg = ({route}) => {
   const [clearMsgVisible, setClearMsgVisible] = useState(false);
 
   return (
-    <>
-      <View flexG paddingH-16 paddingT-18>
+    <ScrollView>
+      <View flexG padding-16>
         <Text text90L marginB-16 grey30 center>
           <FontAwesome
             name="exclamation-circle"
@@ -206,7 +207,7 @@ const ChatMsg = ({route}) => {
         setVisible={setClearMsgVisible}
         description={t('user.clear_chat_confirm')}
       />
-    </>
+    </ScrollView>
   );
 };
 export default ChatMsg;

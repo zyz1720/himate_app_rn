@@ -56,6 +56,11 @@ export const useFloatingLyric = () => {
     FloatingLyric.setTranslationFontSize(size);
   };
 
+  // 停止悬浮歌词服务
+  const stopLyricService = () => {
+    FloatingLyric.stopService();
+  };
+
   return {
     showWidget,
     hideWidget,
@@ -65,5 +70,6 @@ export const useFloatingLyric = () => {
     setLyricFontSize,
     setTranslationColor,
     setTranslationFontSize,
+    stopLyricService,
   };
 };

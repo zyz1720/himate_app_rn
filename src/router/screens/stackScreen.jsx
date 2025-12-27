@@ -25,6 +25,7 @@ import DataManager from '@pages/user/user_pages/dataManager';
 import BasePdfView from '@pages/common/basePdfView';
 import CodeScanner from '@pages/common/codeScanner';
 import QrCodeLogin from '@pages/user/user_pages/qrCodeLogin';
+import Permissions from '@pages/common/permissions';
 
 const Stack = createStackNavigator();
 
@@ -202,6 +203,7 @@ function StackScreen() {
           />
         </Stack.Group>
 
+        {/* 其他 */}
         <Stack.Screen
           name="PdfView"
           component={BasePdfView}
@@ -214,6 +216,13 @@ function StackScreen() {
           component={CodeScanner}
           options={{
             title: t('screen.CodeScanner'),
+          }}
+        />
+        <Stack.Screen
+          name="Permissions"
+          component={Permissions}
+          options={{
+            title: t('screen.Permissions'),
           }}
         />
       </Stack.Group>

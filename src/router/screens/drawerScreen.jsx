@@ -11,7 +11,6 @@ import MusicScreen from './musicScreen';
 import AddMate from '@pages/mate/mate_pages/addMate';
 import SearchMsg from '@pages/message/msg_pages/searchMsg';
 import BaseWebView from '@pages/common/baseWebView';
-import Permissions from '@pages/common/permissions';
 import CodeScanner from '@pages/common/codeScanner';
 import Setting from '@pages/setting/index';
 

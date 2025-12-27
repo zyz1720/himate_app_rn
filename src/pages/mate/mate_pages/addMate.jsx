@@ -13,7 +13,6 @@ import {
 import {useToast} from '@components/common/useToast';
 import {searchUsers} from '@api/user';
 import {addMate} from '@api/mate';
-import {usePermissionStore} from '@store/permissionStore';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
 import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
@@ -23,7 +22,6 @@ import BaseDialog from '@components/common/BaseDialog';
 const AddMate = ({navigation, route}) => {
   const {account} = route?.params || {};
   const {showToast} = useToast();
-  const {accessCamera, setAccessCamera} = usePermissionStore();
   const {envConfig} = useConfigStore();
   const {t} = useTranslation();
 
@@ -133,11 +131,6 @@ const AddMate = ({navigation, route}) => {
         <View flexS centerV row>
           <TouchableOpacity
             onPress={() => {
-              if (!accessCamera) {
-                showToast(t('permission.camera_please'), 'warning');
-                setAccessCamera();
-                return;
-              }
               navigation.navigate('CodeScanner');
             }}>
             <AntDesign name="scan1" size={24} color={Colors.primary} />

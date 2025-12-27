@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {Platform, StyleSheet} from 'react-native';
+import {Platform, StyleSheet, ScrollView} from 'react-native';
 import {
   View,
   Card,
@@ -111,8 +111,8 @@ const Setting = ({navigation}) => {
   }, [isFocused]);
 
   return (
-    <>
-      <View flexG paddingH-16 paddingT-16>
+    <ScrollView>
+      <View flexG padding-16>
         <Card enableShadow={false}>
           <ListItem
             itemName={t('setting.themeColor')}
@@ -439,7 +439,7 @@ const Setting = ({navigation}) => {
         setVisible={setShowClearCache}
         description={t('setting.clearCache_confirm')}
       />
-    </>
+    </ScrollView>
   );
 };
 

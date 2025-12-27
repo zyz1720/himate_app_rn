@@ -105,8 +105,8 @@ const EditUser = () => {
           birthday,
         });
         setOriginalUserInfo(res.data);
-        setAvatarUri(envConfig.STATIC_URL + user_avatar);
-        setBgImgUri(envConfig.STATIC_URL + user_bg_img);
+        setAvatarUri(envConfig.THUMBNAIL_URL + user_avatar);
+        setBgImgUri(envConfig.THUMBNAIL_URL + user_bg_img);
       }
     } catch (error) {
       console.error(error);

@@ -124,11 +124,14 @@ export const useMusicStore = create(
           const _Lyrics = state.lyrics;
           if (_Lyrics.length === 0) {
             const nowLyrics = _Lyrics[-1] || {};
-            state.nowLyricIndex = -1;
-            state.nowLyric = nowLyrics?.lyric || '';
-            state.nowTrans = nowLyrics?.trans || '';
-            state.nowRoma = nowLyrics?.roma || '';
-            return state;
+            const newState = {
+              ...state,
+              nowLyricIndex: -1,
+              nowLyric: nowLyrics?.lyric || '',
+              nowTrans: nowLyrics?.trans || '',
+              nowRoma: nowLyrics?.roma || '',
+            };
+            return newState;
           }
           for (let i = 0; i < _Lyrics.length; i++) {
             const matchTime = state.isHasYrc
@@ -136,19 +139,25 @@ export const useMusicStore = create(
               : _Lyrics[i].time;
             if (matchTime > position) {
               const nowLyrics = _Lyrics[i - 1] || {};
-              state.nowLyricIndex = i - 1;
-              state.nowLyric = nowLyrics?.lyric || '';
-              state.nowTrans = nowLyrics?.trans || '';
-              state.nowRoma = nowLyrics?.roma || '';
-              return state;
+              const newState = {
+                ...state,
+                nowLyricIndex: i - 1,
+                nowLyric: nowLyrics?.lyric || '',
+                nowTrans: nowLyrics?.trans || '',
+                nowRoma: nowLyrics?.roma || '',
+              };
+              return newState;
             }
           }
           const nowLyrics = _Lyrics[-1] || {};
-          state.nowLyricIndex = _Lyrics.length - 1;
-          state.nowLyric = nowLyrics?.lyric || '';
-          state.nowTrans = nowLyrics?.trans || '';
-          state.nowRoma = nowLyrics?.roma || '';
-          return state;
+          const newState = {
+            ...state,
+            nowLyricIndex: _Lyrics.length - 1,
+            nowLyric: nowLyrics?.lyric || '',
+            nowTrans: nowLyrics?.trans || '',
+            nowRoma: nowLyrics?.roma || '',
+          };
+          return newState;
         }),
       resetPlayingMusic: () => set(defaultPlayingMusicState),
     }),

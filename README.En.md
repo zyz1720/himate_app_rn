@@ -138,6 +138,21 @@ npm run start:dev
 npm run start:prod
 ```
 
+## Building the Application
+
+### Android
+```bash
+# Generate Release APK
+cd android
+./gradlew assembleRelease
+
+# Generate Debug APK
+./gradlew assembleDebug
+```
+
+### iOS
+Use Xcode to open the project, configure the signing certificates, and click "Product" -> "Archive" in the Xcode menu. Xcode will automatically build and archive the application.
+
 ## Project Structure
 
 ```

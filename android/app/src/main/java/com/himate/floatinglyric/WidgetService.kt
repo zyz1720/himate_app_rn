@@ -48,7 +48,7 @@ class WidgetService : Service() {
                 @Suppress("DEPRECATION")
                 WindowManager.LayoutParams.TYPE_PHONE
             },
-            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         )
 
@@ -141,6 +141,9 @@ class WidgetService : Service() {
                     val fontSize = it.getFloatExtra(EXTRA_FONT_SIZE, 14f)
                     setTranslationFontSize(fontSize)
                 }
+                ACTION_STOP_SERVICE -> {
+                    stopSelf()
+                }
             }
         }
         return START_STICKY
@@ -225,6 +228,7 @@ class WidgetService : Service() {
         const val ACTION_SET_LYRIC_FONT_SIZE = "com.himate.action.SET_LYRIC_FONT_SIZE"
         const val ACTION_SET_TRANSLATION_COLOR = "com.himate.action.SET_TRANSLATION_COLOR"
         const val ACTION_SET_TRANSLATION_FONT_SIZE = "com.himate.action.SET_TRANSLATION_FONT_SIZE"
+        const val ACTION_STOP_SERVICE = "com.himate.action.STOP_SERVICE"
         const val EXTRA_LYRIC = "lyric"
         const val EXTRA_TRANSLATION = "translation"
         const val EXTRA_COLOR = "color"

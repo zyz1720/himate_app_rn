@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, ScrollView} from 'react-native';
 import {
   View,
   Card,
@@ -134,208 +134,212 @@ const MateInfo = ({navigation, route}) => {
   }, [userId]);
 
   return (
-    <View padding-16>
-      <BaseImageBackground
-        key={otherUserInfo?.id}
-        style={styles.userBgImage}
-        source={{uri: envConfig.STATIC_URL + otherUserInfo?.user_bg_img}}
-        resizeMode="cover">
-        <View backgroundColor={Colors.black2}>
-          <View
-            flexS
-            left
-            row
-            centerV
-            enableShadow={false}
-            padding-16
-            marginT-80>
-            <TouchableOpacity
-              onPress={() => {
-                setAvatarVisible(true);
-                setAvatarUri(envConfig.STATIC_URL + otherUserInfo?.user_avatar);
-              }}>
-              <Image
-                source={{
-                  uri: envConfig.STATIC_URL + otherUserInfo?.user_avatar,
-                }}
-                style={styles.image}
-                errorSource={require('@assets/images/empty.jpg')}
-              />
-            </TouchableOpacity>
-            <View marginL-16 flexG>
-              {isMate ? (
-                <Text text60 white marginB-4>
-                  {mateRemarks}
-                </Text>
-              ) : null}
-              <Text white text80 numberOfLines={1}>
-                {t('user.user_name')}: {otherUserInfo?.user_name || '-'}
-              </Text>
-              <View width={166}>
-                <Text white text80 numberOfLines={1}>
-                  {t('user.account')}: {otherUserInfo?.self_account || '-'}
-                </Text>
-              </View>
-              <View flexS row marginT-4>
-                <View
-                  flexS
-                  row
-                  centerV
-                  padding-4
-                  br20
-                  backgroundColor={Colors.white4}>
-                  {otherUserInfo?.sex === 'woman' ? (
-                    <FontAwesome
-                      name="venus"
-                      color={Colors.magenta}
-                      size={12}
-                    />
-                  ) : otherUserInfo?.sex === 'man' ? (
-                    <FontAwesome
-                      name="mars"
-                      color={Colors.geekBlue}
-                      size={12}
-                    />
-                  ) : null}
-                  <Text marginL-4 white text90>
-                    {otherUserInfo?.age || '-'}
-                    {t('user.age_num')}
+    <ScrollView>
+      <View padding-16>
+        <BaseImageBackground
+          key={otherUserInfo?.id}
+          style={styles.userBgImage}
+          source={{uri: envConfig.STATIC_URL + otherUserInfo?.user_bg_img}}
+          resizeMode="cover">
+          <View backgroundColor={Colors.black2}>
+            <View
+              flexS
+              left
+              row
+              centerV
+              enableShadow={false}
+              padding-16
+              marginT-80>
+              <TouchableOpacity
+                onPress={() => {
+                  setAvatarVisible(true);
+                  setAvatarUri(
+                    envConfig.STATIC_URL + otherUserInfo?.user_avatar,
+                  );
+                }}>
+                <Image
+                  source={{
+                    uri: envConfig.STATIC_URL + otherUserInfo?.user_avatar,
+                  }}
+                  style={styles.image}
+                  errorSource={require('@assets/images/empty.jpg')}
+                />
+              </TouchableOpacity>
+              <View marginL-16 flexG>
+                {isMate ? (
+                  <Text text60 white marginB-4>
+                    {mateRemarks}
                   </Text>
+                ) : null}
+                <Text white text80 numberOfLines={1}>
+                  {t('user.user_name')}: {otherUserInfo?.user_name || '-'}
+                </Text>
+                <View width={166}>
+                  <Text white text80 numberOfLines={1}>
+                    {t('user.account')}: {otherUserInfo?.self_account || '-'}
+                  </Text>
+                </View>
+                <View flexS row marginT-4>
+                  <View
+                    flexS
+                    row
+                    centerV
+                    padding-4
+                    br20
+                    backgroundColor={Colors.white4}>
+                    {otherUserInfo?.sex === 'woman' ? (
+                      <FontAwesome
+                        name="venus"
+                        color={Colors.magenta}
+                        size={12}
+                      />
+                    ) : otherUserInfo?.sex === 'man' ? (
+                      <FontAwesome
+                        name="mars"
+                        color={Colors.geekBlue}
+                        size={12}
+                      />
+                    ) : null}
+                    <Text marginL-4 white text90>
+                      {otherUserInfo?.age || '-'}
+                      {t('user.age_num')}
+                    </Text>
+                  </View>
                 </View>
               </View>
             </View>
           </View>
-        </View>
-      </BaseImageBackground>
-      {isMate ? (
-        <>
+        </BaseImageBackground>
+        {isMate ? (
+          <>
+            <Card enableShadow={false} marginT-16>
+              <ListItem
+                itemName={t('mate.edit_remarks')}
+                iconName={'edit'}
+                iconColor={Colors.primary}
+                onConfirm={() => {
+                  setRemarkVisible(true);
+                }}
+              />
+            </Card>
+            <Button
+              bg-white
+              marginT-16
+              text70
+              color={Colors.primary}
+              borderRadius={12}
+              label={t('mate.send_message')}
+              onPress={() => {
+                navigation.navigate('Chat', {
+                  session_id: mateInfo.mate_id,
+                  userId: userId,
+                  session_name: mateRemarks,
+                  chat_type: ChatTypeEnum.private,
+                });
+              }}
+            />
+            <Button
+              bg-white
+              marginT-16
+              text70
+              color={Colors.error}
+              borderRadius={12}
+              label={t('mate.delete_mate')}
+              onPress={() => {
+                setDeleteVisible(true);
+              }}
+            />
+          </>
+        ) : (
           <Card enableShadow={false} marginT-16>
             <ListItem
-              itemName={t('mate.edit_remarks')}
-              iconName={'edit'}
+              itemName={t('mate.add_mate')}
+              iconName={'user-plus'}
               iconColor={Colors.primary}
               onConfirm={() => {
-                setRemarkVisible(true);
+                setAddVisible(true);
               }}
             />
           </Card>
-          <Button
-            bg-white
-            marginT-16
-            text70
-            color={Colors.primary}
-            borderRadius={12}
-            label={t('mate.send_message')}
-            onPress={() => {
-              navigation.navigate('Chat', {
-                session_id: mateInfo.mate_id,
-                userId: userId,
-                session_name: mateRemarks,
-                chat_type: ChatTypeEnum.private,
-              });
-            }}
-          />
-          <Button
-            bg-white
-            marginT-16
-            text70
-            color={Colors.error}
-            borderRadius={12}
-            label={t('mate.delete_mate')}
-            onPress={() => {
-              setDeleteVisible(true);
-            }}
-          />
-        </>
-      ) : (
-        <Card enableShadow={false} marginT-16>
-          <ListItem
-            itemName={t('mate.add_mate')}
-            iconName={'user-plus'}
-            iconColor={Colors.primary}
-            onConfirm={() => {
-              setAddVisible(true);
-            }}
-          />
-        </Card>
-      )}
+        )}
 
-      <BaseDialog
-        onConfirm={addFriend}
-        onCancel={reset}
-        visible={addVisible}
-        setVisible={setAddVisible}
-        description={t('mate.add_mate')}
-        renderBody={
-          <View paddingR-16>
+        <BaseDialog
+          onConfirm={addFriend}
+          onCancel={reset}
+          visible={addVisible}
+          setVisible={setAddVisible}
+          description={t('mate.add_mate')}
+          renderBody={
+            <View paddingR-16>
+              <TextField
+                marginT-8
+                placeholder={t('mate.remark_placeholder')}
+                floatingPlaceholder
+                showClearButton
+                text70L
+                onChangeText={value => {
+                  setAddRemark(value);
+                }}
+                maxLength={10}
+                showCharCounter={true}
+              />
+              <TextField
+                paddingR-8
+                marginT-8
+                placeholder={t('mate.message_placeholder')}
+                text70L
+                floatingPlaceholder
+                showClearButton
+                onChangeText={value => {
+                  setValMessage(value);
+                }}
+                maxLength={50}
+                showCharCounter={true}
+                multiline={true}
+              />
+            </View>
+          }
+        />
+
+        <BaseDialog
+          onConfirm={editFriendRemark}
+          visible={remarkVisible}
+          setVisible={setRemarkVisible}
+          description={t('mate.edit_remarks')}
+          renderBody={
             <TextField
               marginT-8
               placeholder={t('mate.remark_placeholder')}
+              text70L
               floatingPlaceholder
               showClearButton
-              text70L
               onChangeText={value => {
-                setAddRemark(value);
+                setNewRemark(value);
               }}
               maxLength={10}
               showCharCounter={true}
             />
-            <TextField
-              paddingR-8
-              marginT-8
-              placeholder={t('mate.message_placeholder')}
-              text70L
-              floatingPlaceholder
-              showClearButton
-              onChangeText={value => {
-                setValMessage(value);
-              }}
-              maxLength={50}
-              showCharCounter={true}
-              multiline={true}
-            />
-          </View>
-        }
-      />
+          }
+        />
 
-      <BaseDialog
-        onConfirm={editFriendRemark}
-        visible={remarkVisible}
-        setVisible={setRemarkVisible}
-        description={t('mate.edit_remarks')}
-        renderBody={
-          <TextField
-            marginT-8
-            placeholder={t('mate.remark_placeholder')}
-            text70L
-            floatingPlaceholder
-            showClearButton
-            onChangeText={value => {
-              setNewRemark(value);
-            }}
-            maxLength={10}
-            showCharCounter={true}
-          />
-        }
-      />
+        <BaseDialog
+          title={true}
+          onConfirm={deleteFriend}
+          visible={deleteVisible}
+          setVisible={setDeleteVisible}
+          description={t('mate.delete_mate_confirm')}
+        />
 
-      <BaseDialog
-        title={true}
-        onConfirm={deleteFriend}
-        visible={deleteVisible}
-        setVisible={setDeleteVisible}
-        description={t('mate.delete_mate_confirm')}
-      />
-
-      {/* 图片预览弹窗 */}
-      <ImgModal
-        uris={[avatarUri]}
-        visible={avatarVisible}
-        onClose={() => {
-          setAvatarVisible(false);
-        }}
-      />
-    </View>
+        {/* 图片预览弹窗 */}
+        <ImgModal
+          uris={[avatarUri]}
+          visible={avatarVisible}
+          onClose={() => {
+            setAvatarVisible(false);
+          }}
+        />
+      </View>
+    </ScrollView>
   );
 };
 const styles = StyleSheet.create({

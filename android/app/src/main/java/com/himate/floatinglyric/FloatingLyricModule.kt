@@ -133,6 +133,14 @@ class FloatingLyricModule(reactContext: ReactApplicationContext) : ReactContextB
         context.startService(intent)
     }
 
+    @ReactMethod
+    fun stopService() {
+        val context = reactApplicationContext
+        val intent = Intent(context, WidgetService::class.java)
+        intent.action = WidgetService.ACTION_STOP_SERVICE
+        context.startService(intent)
+    }
+
     companion object {
         const val OVERLAY_PERMISSION_REQUEST_CODE = 12345
     }

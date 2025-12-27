@@ -240,7 +240,7 @@ const EditUser = ({route}) => {
             onRefresh={dataInit}
           />
         }>
-        <View flexG paddingH-16 paddingT-16>
+        <View flexG padding-16>
           <View marginB-16 flexG center>
             <Text center>
               <FontAwesome

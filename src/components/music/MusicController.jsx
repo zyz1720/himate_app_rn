@@ -163,6 +163,7 @@ const MusicCtrlProvider = React.memo(props => {
     updateLyric,
     addOnClickListener,
     setLyricFontSize,
+    stopLyricService,
   } = useFloatingLyric();
 
   // 音乐播放器
@@ -323,14 +324,16 @@ const MusicCtrlProvider = React.memo(props => {
 
       await startPlayer(url);
       const index = playList.findIndex(item => item.id === playingMusic.id);
+      setIsMusicPlaying(true);
       setPlayingMusicIndex(index);
       setNowPlayingCtrl(playingMusic);
       recordPlayHistory(playingMusic);
-      setIsMusicLoading(false);
     } catch (error) {
       console.error(error);
       showToast(t('music.unable_to_play'), 'error');
       restMusicStatus();
+    } finally {
+      setIsMusicLoading(false);
     }
   };
 
@@ -554,6 +557,7 @@ const MusicCtrlProvider = React.memo(props => {
   useEffect(() => {
     return () => {
       removePlayBackListener();
+      stopLyricService();
       restMusicStatus();
       setPlayingMusic({});
     };

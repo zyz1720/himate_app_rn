@@ -138,6 +138,21 @@ npm run start:dev
 npm run start:prod
 ```
 
+## 构建应用
+
+### Android
+```bash
+# 生成Release APK
+cd android
+./gradlew assembleRelease
+
+# 生成Debug APK
+./gradlew assembleDebug
+```
+
+### iOS
+使用Xcode打开项目，配置好签名证书后，点击Xcode菜单中的“Product” -> “Archive”，Xcode会自动构建并归档应用。
+
 ## 项目结构
 
 ```
