@@ -65,6 +65,7 @@ instance.interceptors.response.use(
 
     if (message === 'The network is not connected') {
       message = i18n.t('httpError.unConnected');
+      return Promise.reject(error);
     } else if (message === 'Network Error') {
       message = i18n.t('httpError.network');
     } else if (message.includes('timeout')) {

@@ -287,6 +287,7 @@ const MusicCtrlProvider = React.memo(props => {
   const restMusicStatus = async () => {
     stopPlayerCtrl();
     resetPlayingMusic();
+    setSeekToPosition(0);
     await stopPlayer();
   };
 
