@@ -21,10 +21,7 @@ export const usePermissionStore = create(set => ({
   setAllPermissions: async () => {
     const permissions = await checkPermissions();
     if (permissions) {
-      set(state => ({
-        ...state,
-        ...permissions,
-      }));
+      set({...permissions});
     }
   },
   setAccessNotify: async () => {

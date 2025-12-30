@@ -15,11 +15,10 @@ export const useConfigStore = create(set => ({
     try {
       set({configLoading: true});
       const config = await getAppConfig();
-      set(state => {
-        const {MSG_SECRET} = config;
-        state.envConfig = config;
-        state.msgSecretKey = generateSecretKey(MSG_SECRET);
-        return state;
+      const {MSG_SECRET} = config;
+      set({
+        envConfig: config,
+        msgSecretKey: generateSecretKey(MSG_SECRET),
       });
     } catch (error) {
       console.error(error);
@@ -29,7 +28,6 @@ export const useConfigStore = create(set => ({
   },
   updateEnvConfig: config => {
     set(state => ({
-      ...state,
       envConfig: isEmptyObject(config) ? state.envConfig : config,
     }));
   },

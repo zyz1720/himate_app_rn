@@ -1,4 +1,4 @@
-import React, {useMemo, useCallback} from 'react';
+import React, {useMemo} from 'react';
 import {StyleSheet, Modal, FlatList} from 'react-native';
 import {View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
 import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const ToBePlayedModal = props => {
+const ToBePlayedModal = React.memo(props => {
   const {visible = false, onClose = () => {}} = props;
   const {t} = useTranslation();
   const {fullHeight, statusBarHeight} = useScreenDimensionsContext();
@@ -63,43 +63,40 @@ const ToBePlayedModal = props => {
   }, [playingMusic]);
 
   // 记忆化渲染项
-  const renderItem = useCallback(
-    ({item}) => {
-      const artistsText = renderArtists(item);
-      const isCurrent = playingMusic?.id === item.id;
+  const renderItem = ({item}) => {
+    const artistsText = renderArtists(item);
+    const isCurrent = playingMusic?.id === item.id;
 
-      return (
-        <View row centerV>
-          <View flexG marginB-6>
-            <TouchableOpacity
-              onPress={() => setPlayingMusic(item)}
-              flexS
-              centerV
-              style={styles.playingStyle}
-              backgroundColor={isCurrent ? Colors.black2 : 'transparent'}
-              padding-12>
-              <View row spread centerV>
-                <View width={'86%'}>
-                  <Text text80BO white numberOfLines={1}>
-                    {item.title}
-                  </Text>
-                  <Text text90L white marginT-4 numberOfLines={1}>
-                    {artistsText}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  style={styles.musicBut}
-                  onPress={() => removePlayList([item])}>
-                  <AntDesign name="close" color={Colors.white} size={20} />
-                </TouchableOpacity>
+    return (
+      <View row centerV>
+        <View flexG marginB-6>
+          <TouchableOpacity
+            onPress={() => setPlayingMusic(item)}
+            flexS
+            centerV
+            style={styles.playingStyle}
+            backgroundColor={isCurrent ? Colors.black2 : 'transparent'}
+            padding-12>
+            <View row spread centerV>
+              <View width={'86%'}>
+                <Text text80BO white numberOfLines={1}>
+                  {item.title}
+                </Text>
+                <Text text90L white marginT-4 numberOfLines={1}>
+                  {artistsText}
+                </Text>
               </View>
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity
+                style={styles.musicBut}
+                onPress={() => removePlayList([item])}>
+                <AntDesign name="close" color={Colors.white} size={20} />
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
         </View>
-      );
-    },
-    [playingMusic?.id, setPlayingMusic, removePlayList],
-  );
+      </View>
+    );
+  };
 
   return (
     <Modal
@@ -129,7 +126,7 @@ const ToBePlayedModal = props => {
             {currentMusicInfo}
             <FlatList
               data={playList}
-              keyExtractor={(item, index) => `${item.id}_${index}`}
+              keyExtractor={(_, index) => index.toString()}
               renderItem={renderItem}
               ListEmptyComponent={
                 <View marginT-16 center>
@@ -149,6 +146,6 @@ const ToBePlayedModal = props => {
       </View>
     </Modal>
   );
-};
+});
 
 export default ToBePlayedModal;

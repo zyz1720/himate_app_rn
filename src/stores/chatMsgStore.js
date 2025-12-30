@@ -20,6 +20,7 @@ export const useChatMsgStore = create(
         const {userInfo} = useUserStore.getState();
         set(state => {
           const nowJoinSessions = state.nowJoinSessions;
+          const oldRemindSessionIds = [...state.remindSessionIds];
           data.forEach(sessionWithExtra => {
             const {session} = sessionWithExtra;
             const {reminders = []} = session?.lastMsg || {};
@@ -31,55 +32,59 @@ export const useChatMsgStore = create(
                 sessionId: session.id,
                 client_msg_id: session?.lastMsg?.client_msg_id || null,
               };
-              const index = state.remindSessionIds.findIndex(
+              const index = oldRemindSessionIds.findIndex(
                 item => item.sessionId === session.id,
               );
               if (index !== -1) {
-                state.remindSessionIds[index] = remindInfo;
+                oldRemindSessionIds[index] = remindInfo;
               } else {
-                state.remindSessionIds.push(remindInfo);
+                oldRemindSessionIds.push(remindInfo);
               }
             }
           });
-          return state;
+          return {remindSessionIds: oldRemindSessionIds};
         });
       },
       removeRemindSession: sessionId =>
         set(state => {
-          const index = state.remindSessionIds.findIndex(
+          const oldRemindSessionIds = [...state.remindSessionIds];
+          const index = oldRemindSessionIds.findIndex(
             item => item.sessionId === sessionId,
           );
           if (index !== -1) {
-            state.remindSessionIds.splice(index, 1);
+            oldRemindSessionIds.splice(index, 1);
           }
-          return state;
+          return {remindSessionIds: oldRemindSessionIds};
         }),
       setNotRemindSessionIds: sessionId =>
         set(state => {
-          if (!state.notRemindSessionIds.includes(sessionId)) {
-            state.notRemindSessionIds.push(sessionId);
+          const oldNotRemindSessionIds = [...state.notRemindSessionIds];
+          if (!oldNotRemindSessionIds.includes(sessionId)) {
+            oldNotRemindSessionIds.push(sessionId);
           } else {
-            const index = state.notRemindSessionIds.indexOf(sessionId);
+            const index = oldNotRemindSessionIds.indexOf(sessionId);
             if (index !== -1) {
-              state.notRemindSessionIds.splice(index, 1);
+              oldNotRemindSessionIds.splice(index, 1);
             }
           }
-          return state;
+          return {notRemindSessionIds: oldNotRemindSessionIds};
         }),
       setNowJoinSession: session_id =>
         set(state => {
-          if (!state.nowJoinSessions.includes(session_id)) {
-            state.nowJoinSessions.push(session_id);
+          const oldNowJoinSessions = [...state.nowJoinSessions];
+          if (!oldNowJoinSessions.includes(session_id)) {
+            oldNowJoinSessions.push(session_id);
           }
-          return state;
+          return {nowJoinSessions: oldNowJoinSessions};
         }),
       removeNowJoinSession: session_id =>
         set(state => {
-          const index = state.nowJoinSessions.indexOf(session_id);
+          const oldNowJoinSessions = [...state.nowJoinSessions];
+          const index = oldNowJoinSessions.indexOf(session_id);
           if (index !== -1) {
-            state.nowJoinSessions.splice(index, 1);
+            oldNowJoinSessions.splice(index, 1);
           }
-          return state;
+          return {nowJoinSessions: oldNowJoinSessions};
         }),
     }),
     {

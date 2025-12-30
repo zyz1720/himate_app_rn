@@ -122,3 +122,16 @@ export const deepMerge = (target, source) => {
 
   return merge(target, source);
 };
+
+
+/**
+ * 排除对象中的指定字段
+ * @param {object} obj 对象
+ * @param {string[]} keys 要排除的字段数组
+ * @returns {object} 排除指定字段后的对象
+ */
+export const excludeFields = (obj, keys) => {
+  const newObj = {...obj};
+  keys.forEach(key => delete newObj[key]);
+  return newObj;
+};

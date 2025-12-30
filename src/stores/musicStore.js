@@ -1,8 +1,9 @@
 import {getMusicDetail} from '@api/music';
 import {create} from 'zustand';
 import {persist, createJSONStorage} from 'zustand/middleware';
-import {isEmptyObject} from '@utils/common/object_utils';
+import {isEmptyObject, excludeFields} from '@utils/common/object_utils';
 import {formatLrc} from '@utils/system/lyric_utils';
+import {findLyricIndex} from '@utils/system/lyric_utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const defaultState = {
@@ -38,7 +39,7 @@ const defaultPlayingMusicState = {
 
 export const useMusicStore = create(
   persist(
-    set => ({
+    (set, get) => ({
       ...defaultState,
       ...defaultPlayingMusicState,
       setPlayingMusic: music => {
@@ -50,8 +51,16 @@ export const useMusicStore = create(
         }
         getMusicDetail(music?.id).then(res => {
           if (res.code === 0) {
-            set({playingMusic: res.data || {}});
-            const musicExtra = res.data?.musicExtra;
+            const musicInfo = res.data;
+            const musicExtra = musicInfo?.musicExtra;
+            const musicWithExtra = excludeFields(musicExtra, [
+              'music_lyric',
+              'music_trans',
+              'music_roma',
+              'music_yrc',
+            ]);
+            musicInfo.musicExtra = musicWithExtra;
+            set({playingMusic: musicInfo || {}});
             if (musicExtra) {
               const {lyrics, haveTrans, haveRoma, haveYrc} =
                 formatLrc(musicExtra);
@@ -68,37 +77,40 @@ export const useMusicStore = create(
       setPlayList: (list = []) => set({playList: list}),
       addPlayList: (list = []) =>
         set(state => {
+          const oldPlayList = [...state.playList];
           list.forEach(item => {
-            if (!state.playList.some(e => e?.id === item?.id)) {
-              state.playList.push(item);
+            if (!oldPlayList.find(e => e?.id === item?.id)) {
+              oldPlayList.push(item);
             }
           });
-          return state;
+          return {playList: oldPlayList};
         }),
       unshiftPlayList: (list = []) =>
         set(state => {
+          const oldPlayList = [...state.playList];
           list.forEach(item => {
-            if (!state.playList.some(e => e?.id === item?.id)) {
-              state.playList.unshift(item);
+            if (!oldPlayList.find(e => e?.id === item?.id)) {
+              oldPlayList.unshift(item);
             }
           });
-          return state;
+          return {playList: oldPlayList};
         }),
       removePlayList: (list = []) =>
         set(state => {
+          const oldPlayList = [...state.playList];
           list.forEach(item => {
-            const index = state.playList.findIndex(e => e?.id === item?.id);
+            const index = oldPlayList.findIndex(e => e?.id === item?.id);
             if (index > -1) {
-              state.playList.splice(index, 1);
+              oldPlayList.splice(index, 1);
             }
           });
-          return state;
+          return {playList: oldPlayList};
         }),
       setShowMusicCtrl: router => {
         if (router.includes('Music') || router.includes('Favorites')) {
-          return set({showMusicCtrl: true});
+          set({showMusicCtrl: true});
         } else {
-          return set({showMusicCtrl: false});
+          set({showMusicCtrl: false});
         }
       },
       setCloseTime: time => set({closeTime: time || 0}),
@@ -115,50 +127,27 @@ export const useMusicStore = create(
       setPlayingMusicProgress: progress =>
         set({playingMusicProgress: progress || 0}),
       setMusicPlayMode: mode => set({musicPlayMode: mode || 'order'}),
-      setPlayPosition: position =>
-        set(state => {
-          if (position === state.playPosition) {
-            return state;
-          }
-          state.playPosition = position;
-          const _Lyrics = state.lyrics;
-          if (_Lyrics.length === 0) {
-            const nowLyrics = _Lyrics[-1] || {};
-            const newState = {
-              ...state,
-              nowLyricIndex: -1,
-              nowLyric: nowLyrics?.lyric || '',
-              nowTrans: nowLyrics?.trans || '',
-              nowRoma: nowLyrics?.roma || '',
-            };
-            return newState;
-          }
-          for (let i = 0; i < _Lyrics.length; i++) {
-            const matchTime = state.isHasYrc
-              ? _Lyrics[i].startTime
-              : _Lyrics[i].time;
-            if (matchTime > position) {
-              const nowLyrics = _Lyrics[i - 1] || {};
-              const newState = {
-                ...state,
-                nowLyricIndex: i - 1,
-                nowLyric: nowLyrics?.lyric || '',
-                nowTrans: nowLyrics?.trans || '',
-                nowRoma: nowLyrics?.roma || '',
-              };
-              return newState;
-            }
-          }
-          const nowLyrics = _Lyrics[-1] || {};
-          const newState = {
-            ...state,
-            nowLyricIndex: _Lyrics.length - 1,
-            nowLyric: nowLyrics?.lyric || '',
-            nowTrans: nowLyrics?.trans || '',
-            nowRoma: nowLyrics?.roma || '',
-          };
-          return newState;
-        }),
+      setPlayPosition: position => {
+        const {playPosition, lyrics, isHasYrc, nowLyricIndex} = get();
+        if (position === playPosition) {
+          return;
+        }
+        set({playPosition: position});
+        if (lyrics.length === 0) {
+          return;
+        }
+        const nowIndex = findLyricIndex(lyrics, position, isHasYrc) - 1;
+        if (nowLyricIndex === nowIndex) {
+          return;
+        }
+        const nowLyric = lyrics[nowIndex] || {};
+        set({
+          nowLyricIndex: nowIndex,
+          nowLyric: nowLyric?.lyric || '',
+          nowTrans: nowLyric?.trans || '',
+          nowRoma: nowLyric?.roma || '',
+        });
+      },
       resetPlayingMusic: () => set(defaultPlayingMusicState),
     }),
     {
