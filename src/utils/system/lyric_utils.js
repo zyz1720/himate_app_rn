@@ -143,3 +143,25 @@ export const formatLrc = musicExtra => {
     haveRoma: romaLyricsMap.length > 0,
   };
 };
+
+export const findLyricIndex = (lyrics, position, isHasYrc) => {
+  let left = 0;
+  let right = lyrics.length - 1;
+  let result = -1; // 默认值，如果都 <= position 则返回 -1
+
+  while (left <= right) {
+    const mid = Math.floor((left + right) / 2);
+    const matchTime = isHasYrc ? lyrics[mid].startTime : lyrics[mid].time;
+
+    if (matchTime > position) {
+      // 找到 > position 的，记录位置，继续向左找更早的
+      result = mid;
+      right = mid - 1;
+    } else {
+      // matchTime <= position，向右找
+      left = mid + 1;
+    }
+  }
+
+  return result;
+};

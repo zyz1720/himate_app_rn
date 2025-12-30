@@ -71,7 +71,7 @@ const LrcItem = React.memo(
 
     // 检查文本是否可见
     const isTextVisible = useCallback(text => {
-      return !HIDDEN_TEXTS.some(hidden => text.includes(hidden));
+      return !HIDDEN_TEXTS.find(hidden => text.includes(hidden));
     }, []);
 
     // 动画样式

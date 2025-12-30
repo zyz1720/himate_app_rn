@@ -374,10 +374,6 @@ public class MusicControlModule extends ReactContextBaseJavaModule implements Co
         nb.setContentInfo(album);
         nb.setColor(notificationColor);
         nb.setColorized(false);
-        
-        if (mflag_show_ticker > 0 && title != null) {
-             nb.setTicker(title);
-        }
  
         if(notificationIcon != null){
             notification.setCustomNotificationIcon(notificationIcon);
