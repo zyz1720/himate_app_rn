@@ -7,6 +7,7 @@ import {useMusicStore} from '@store/musicStore';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
 import {renderArtists} from '@utils/system/lyric_utils';
+import {useMusicCtrl} from './MusicController';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LrcItem from './LrcItem';
 
@@ -27,7 +28,7 @@ const styles = StyleSheet.create({
     height: 46,
     borderRadius: 8,
     marginRight: 12,
-    borderWidth: 0.5,
+    borderWidth: 0.2,
   },
   line: {
     fontSize: 16,
@@ -66,8 +67,10 @@ const styles = StyleSheet.create({
 });
 
 const LrcView = props => {
+  const {isHorizontal = false} = props;
+  const {t} = useTranslation();
+  const {fullWidth, fullHeight} = useScreenDimensions();
   const {
-    isHorizontal = false,
     playPosition = 0,
     playingMusic = {},
     lyrics = [],
@@ -75,9 +78,7 @@ const LrcView = props => {
     isHasTrans,
     isHasRoma,
     nowLyricIndex = -1,
-  } = props;
-  const {t} = useTranslation();
-  const {fullWidth, fullHeight} = useScreenDimensions();
+  } = useMusicCtrl();
 
   const {envConfig} = useConfigStore();
   const {switchCount, setSwitchCount} = useMusicStore();
@@ -187,19 +188,31 @@ const LrcView = props => {
   // 每行歌词高度变化
   const [itemHeights, setItemHeights] = useState(() => new Map());
   const shouldSkip = useRef(false);
+  const isTwoLinesRef = useRef(isTwoLines);
+
+  // 缓存isTwoLines值，避免在回调中依赖
+  useEffect(() => {
+    isTwoLinesRef.current = isTwoLines;
+  }, [isTwoLines]);
+
   const onItemLayout = useCallback(
     (index, height) => {
       if (shouldSkip.current || index === lyrics.length - 1) {
         shouldSkip.current = true;
         return;
       }
+
+      const currentIsTwoLines = isTwoLinesRef.current;
+
+      // 避免不必要的状态更新
+      if (
+        (currentIsTwoLines && height === 68) ||
+        (!currentIsTwoLines && height === 48)
+      ) {
+        return;
+      }
+
       setItemHeights(prev => {
-        if (isTwoLines && height === 68) {
-          return prev;
-        }
-        if (!isTwoLines && height === 48) {
-          return prev;
-        }
         if (prev.get(index) === height) {
           return prev;
         }
@@ -208,7 +221,7 @@ const LrcView = props => {
         return newMap;
       });
     },
-    [lyrics.length, shouldSkip.current, isTwoLines],
+    [lyrics.length],
   );
 
   const itemLayouts = useMemo(() => {
@@ -285,7 +298,6 @@ const LrcView = props => {
         roma={item?.roma}
         index={index}
         yrcDuration={yrcDuration}
-        nowIndex={nowLyricIndex}
         progress={progress}
         displayChars={displayChars}
         fullText={fullText}

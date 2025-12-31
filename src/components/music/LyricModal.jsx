@@ -18,6 +18,7 @@ import {getWhitenessScore} from '@utils/system/color_utils';
 import {useKeepAwake} from 'expo-keep-awake';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
+import {useMusicCtrl} from './MusicController';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import BaseImageBackground from '@components/common/BaseImageBackground';
@@ -43,11 +44,11 @@ const styles = StyleSheet.create({
   },
   HbigImage: {
     borderRadius: 20,
-    borderWidth: 1,
+    borderWidth: 0.4,
   },
   bigImage: {
     borderRadius: 20,
-    borderWidth: 1,
+    borderWidth: 0.4,
   },
   trackStyle: {
     height: 3,
@@ -74,19 +75,20 @@ const LyricModal = props => {
     onPlay = () => {},
     onForWard = () => {},
     onPressMenu = () => {},
-    playingMusic,
-    nowLyric,
-    playPosition,
-    musicDuration,
-    musicPlayMode,
-    isMusicPlaying,
-    ...lyricInfo
   } = props;
 
   useKeepAwake();
   const {t} = useTranslation();
   const {fullWidth, fullHeight, isHorizontal, statusBarHeight} =
     useScreenDimensions();
+  const {
+    playingMusic,
+    nowLyric,
+    playPosition,
+    musicDuration,
+    musicPlayMode,
+    isMusicPlaying,
+  } = useMusicCtrl();
 
   const {envConfig} = useConfigStore();
   const musicExtra = playingMusic?.musicExtra;
@@ -314,12 +316,7 @@ const LyricModal = props => {
               </View>
               {/* 第二页：歌词视图 */}
               <View width={'50%'} paddingH-20 centerV>
-                <LrcView
-                  isHorizontal={true}
-                  {...lyricInfo}
-                  playingMusic={playingMusic}
-                  playPosition={playPosition}
-                />
+                <LrcView isHorizontal={true} />
               </View>
             </View>
           ) : (
@@ -472,11 +469,7 @@ const LyricModal = props => {
               </View>
 
               {/* 第二页：歌词视图 */}
-              <LrcView
-                {...lyricInfo}
-                playingMusic={playingMusic}
-                playPosition={playPosition}
-              />
+              <LrcView />
             </Carousel>
           )}
         </BaseImageBackground>

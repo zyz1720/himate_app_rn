@@ -1,4 +1,4 @@
-import React, {useEffect, useCallback, useState} from 'react';
+import React, {useEffect, useCallback, useState, useRef} from 'react';
 import {StyleSheet} from 'react-native';
 import {View, Text, Colors} from 'react-native-ui-lib';
 import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
@@ -9,6 +9,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import {HIDDEN_TEXTS} from '@utils/system/lyric_utils';
+import {useMusicCtrl} from './MusicController';
 
 const styles = StyleSheet.create({
   lyricViewAbs: {
@@ -19,13 +20,12 @@ const styles = StyleSheet.create({
   },
 });
 
-const LrcItem = props => {
+const LrcItem = React.memo(props => {
   const {
     lyric = '',
     trans = '',
     roma = '',
     index = 0,
-    nowIndex = 0,
     progress = 0,
     yrcDuration = 0,
     displayChars = [],
@@ -38,11 +38,18 @@ const LrcItem = props => {
   } = props;
 
   const {fullWidth} = useScreenDimensions();
+  const {nowLyricIndex} = useMusicCtrl();
+
+  const fullWidthRef = useRef(fullWidth);
+
+  // 缓存fullWidth值
+  useEffect(() => {
+    fullWidthRef.current = fullWidth;
+  }, [fullWidth]);
 
   // 共享动画值
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
-  const color = useSharedValue(Colors.lyricColor);
   const transOpacity = useSharedValue(1);
   const paddingH = useSharedValue(0);
   const textWidth = useSharedValue(0);
@@ -53,38 +60,42 @@ const LrcItem = props => {
     height: 24,
   });
 
-  const itemLayout = _index => event => {
-    const {height} = event.nativeEvent.layout;
-    onItemLayout(_index, height);
-  };
+  const itemLayout = useCallback(
+    _index => event => {
+      const {height} = event.nativeEvent.layout;
+      onItemLayout(_index, height);
+    },
+    [onItemLayout],
+  );
 
   // 处理文本布局
   const handleTextLayout = useCallback(event => {
     const {height, width} = event.nativeEvent.layout;
     setTextDimensions(prev => {
-      // 只有当尺寸变化时才更新状态
-      if (prev.width !== width || prev.height !== height) {
+      // 只有当尺寸变化明显时才更新状态
+      if (
+        Math.abs(prev.width - width) > 1 ||
+        Math.abs(prev.height - height) > 1
+      ) {
         return {width, height};
       }
       return prev;
     });
   }, []);
 
-  // 检查文本是否可见
+  // 检查文本是否可见 - 优化：使用some代替find，更高效
   const isTextVisible = useCallback(text => {
-    return !HIDDEN_TEXTS.find(hidden => text.includes(hidden));
+    return !text || !HIDDEN_TEXTS.some(hidden => text.includes(hidden));
   }, []);
 
-  // 动画样式
+  // 动画样式 - 优化：减少不必要的动画样式属性
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{scale: scale.value}],
     opacity: opacity.value,
-    color: color.value,
     paddingHorizontal: paddingH.value,
   }));
 
   const transAnimatedStyle = useAnimatedStyle(() => ({
-    color: color.value,
     opacity: transOpacity.value,
   }));
 
@@ -95,26 +106,28 @@ const LrcItem = props => {
 
   // 更新动画效果
   useEffect(() => {
-    const isActive = nowIndex === index;
-    const isAdjacent = Math.abs(nowIndex - index) === 1;
-    const isNearby = Math.abs(nowIndex - index) === 2;
+    const isActive = nowLyricIndex === index;
+    const diff = Math.abs(nowLyricIndex - index);
+    const isAdjacent = diff === 1;
+    const isNearby = diff === 2;
+    const currentFullWidth = fullWidthRef.current;
 
-    // 批量更新动画值
+    // 批量更新动画值，避免多次触发动画
     if (isActive) {
       scale.value = withTiming(1.3, {duration: 200});
       paddingH.value = withTiming(
-        isHorizontal ? (fullWidth / 2) * 0.1 : fullWidth * 0.105,
-        {
-          duration: 300,
-        },
+        isHorizontal ? (currentFullWidth / 2) * 0.1 : currentFullWidth * 0.105,
+        {duration: 300},
       );
-      textWidth.value = withTiming(progress, {
-        duration: yrcDuration,
-        easing: Easing.in,
-      });
+      // 只有在yrc模式下才需要更新textWidth
+      if (yrcVisible) {
+        textWidth.value = withTiming(progress, {
+          duration: yrcDuration,
+          easing: Easing.in,
+        });
+      }
       opacity.value = withTiming(1, {duration: 200});
       transOpacity.value = withTiming(1, {duration: 200});
-      color.value = withTiming(Colors.lyricColor, {duration: 100});
     } else if (isAdjacent) {
       opacity.value = withTiming(0.8, {duration: 200});
       transOpacity.value = withTiming(0.8, {duration: 200});
@@ -131,7 +144,7 @@ const LrcItem = props => {
       scale.value = withTiming(1, {duration: 200});
       paddingH.value = withTiming(0, {duration: 200});
     }
-  }, [index, nowIndex, progress, yrcDuration]);
+  }, [index, nowLyricIndex, progress, yrcDuration, yrcVisible, isHorizontal]);
 
   return (
     <View paddingV-12 paddingH-20 onLayout={itemLayout(index)}>
@@ -173,6 +186,9 @@ const LrcItem = props => {
       )}
     </View>
   );
-};
+});
+
+// 自定义比较函数，避免不必要的重渲染
+LrcItem.displayName = 'LrcItem';
 
 export default LrcItem;

@@ -238,16 +238,19 @@ const MusicCtrlProvider = props => {
     if (nowLyricIndex === nowIndex) {
       return;
     }
-    const _nowLyric = lyrics[nowIndex] || {};
-    const _nowTrans = HIDDEN_TEXTS.find(hidden =>
-      _nowLyric?.trans.includes(hidden),
-    )
-      ? ''
-      : _nowLyric?.trans;
     setNowLyricIndex(nowIndex);
-    setNowLyric(_nowLyric?.lyric);
+
+    const _nowLyric = lyrics[nowIndex] || {};
+    const transText = _nowLyric?.trans || '';
+    const _nowTrans =
+      transText && HIDDEN_TEXTS.some(hidden => transText.includes(hidden))
+        ? ''
+        : transText;
+    const _nowRoma = _nowLyric?.roma || '';
+    const _nowLyricText = _nowLyric?.lyric || '';
+    setNowLyric(_nowLyricText);
     setNowTrans(_nowTrans);
-    setNowRoma(_nowLyric?.roma);
+    setNowRoma(_nowRoma);
   };
 
   // 重置正在播放的音乐状态
@@ -453,6 +456,7 @@ const MusicCtrlProvider = props => {
     return (
       <View>
         <Marquee
+          key={String(isMusicLoading)}
           withGesture={false}
           speed={speed}
           spacing={spacing}
@@ -605,7 +609,6 @@ const MusicCtrlProvider = props => {
     } else {
       pausePlayerCtrl();
     }
-    console.log('isMusicPlaying', isMusicPlaying);
   }, [isMusicPlaying]);
 
   // 是否要定时关闭音乐
@@ -680,10 +683,22 @@ const MusicCtrlProvider = props => {
     <MusicCtrlContext.Provider
       value={{
         playingMusic,
+        playList,
+        nowLyric,
+        playPosition,
+        musicDuration,
+        musicPlayMode,
+        isMusicPlaying,
+        setPlayingMusic,
         addPlayList,
         unshiftPlayList,
-        setPlayingMusic,
+        removePlayList,
         setPlayList,
+        lyrics,
+        isHasYrc,
+        isHasTrans,
+        isHasRoma,
+        nowLyricIndex,
       }}>
       {children}
       <View style={[styles.CtrlContainer, {width: fullWidth}]}>
@@ -819,11 +834,6 @@ const MusicCtrlProvider = props => {
       <ToBePlayedModal
         visible={listModalVisible}
         onClose={() => setListModalVisible(false)}
-        playingMusic={playingMusic}
-        playList={playList}
-        setPlayingMusic={setPlayingMusic}
-        setPlayList={setPlayList}
-        removePlayList={removePlayList}
       />
     </MusicCtrlContext.Provider>
   );

@@ -146,24 +146,76 @@ export const formatLrc = musicExtra => {
   };
 };
 
+// 缓存机制：存储上次查找的结果
+let lastLyricsCache = null;
+let lastIndexCache = -1;
+let lastPositionCache = -1;
+
+/**
+ * 查找歌词索引函数（优化版）
+ * @param {Array} lyrics 歌词数组
+ * @param {number} position 当前播放位置
+ * @param {boolean} isHasYrc 是否有逐字歌词
+ * @returns {number} 匹配的歌词索引
+ */
 export const findLyricIndex = (lyrics, position, isHasYrc) => {
+  // 边界情况处理
+  if (!lyrics || lyrics.length === 0) {
+    return -1;
+  }
+
+  // 缓存检查：如果歌词数组相同且播放位置递增，使用缓存
+  if (
+    lastLyricsCache === lyrics &&
+    position >= lastPositionCache &&
+    lastIndexCache !== -1
+  ) {
+    // 从缓存位置开始向右查找（利用播放位置递增特性）
+    const cachedIndex = lastIndexCache;
+
+    // 检查缓存位置是否仍然有效
+    const cachedTime = isHasYrc
+      ? lyrics[cachedIndex]?.startTime
+      : lyrics[cachedIndex]?.time;
+    if (cachedTime !== undefined && cachedTime <= position) {
+      // 从缓存位置开始向右线性查找
+      for (let i = cachedIndex; i < lyrics.length; i++) {
+        const currentTime = isHasYrc ? lyrics[i].startTime : lyrics[i].time;
+        if (currentTime > position) {
+          lastIndexCache = i;
+          lastPositionCache = position;
+          return i;
+        }
+      }
+      // 如果都没找到，返回最后一个有效索引
+      lastIndexCache = lyrics.length - 1;
+      lastPositionCache = position;
+      return -1;
+    }
+  }
+
+  // 更新缓存
+  lastLyricsCache = lyrics;
+  lastPositionCache = position;
+
+  // 使用二分查找
   let left = 0;
   let right = lyrics.length - 1;
-  let result = -1; // 默认值，如果都 <= position 则返回 -1
+  let result = -1;
 
   while (left <= right) {
     const mid = Math.floor((left + right) / 2);
     const matchTime = isHasYrc ? lyrics[mid].startTime : lyrics[mid].time;
 
     if (matchTime > position) {
-      // 找到 > position 的，记录位置，继续向左找更早的
       result = mid;
       right = mid - 1;
     } else {
-      // matchTime <= position，向右找
       left = mid + 1;
     }
   }
 
+  // 更新缓存
+  lastIndexCache = result;
   return result;
 };

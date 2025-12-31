@@ -389,7 +389,7 @@ const MusicList = props => {
                   addPlayList([item]);
                   showToast(t('music.add_success'), 'success');
                 }}>
-                <AntDesign name="plus" color={Colors.grey50} size={20} />
+                <AntDesign name="plus" color={Colors.grey50} size={22} />
               </TouchableOpacity>
               {isMultiSelect || isLocal ? null : (
                 <TouchableOpacity
@@ -400,7 +400,7 @@ const MusicList = props => {
                     getMusicIsLikedFunc(item.id);
                     setModalVisible(true);
                   }}>
-                  <AntDesign name="bars" color={Colors.grey50} size={20} />
+                  <AntDesign name="bars" color={Colors.grey50} size={24} />
                 </TouchableOpacity>
               )}
             </View>

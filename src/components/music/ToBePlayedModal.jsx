@@ -6,6 +6,7 @@ import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
 import {renderArtists} from '@utils/system/lyric_utils';
+import {useMusicCtrl} from './MusicController';
 import BaseImageBackground from '@components/common/BaseImageBackground';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
@@ -34,17 +35,16 @@ const styles = StyleSheet.create({
 });
 
 const ToBePlayedModal = props => {
+  const {visible = false, onClose = () => {}} = props;
+  const {t} = useTranslation();
+  const {fullHeight, statusBarHeight} = useScreenDimensions();
   const {
-    visible = false,
-    onClose = () => {},
     playingMusic = {},
     playList = [],
     setPlayingMusic,
     setPlayList,
     removePlayList,
-  } = props;
-  const {t} = useTranslation();
-  const {fullHeight, statusBarHeight} = useScreenDimensions();
+  } = useMusicCtrl();
 
   const {envConfig} = useConfigStore();
   const {userInfo} = useUserStore();
@@ -131,7 +131,7 @@ const ToBePlayedModal = props => {
             {currentMusicInfo}
             <FlatList
               data={playList}
-              keyExtractor={(item) => item?.id?.toString()}
+              keyExtractor={item => item?.id?.toString()}
               renderItem={renderItem}
               showsVerticalScrollIndicator={false}
               ListEmptyComponent={
