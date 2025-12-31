@@ -9,33 +9,28 @@ import React, {
 import {StyleSheet} from 'react-native';
 import {Image, View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
-import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
+import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
 import {Marquee} from '@animatereactnative/marquee';
-import {isEmptyObject} from '@utils/common/object_utils';
+import {isEmptyObject, excludeFields} from '@utils/common/object_utils';
 import {getRandomInt} from '@utils/common/number_utils';
 import {useToast} from '@components/common/useToast';
-import {getMusic, likeMusic, dislikeMusic} from '@api/music';
+import {getMusic, likeMusic, dislikeMusic, getMusicDetail} from '@api/music';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
 import {useMusicStore} from '@store/musicStore';
 import {useSettingStore} from '@store/settingStore';
 import {useTranslation} from 'react-i18next';
-import {renderMusicTitle} from '@utils/system/lyric_utils';
+import {
+  renderMusicTitle,
+  formatLrc,
+  findLyricIndex,
+} from '@utils/system/lyric_utils';
 import {useMusicControl} from '@utils/hooks/useMusicControl';
 import {recordPlayHistory} from '@utils/realm/useMusicInfo';
 import {useAppStateStore} from '@store/appStateStore';
 import {isEmptyString} from '@/utils/common/string_utils';
 import {useFloatingLyric} from '@utils/hooks/useFloatingLyric';
-import {
-  addPlayBackListener,
-  startPlayer,
-  pausePlayer,
-  resumePlayer,
-  stopPlayer,
-  seekToPlayer,
-  removePlayBackListener,
-} from '@utils/system/audioPlayer';
 import Animated, {
   useSharedValue,
   withTiming,
@@ -48,6 +43,9 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import BaseImageBackground from '@components/common/BaseImageBackground';
 import LyricModal from './LyricModal';
 import ToBePlayedModal from './ToBePlayedModal';
+import AudioRecorderPlayer from 'react-native-audio-recorder-player';
+
+const audioPlayer = new AudioRecorderPlayer();
 
 const styles = StyleSheet.create({
   musicBut: {
@@ -85,62 +83,28 @@ const styles = StyleSheet.create({
 });
 
 export const MusicCtrlContext = createContext();
-export const useMusicCtrl = () => useContext(MusicCtrlContext);
 
-const MusicCtrlProvider = React.memo(props => {
+const MusicCtrlProvider = props => {
   const {children} = props;
   const {showToast} = useToast();
-  const {fullWidth} = useScreenDimensionsContext();
+  const {fullWidth} = useScreenDimensions();
   const {userInfo} = useUserStore();
   const {envConfig} = useConfigStore();
   const {
-    nowLyric,
-    nowTrans,
-    nowRoma,
     showMusicCtrl,
-    playList,
-    playingMusic,
     closeTime,
     randomNum,
     isRandomPlay,
-    setPlayingMusic,
     setIsClosed,
-    addPlayList,
     setIsMusicResumePlay,
     isMusicResumePlay,
-    playPosition,
-    setPlayPosition,
     isMusicBreak,
     setIsMusicBreak,
-    isMusicLoading,
-    setIsMusicLoading,
-    musicDuration,
-    setMusicDuration,
-    playingMusicIndex,
-    setPlayingMusicIndex,
-    playingMusicProgress,
-    setPlayingMusicProgress,
     musicPlayMode,
     setMusicPlayMode,
-    isMusicPlaying,
-    setIsMusicPlaying,
-    resetPlayingMusic,
   } = useMusicStore();
   const {statusBarLyricType, isShowDesktopLyric} = useSettingStore();
   const {isAppActive} = useAppStateStore();
-
-  // 旋转动画共享值
-  const rotation = useSharedValue(0);
-
-  // 旋转动画样式
-  const rotateAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{rotate: `${rotation.value}deg`}],
-  }));
-
-  const {t} = useTranslation();
-  const [musicModalVisible, setMusicModalVisible] = useState(false);
-  const [listModalVisible, setListModalVisible] = useState(false);
-  const [seekToPosition, setSeekToPosition] = useState(0);
 
   const {
     setNowPlayingCtrl,
@@ -161,44 +125,181 @@ const MusicCtrlProvider = React.memo(props => {
     hideWidget,
     updateLyric,
     addOnClickListener,
-    setLyricFontSize,
     stopLyricService,
   } = useFloatingLyric();
 
-  // 音乐播放器
-  addPlayBackListener(playbackMeta => {
-    const {currentPosition, duration, elapsedTime, progress, isFinished} =
-      playbackMeta;
+  const {t} = useTranslation();
 
-    setIsMusicPlaying(currentPosition !== playPosition);
+  const [lyrics, setLyrics] = useState([]);
+  const [nowLyricIndex, setNowLyricIndex] = useState(-1);
+  const [isHasYrc, setIsHasYrc] = useState(false);
+  const [isHasTrans, setIsHasTrans] = useState(false);
+  const [isHasRoma, setIsHasRoma] = useState(false);
+  const [nowLyric, setNowLyric] = useState('');
+  const [nowTrans, setNowTrans] = useState('');
+  const [nowRoma, setNowRoma] = useState('');
 
-    if (currentPosition === seekToPosition) {
-      setIsMusicLoading(true);
+  const [playList, setPlayList] = useState([]);
+  const [playingMusic, _setPlayingMusic] = useState({});
+  const [playPosition, setPlayPosition] = useState(0);
+  const [isMusicLoading, setIsMusicLoading] = useState(false);
+  const [musicDuration, setMusicDuration] = useState(0);
+  const [playingMusicIndex, setPlayingMusicIndex] = useState(0);
+  const [playingMusicProgress, setPlayingMusicProgress] = useState(0);
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+
+  const [musicModalVisible, setMusicModalVisible] = useState(false);
+  const [listModalVisible, setListModalVisible] = useState(false);
+
+  // 获取音乐详情
+  const getMusicDetailFunc = async id => {
+    try {
+      const result = await getMusicDetail(id);
+      if (result.code === 0) {
+        const musicInfo = result.data;
+        const musicExtra = musicInfo?.musicExtra;
+        const musicWithExtra = excludeFields(musicExtra, [
+          'music_lyric',
+          'music_trans',
+          'music_roma',
+          'music_yrc',
+        ]);
+        musicInfo.musicExtra = musicWithExtra;
+        _setPlayingMusic(musicInfo);
+        if (musicExtra) {
+          const {
+            lyrics: _lyrics,
+            haveTrans,
+            haveRoma,
+            haveYrc,
+          } = formatLrc(musicExtra);
+          setLyrics(_lyrics);
+          setIsHasTrans(haveTrans);
+          setIsHasRoma(haveRoma);
+          setIsHasYrc(haveYrc);
+        }
+      }
+    } catch (error) {
+      console.log('getMusicDetailFunc error', error);
+    }
+  };
+
+  // 设置正在播放的音乐
+  const setPlayingMusic = async music => {
+    resetLyricState();
+    if (!music || isEmptyObject(music)) {
+      return _setPlayingMusic({});
+    }
+    if (typeof music?.id === 'string') {
+      return _setPlayingMusic(music);
+    }
+    getMusicDetailFunc(music?.id);
+  };
+
+  // 添加播放列表
+  const addPlayList = (list = []) =>
+    setPlayList(prevPlayList => {
+      list.forEach(item => {
+        if (!prevPlayList.find(e => e?.id === item?.id)) {
+          prevPlayList.push(item);
+        }
+      });
+      return prevPlayList;
+    });
+
+  // 从播放列表头部添加音乐
+  const unshiftPlayList = (list = []) =>
+    setPlayList(prevPlayList => {
+      list.forEach(item => {
+        if (!prevPlayList.find(e => e?.id === item?.id)) {
+          prevPlayList.unshift(item);
+        }
+      });
+      return prevPlayList;
+    });
+
+  // 从播放列表中移除音乐
+  const removePlayList = (list = []) =>
+    setPlayList(prevPlayList => {
+      list.forEach(item => {
+        const index = prevPlayList.findIndex(e => e?.id === item?.id);
+        if (index > -1) {
+          prevPlayList.splice(index, 1);
+        }
+      });
+      return prevPlayList;
+    });
+
+  // 设置播放位置
+  const setPlayPositionWithLyrics = position => {
+    if (position === playPosition) {
+      return;
+    }
+    setPlayPosition(position);
+    if (lyrics.length === 0) {
+      return;
+    }
+    const nowIndex = findLyricIndex(lyrics, position, isHasYrc) - 1;
+    if (nowLyricIndex === nowIndex) {
+      return;
+    }
+    const _nowLyric = lyrics[nowIndex] || {};
+    setNowLyricIndex(nowIndex);
+    setNowLyric(_nowLyric?.lyric || '');
+    setNowTrans(_nowLyric?.trans || '');
+    setNowRoma(_nowLyric?.roma || '');
+  };
+
+  // 重置正在播放的音乐状态
+  const resetPlayingState = () => {
+    setPlayPosition(0);
+    setMusicDuration(0);
+    setPlayingMusicProgress(0);
+    setIsMusicLoading(false);
+    setIsMusicPlaying(false);
+    setPlayingMusicIndex(0);
+  };
+
+  // 重置歌词状态
+  const resetLyricState = () => {
+    setLyrics([]);
+    setNowLyricIndex(-1);
+    setNowLyric('');
+    setNowTrans('');
+    setNowRoma('');
+    setIsHasYrc(false);
+    setIsHasTrans(false);
+    setIsHasRoma(false);
+  };
+
+  // 处理播放更新
+  const handlePlaybackUpdate = playbackMeta => {
+    const {currentPosition, duration, isFinished} = playbackMeta;
+    const elapsedTime = Math.round(currentPosition / 1000);
+    const progress = Math.round((currentPosition / duration) * 100);
+    const isPlaying = currentPosition !== playPosition;
+
+    setIsMusicPlaying(isPlaying);
+
+    if (isPlaying) {
+      setPlayPositionWithLyrics(currentPosition);
+      if (duration !== musicDuration) {
+        setMusicDuration(duration);
+      }
+      if (progress !== playingMusicProgress) {
+        setPlayingMusicProgress(progress);
+      }
+      seekToPlayerCtrl(elapsedTime);
     }
 
-    if (currentPosition !== playPosition) {
-      setPlayPosition(currentPosition);
-    }
-
-    if (duration !== musicDuration) {
-      setMusicDuration(duration);
-    }
-
-    if (progress !== playingMusicProgress) {
-      setPlayingMusicProgress(progress);
-    }
-
-    seekToPlayerCtrl(elapsedTime);
     if (isFinished) {
       autoPlayNext();
     }
-  });
+  };
 
   // 自动播放下一首
   const autoPlayNext = useCallback(() => {
-    resetPlayingMusic();
-    setPlayingMusic({});
-
+    _setPlayingMusic({});
     if (isRandomPlay) {
       getRandMusic();
     } else if (playList.length > 0) {
@@ -236,13 +337,14 @@ const MusicCtrlProvider = React.memo(props => {
       showToast(t('music.loading'), 'warning', true);
     }
     if (isMusicPlaying) {
-      await pausePlayer();
+      console.log('isMusicPlaying', isMusicPlaying);
+      await audioPlayer.pausePlayer();
     } else {
       if (isEmptyObject(playingMusic)) {
         showToast(t('music.no_music'), 'warning');
         return;
       }
-      await resumePlayer();
+      await audioPlayer.resumePlayer();
     }
   }, [playingMusic, isMusicLoading, isMusicPlaying]);
 
@@ -253,7 +355,7 @@ const MusicCtrlProvider = React.memo(props => {
     }
     if (isMusicPlaying || isMusicLoading) {
       pausePlayerCtrl();
-      await pausePlayer();
+      await audioPlayer.pausePlayer();
     }
   }, [playingMusic, isMusicLoading, isMusicPlaying]);
 
@@ -279,16 +381,17 @@ const MusicCtrlProvider = React.memo(props => {
 
   // 调整播放进度
   const onSliderChange = useCallback(async position => {
-    setSeekToPosition(parseInt(position, 10));
-    await seekToPlayer(position);
+    setIsMusicLoading(true);
+    await audioPlayer.seekToPlayer(position);
   }, []);
 
   // 重置音乐播放所有状态
   const restMusicStatus = async () => {
     stopPlayerCtrl();
-    resetPlayingMusic();
-    setSeekToPosition(0);
-    await stopPlayer();
+    resetPlayingState();
+    resetLyricState();
+    _setPlayingMusic({});
+    await audioPlayer.stopPlayer();
   };
 
   // 获取随机歌曲
@@ -312,7 +415,7 @@ const MusicCtrlProvider = React.memo(props => {
       if (!playingMusic?.file_key) {
         return;
       }
-      await restMusicStatus();
+      resetPlayingState();
       setIsMusicLoading(true);
       let url = '';
       if (typeof playingMusic?.id === 'number') {
@@ -322,7 +425,8 @@ const MusicCtrlProvider = React.memo(props => {
         url = playingMusic?.file_key;
       }
 
-      await startPlayer(url);
+      await audioPlayer.stopPlayer();
+      await audioPlayer.startPlayer(url);
       const index = playList.findIndex(item => item.id === playingMusic.id);
       setIsMusicPlaying(true);
       setPlayingMusicIndex(index);
@@ -395,6 +499,14 @@ const MusicCtrlProvider = React.memo(props => {
     }
   };
 
+  // 旋转动画共享值
+  const rotation = useSharedValue(0);
+
+  // 旋转动画样式
+  const rotateAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{rotate: `${rotation.value}deg`}],
+  }));
+
   const [isExpand, setIsExpand] = useState(true);
   const ctrlWidth = useSharedValue(fullWidth - 32);
   const expandAnimatedStyle = useAnimatedStyle(() => ({
@@ -455,6 +567,7 @@ const MusicCtrlProvider = React.memo(props => {
     if (playingMusic?.id) {
       playNewMusic();
     }
+    console.log(playingMusic?.id);
   }, [playingMusic?.id]);
 
   useEffect(() => {
@@ -489,7 +602,6 @@ const MusicCtrlProvider = React.memo(props => {
       return;
     }
     if (isMusicPlaying) {
-      setSeekToPosition(0);
       setIsMusicLoading(false);
       resumePlayerCtrl();
     } else {
@@ -502,7 +614,7 @@ const MusicCtrlProvider = React.memo(props => {
   useEffect(() => {
     if (closeTime) {
       playerTimer = setTimeout(() => {
-        pausePlayer();
+        audioPlayer.pausePlayer();
         pausePlayerCtrl();
         setIsClosed(true);
         clearTimeout(playerTimer);
@@ -539,7 +651,6 @@ const MusicCtrlProvider = React.memo(props => {
     if (isAppActive) {
       hideWidget();
     } else {
-      setLyricFontSize(32);
       showWidget();
     }
   }, [isAppActive]);
@@ -555,16 +666,26 @@ const MusicCtrlProvider = React.memo(props => {
   }, [isMusicPlaying, playingMusic?.id, isExpand]);
 
   useEffect(() => {
+    audioPlayer.addPlayBackListener(handlePlaybackUpdate);
+    return () => audioPlayer.removePlayBackListener();
+  }, [handlePlaybackUpdate]);
+
+  useEffect(() => {
     return () => {
-      removePlayBackListener();
       stopLyricService();
       restMusicStatus();
-      setPlayingMusic({});
     };
   }, []);
 
   return (
-    <MusicCtrlContext.Provider value={{}}>
+    <MusicCtrlContext.Provider
+      value={{
+        playingMusic,
+        addPlayList,
+        unshiftPlayList,
+        setPlayingMusic,
+        setPlayList,
+      }}>
       {children}
       <View style={[styles.CtrlContainer, {width: fullWidth}]}>
         <Animated.View
@@ -657,6 +778,17 @@ const MusicCtrlProvider = React.memo(props => {
         </Animated.View>
       </View>
       <LyricModal
+        playingMusic={playingMusic}
+        playPosition={playPosition}
+        musicDuration={musicDuration}
+        musicPlayMode={musicPlayMode}
+        isMusicPlaying={isMusicPlaying}
+        nowLyric={nowLyric}
+        nowLyricIndex={nowLyricIndex}
+        lyrics={lyrics}
+        isHasYrc={isHasYrc}
+        isHasTrans={isHasTrans}
+        isHasRoma={isHasRoma}
         visible={musicModalVisible}
         onClose={() => setMusicModalVisible(false)}
         isLike={isLike}
@@ -688,9 +820,16 @@ const MusicCtrlProvider = React.memo(props => {
       <ToBePlayedModal
         visible={listModalVisible}
         onClose={() => setListModalVisible(false)}
+        playingMusic={playingMusic}
+        playList={playList}
+        setPlayingMusic={setPlayingMusic}
+        setPlayList={setPlayList}
+        removePlayList={removePlayList}
       />
     </MusicCtrlContext.Provider>
   );
-});
+};
+
+export const useMusicCtrl = () => useContext(MusicCtrlContext);
 
 export default MusicCtrlProvider;

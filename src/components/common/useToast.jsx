@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, createContext, useContext} from 'react';
 import {ToastAndroid, StyleSheet, Platform} from 'react-native';
 import {Toast, View, Text, Colors} from 'react-native-ui-lib';
 import {useSettingStore} from '@store/settingStore';
@@ -8,8 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-export const ToastContext = React.createContext();
-export const useToast = () => React.useContext(ToastContext);
+export const ToastContext = createContext();
 
 let timer = null;
 const ToastProvider = props => {
@@ -111,5 +110,7 @@ const styles = StyleSheet.create({
     maxWidth: 200,
   },
 });
+
+export const useToast = () => useContext(ToastContext);
 
 export default ToastProvider;

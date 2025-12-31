@@ -13,7 +13,7 @@ import {
 import {getFirstLetter} from '@utils/common/string_utils';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
-import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
+import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
 
 const MateList = props => {
   const {
@@ -30,7 +30,7 @@ const MateList = props => {
   } = props;
 
   const {t} = useTranslation();
-  const {fullHeight} = useScreenDimensionsContext();
+  const {fullHeight} = useScreenDimensions();
   const {envConfig} = useConfigStore();
 
   const [mateList, setMateList] = useState([]);

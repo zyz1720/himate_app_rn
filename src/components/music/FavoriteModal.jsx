@@ -8,7 +8,7 @@ import {
   Colors,
   TouchableOpacity,
 } from 'react-native-ui-lib';
-import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
+import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
 import {useConfigStore} from '@store/configStore';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import BaseImageBackground from '@components/common/BaseImageBackground';
@@ -46,7 +46,7 @@ const FavoriteModal = React.memo(props => {
     userAvatar = '',
     userName = '',
   } = props;
-  const {fullHeight, statusBarHeight} = useScreenDimensionsContext();
+  const {fullHeight, statusBarHeight} = useScreenDimensions();
 
   const {envConfig} = useConfigStore();
 

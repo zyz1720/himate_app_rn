@@ -18,9 +18,7 @@ import {
   Dialog,
   ProgressBar,
 } from 'react-native-ui-lib';
-import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
 import {useToast} from '@components/common/useToast';
 import {isEmptyObject} from '@utils/common/object_utils';
 import {getOneselfFavorites} from '@api/favorites';
@@ -33,10 +31,12 @@ import {
 } from '@api/music';
 import {downloadFile, getFileExt} from '@utils/system/file_utils';
 import {useConfigStore} from '@store/configStore';
-import {useMusicStore} from '@store/musicStore';
 import {useTranslation} from 'react-i18next';
 import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
 import {renderMusicTitle, renderArtists} from '@utils/system/lyric_utils';
+import {useMusicCtrl} from './MusicController';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 const MusicList = props => {
   const {
@@ -53,7 +53,7 @@ const MusicList = props => {
     onRefresh = () => {},
     listHeader = null,
   } = props;
-  const {fullHeight, statusBarHeight} = useScreenDimensionsContext();
+  const {fullHeight, statusBarHeight} = useScreenDimensions();
   const {t} = useTranslation();
   const {showToast} = useToast();
   const {envConfig} = useConfigStore();
@@ -63,7 +63,7 @@ const MusicList = props => {
     unshiftPlayList,
     setPlayingMusic,
     setPlayList,
-  } = useMusicStore();
+  } = useMusicCtrl();
 
   /* 音乐是否收藏 */
   const [isLiked, setIsLiked] = useState(false);

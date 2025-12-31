@@ -11,7 +11,7 @@ import {
   Image,
 } from 'react-native-ui-lib';
 import {useConfigStore} from '@store/configStore';
-import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
+import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
 import {useTranslation} from 'react-i18next';
 
 const FavoritesList = props => {
@@ -24,7 +24,7 @@ const FavoritesList = props => {
   } = props;
 
   const {t} = useTranslation();
-  const {fullHeight, fullWidth} = useScreenDimensionsContext();
+  const {fullHeight, fullWidth} = useScreenDimensions();
 
   const {envConfig} = useConfigStore();
 

@@ -1,10 +1,9 @@
 import React, {useMemo} from 'react';
 import {StyleSheet, Modal, FlatList} from 'react-native';
 import {View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
-import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
+import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
 import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
-import {useMusicStore} from '@store/musicStore';
 import {useTranslation} from 'react-i18next';
 import {renderArtists} from '@utils/system/lyric_utils';
 import BaseImageBackground from '@components/common/BaseImageBackground';
@@ -35,12 +34,18 @@ const styles = StyleSheet.create({
 });
 
 const ToBePlayedModal = React.memo(props => {
-  const {visible = false, onClose = () => {}} = props;
+  const {
+    visible = false,
+    onClose = () => {},
+    playingMusic,
+    playList,
+    setPlayingMusic,
+    setPlayList,
+    removePlayList,
+  } = props;
   const {t} = useTranslation();
-  const {fullHeight, statusBarHeight} = useScreenDimensionsContext();
+  const {fullHeight, statusBarHeight} = useScreenDimensions();
 
-  const {playingMusic, playList, setPlayingMusic, setPlayList, removePlayList} =
-    useMusicStore();
   const {envConfig} = useConfigStore();
   const {userInfo} = useUserStore();
 

@@ -2,11 +2,11 @@ import React from 'react';
 import {StyleSheet} from 'react-native';
 import {Send} from 'react-native-gifted-chat';
 import {Colors} from 'react-native-ui-lib';
-import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
+import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
 
 /* 自定义加载更多 */
 const CustomSend = React.memo(props => {
-  const {fullHeight} = useScreenDimensionsContext();
+  const {fullHeight} = useScreenDimensions();
 
   const styles = StyleSheet.create({
     containerStyle: {

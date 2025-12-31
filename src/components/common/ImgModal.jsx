@@ -1,7 +1,7 @@
 import React from 'react';
 import {Modal, ActivityIndicator} from 'react-native';
 import {View, Text} from 'react-native-ui-lib';
-import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
+import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
 import {useTranslation} from 'react-i18next';
 import {useToast} from '@components/common/useToast';
 import {downloadFile} from '@utils/system/file_utils';
@@ -16,7 +16,7 @@ const ImgModal = React.memo(props => {
   } = props;
   const {t} = useTranslation();
   const {showToast} = useToast();
-  const {fullWidth} = useScreenDimensionsContext();
+  const {fullWidth} = useScreenDimensions();
 
   const onSave = async url => {
     showToast(t('component.image_saving'), 'success');

@@ -9,7 +9,7 @@ import {
   Button,
 } from 'react-native-ui-lib';
 import {useConfigStore} from '@store/configStore';
-import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
+import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
 import {useTranslation} from 'react-i18next';
 import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
 import {getGroupMembers} from '@api/group_member';
@@ -37,7 +37,7 @@ const MembersModal = props => {
   } = props;
   const {envConfig} = useConfigStore();
   const {t} = useTranslation();
-  const {fullHeight, fullWidth} = useScreenDimensionsContext();
+  const {fullHeight, fullWidth} = useScreenDimensions();
 
   const getGroupMembersList = async () => {
     return getGroupMembers(groupId);

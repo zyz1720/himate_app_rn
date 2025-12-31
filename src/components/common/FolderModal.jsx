@@ -9,7 +9,7 @@ import {
 } from 'react-native-ui-lib';
 import {FlatList, StyleSheet, Modal, RefreshControl} from 'react-native';
 import {useToast} from '@components/common/useToast';
-import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
+import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
 import {useTranslation} from 'react-i18next';
 import {scanDir, rootDir} from '@utils/system/fs_utils';
 import {getFileExt} from '@utils/system/file_utils';
@@ -19,7 +19,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 const FolderModal = props => {
   const {visible, setVisible, onConfirm = () => {}, isShowFile = false} = props;
   const {showToast} = useToast();
-  const {fullHeight, statusBarHeight} = useScreenDimensionsContext();
+  const {fullHeight, statusBarHeight} = useScreenDimensions();
   const {t} = useTranslation();
 
   const [loading, setLoading] = useState(false);

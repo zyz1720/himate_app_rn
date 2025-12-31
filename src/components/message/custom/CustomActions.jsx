@@ -7,7 +7,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {useToast} from '@components/common/useToast';
-import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
+import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 /* 自定义操作按钮 */
@@ -15,7 +15,7 @@ const CustomActions = React.memo(
   ({userInGroupInfo, uploadIds, isExpand, setExpand}) => {
     const {t} = useTranslation();
     const {showToast} = useToast();
-    const {fullHeight} = useScreenDimensionsContext();
+    const {fullHeight} = useScreenDimensions();
 
     const rotate = useSharedValue('0deg');
 

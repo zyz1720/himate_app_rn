@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef, useMemo, useCallback} from 'react';
 import {FlatList, StyleSheet} from 'react-native';
 import {View, Text, Colors, TouchableOpacity, Image} from 'react-native-ui-lib';
-import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
+import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
 import {useToast} from '@components/common/useToast';
 import {useMusicStore} from '@store/musicStore';
 import {useConfigStore} from '@store/configStore';
@@ -65,23 +65,22 @@ const styles = StyleSheet.create({
   },
 });
 
-const LrcView = props => {
-  const {isHorizontal = false} = props;
-  const {t} = useTranslation();
-  const {fullWidth, fullHeight} = useScreenDimensionsContext();
-
-  const {envConfig} = useConfigStore();
+const LrcView = React.memo(props => {
   const {
-    lyrics,
-    switchCount,
-    setSwitchCount,
+    isHorizontal = false,
+    playPosition,
     playingMusic,
+    lyrics,
     isHasYrc,
     isHasTrans,
     isHasRoma,
     nowLyricIndex,
-    playPosition,
-  } = useMusicStore();
+  } = props;
+  const {t} = useTranslation();
+  const {fullWidth, fullHeight} = useScreenDimensions();
+
+  const {envConfig} = useConfigStore();
+  const {switchCount, setSwitchCount} = useMusicStore();
   const {musicExtra = {}} = playingMusic;
   const {showToast} = useToast();
   const flatListRef = useRef(null);
@@ -257,54 +256,47 @@ const LrcView = props => {
   );
 
   // 渲染每行歌词
-  const renderItem = useCallback(
-    ({item, index}) => {
-      const isActive = nowLyricIndex === index;
-      let progress = 0;
-      let displayChars = '';
-      const fullText = item?.words
-        ? item.words.map(w => w.char).join('')
-        : item?.text;
-      if (isActive && item?.words) {
-        const lineTime = playPosition - item.startTime;
-        progress = Math.min(Math.max(lineTime / item.duration, 0), 1);
+  const renderItem = ({item, index}) => {
+    const isActive = nowLyricIndex === index;
+    let progress = 0;
+    let displayChars = '';
+    let yrcDuration = 0;
+    const fullText = item?.words
+      ? item.words.map(w => w.char).join('')
+      : item?.text;
+    if (isActive && item?.words) {
+      const lineTime = playPosition - item.startTime;
+      progress = Math.min(Math.max(lineTime / item.duration, 0), 1);
 
-        for (const word of item.words) {
-          if (playPosition >= word.startTime) {
-            displayChars += word.char;
-          } else {
-            break;
-          }
+      for (const word of item.words) {
+        if (playPosition >= word.startTime) {
+          displayChars += word.char;
+          yrcDuration = word.endTime - word.startTime;
+        } else {
+          break;
         }
       }
+    }
 
-      return (
-        <LrcItem
-          item={item}
-          index={index}
-          nowIndex={nowLyricIndex}
-          progress={progress}
-          displayChars={displayChars}
-          fullText={fullText}
-          yrcVisible={yrcVisible && isHasYrc}
-          transVisible={transVisible && isHasTrans}
-          romaVisible={romaVisible && isHasRoma}
-          onItemLayout={onItemLayout}
-          isHorizontal={isHorizontal}
-        />
-      );
-    },
-    [
-      playPosition,
-      nowLyricIndex,
-      yrcVisible,
-      isHasYrc,
-      transVisible,
-      isHasTrans,
-      romaVisible,
-      isHasRoma,
-    ],
-  );
+    return (
+      <LrcItem
+        lyric={item?.lyric}
+        trans={item?.trans}
+        roma={item?.roma}
+        index={index}
+        yrcDuration={yrcDuration}
+        nowIndex={nowLyricIndex}
+        progress={progress}
+        displayChars={displayChars}
+        fullText={fullText}
+        yrcVisible={yrcVisible && isHasYrc}
+        transVisible={transVisible && isHasTrans}
+        romaVisible={romaVisible && isHasRoma}
+        onItemLayout={onItemLayout}
+        isHorizontal={isHorizontal}
+      />
+    );
+  };
 
   // 自动滚动到当前歌词
   useEffect(() => {
@@ -393,6 +385,6 @@ const LrcView = props => {
       )}
     </View>
   );
-};
+});
 
 export default LrcView;

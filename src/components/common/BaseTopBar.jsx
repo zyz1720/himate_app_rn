@@ -2,13 +2,13 @@ import React, {useState, useEffect} from 'react';
 import {StyleSheet, ScrollView} from 'react-native';
 import {View, TouchableOpacity, Text, Colors} from 'react-native-ui-lib';
 import Animated, {FadeInLeft, FadeOutRight} from 'react-native-reanimated';
-import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
+import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
 
 const BaseTopBar = props => {
   const {routes = [], initialIndex = 0, onChange = () => {}} = props;
 
   const [focusedIndex, setFocusedIndex] = useState(initialIndex);
-  const {fullWidth} = useScreenDimensionsContext();
+  const {fullWidth} = useScreenDimensions();
 
   const [isOverflow, setIsOverflow] = useState(false);
 

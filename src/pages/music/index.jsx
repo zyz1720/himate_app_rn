@@ -24,7 +24,7 @@ import {
   ScrollView,
 } from 'react-native';
 import {useToast} from '@components/common/useToast';
-import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
+import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
 import {
   getOneselfFavorites,
   addFavorites,
@@ -52,7 +52,7 @@ const MOMENTS = ['00:00', '00:30', '01:00', '01:30', '02:00'];
 
 const Music = ({navigation}) => {
   const {showToast} = useToast();
-  const {fullWidth, fullHeight} = useScreenDimensionsContext();
+  const {fullWidth, fullHeight} = useScreenDimensions();
   const {t} = useTranslation();
   const isFocused = useIsFocused();
 

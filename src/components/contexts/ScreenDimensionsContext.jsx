@@ -28,14 +28,6 @@ const ScreenDimensionsProvider = ({children}) => {
   );
 };
 
-export const useScreenDimensionsContext = () => {
-  const context = useContext(ScreenDimensionsContext);
-  if (!context) {
-    throw new Error(
-      'useScreenDimensionsContext must be used within ScreenDimensionsProvider',
-    );
-  }
-  return context;
-};
+export const useScreenDimensions = () => useContext(ScreenDimensionsContext);
 
 export default ScreenDimensionsProvider;

@@ -9,7 +9,7 @@ import {
   Slider,
   Carousel,
 } from 'react-native-ui-lib';
-import {useScreenDimensionsContext} from '@components/contexts/ScreenDimensionsContext';
+import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
 import {isEmptyString} from '@utils/common/string_utils';
 import {formatMilliSeconds} from '@utils/common/time_utils';
 import Animated, {FadeInUp, FadeOutDown} from 'react-native-reanimated';
@@ -18,7 +18,6 @@ import {getWhitenessScore} from '@utils/system/color_utils';
 import {useKeepAwake} from 'expo-keep-awake';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
-import {useMusicStore} from '@store/musicStore';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import BaseImageBackground from '@components/common/BaseImageBackground';
@@ -75,22 +74,21 @@ const LyricModal = React.memo(props => {
     onPlay = () => {},
     onForWard = () => {},
     onPressMenu = () => {},
-  } = props;
-
-  useKeepAwake();
-  const {t} = useTranslation();
-  const {fullWidth, fullHeight, isHorizontal, statusBarHeight} =
-    useScreenDimensionsContext();
-
-  const {envConfig} = useConfigStore();
-  const {
     playingMusic,
     nowLyric,
     playPosition,
     musicDuration,
     musicPlayMode,
     isMusicPlaying,
-  } = useMusicStore();
+    ...lyricInfo
+  } = props;
+
+  useKeepAwake();
+  const {t} = useTranslation();
+  const {fullWidth, fullHeight, isHorizontal, statusBarHeight} =
+    useScreenDimensions();
+
+  const {envConfig} = useConfigStore();
   const musicExtra = playingMusic?.musicExtra;
 
   // 艺术家字符串
@@ -316,7 +314,12 @@ const LyricModal = React.memo(props => {
               </View>
               {/* 第二页：歌词视图 */}
               <View width={'50%'} paddingH-20 centerV>
-                <LrcView isHorizontal={true} />
+                <LrcView
+                  isHorizontal={true}
+                  {...lyricInfo}
+                  playingMusic={playingMusic}
+                  playPosition={playPosition}
+                />
               </View>
             </View>
           ) : (
@@ -469,7 +472,11 @@ const LyricModal = React.memo(props => {
               </View>
 
               {/* 第二页：歌词视图 */}
-              <LrcView />
+              <LrcView
+                {...lyricInfo}
+                playingMusic={playingMusic}
+                playPosition={playPosition}
+              />
             </Carousel>
           )}
         </BaseImageBackground>
