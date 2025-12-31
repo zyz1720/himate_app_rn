@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const LyricModal = React.memo(props => {
+const LyricModal = props => {
   const {
     visible = false,
     isLike = false,
@@ -483,6 +483,6 @@ const LyricModal = React.memo(props => {
       </View>
     </Modal>
   );
-});
+};
 
 export default LyricModal;

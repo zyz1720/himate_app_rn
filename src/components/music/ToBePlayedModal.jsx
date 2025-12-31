@@ -33,12 +33,12 @@ const styles = StyleSheet.create({
   },
 });
 
-const ToBePlayedModal = React.memo(props => {
+const ToBePlayedModal = props => {
   const {
     visible = false,
     onClose = () => {},
-    playingMusic,
-    playList,
+    playingMusic = {},
+    playList = [],
     setPlayingMusic,
     setPlayList,
     removePlayList,
@@ -67,7 +67,7 @@ const ToBePlayedModal = React.memo(props => {
     );
   }, [playingMusic]);
 
-  // 记忆化渲染项
+  // 渲染播放列表项
   const renderItem = ({item}) => {
     const artistsText = renderArtists(item);
     const isCurrent = playingMusic?.id === item.id;
@@ -131,8 +131,9 @@ const ToBePlayedModal = React.memo(props => {
             {currentMusicInfo}
             <FlatList
               data={playList}
-              keyExtractor={(_, index) => index.toString()}
+              keyExtractor={(item) => item?.id?.toString()}
               renderItem={renderItem}
+              showsVerticalScrollIndicator={false}
               ListEmptyComponent={
                 <View marginT-16 center>
                   <Text text90L white>
@@ -151,6 +152,6 @@ const ToBePlayedModal = React.memo(props => {
       </View>
     </Modal>
   );
-});
+};
 
 export default ToBePlayedModal;

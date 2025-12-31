@@ -65,16 +65,16 @@ const styles = StyleSheet.create({
   },
 });
 
-const LrcView = React.memo(props => {
+const LrcView = props => {
   const {
     isHorizontal = false,
-    playPosition,
-    playingMusic,
-    lyrics,
+    playPosition = 0,
+    playingMusic = {},
+    lyrics = [],
     isHasYrc,
     isHasTrans,
     isHasRoma,
-    nowLyricIndex,
+    nowLyricIndex = -1,
   } = props;
   const {t} = useTranslation();
   const {fullWidth, fullHeight} = useScreenDimensions();
@@ -359,6 +359,7 @@ const LrcView = React.memo(props => {
             data={lyrics}
             renderItem={renderItem}
             keyExtractor={(_, index) => index.toString()}
+            showsVerticalScrollIndicator={false}
             contentContainerStyle={{
               paddingVertical: isTwoLines
                 ? lrcHeight / 2 - 48
@@ -385,6 +386,6 @@ const LrcView = React.memo(props => {
       )}
     </View>
   );
-});
+};
 
 export default LrcView;

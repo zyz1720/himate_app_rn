@@ -1,5 +1,4 @@
 import React, {
-  useCallback,
   useState,
   useEffect,
   createContext,
@@ -25,6 +24,7 @@ import {
   renderMusicTitle,
   formatLrc,
   findLyricIndex,
+  HIDDEN_TEXTS,
 } from '@utils/system/lyric_utils';
 import {useMusicControl} from '@utils/hooks/useMusicControl';
 import {recordPlayHistory} from '@utils/realm/useMusicInfo';
@@ -244,10 +244,15 @@ const MusicCtrlProvider = props => {
       return;
     }
     const _nowLyric = lyrics[nowIndex] || {};
+    const _nowTrans = HIDDEN_TEXTS.find(hidden =>
+      _nowLyric?.trans.includes(hidden),
+    )
+      ? ''
+      : _nowLyric?.trans;
     setNowLyricIndex(nowIndex);
-    setNowLyric(_nowLyric?.lyric || '');
-    setNowTrans(_nowLyric?.trans || '');
-    setNowRoma(_nowLyric?.roma || '');
+    setNowLyric(_nowLyric?.lyric);
+    setNowTrans(_nowTrans);
+    setNowRoma(_nowLyric?.roma);
   };
 
   // 重置正在播放的音乐状态
@@ -270,6 +275,15 @@ const MusicCtrlProvider = props => {
     setIsHasYrc(false);
     setIsHasTrans(false);
     setIsHasRoma(false);
+  };
+
+  // 重置音乐播放所有状态
+  const restAllMusicState = async () => {
+    stopPlayerCtrl();
+    resetPlayingState();
+    resetLyricState();
+    _setPlayingMusic({});
+    await audioPlayer.stopPlayer();
   };
 
   // 处理播放更新
@@ -298,7 +312,7 @@ const MusicCtrlProvider = props => {
   };
 
   // 自动播放下一首
-  const autoPlayNext = useCallback(() => {
+  const autoPlayNext = () => {
     _setPlayingMusic({});
     if (isRandomPlay) {
       getRandMusic();
@@ -314,11 +328,13 @@ const MusicCtrlProvider = props => {
       } else if (musicPlayMode === 'random') {
         setPlayingMusic(playList[Math.floor(Math.random() * playList.length)]);
       }
+    } else {
+      restAllMusicState();
     }
-  }, [isRandomPlay, playList, playingMusicIndex, musicPlayMode]);
+  };
 
   // 上一首
-  const previousTrack = useCallback(() => {
+  const previousTrack = () => {
     if (playingMusicIndex === 0 && playList.length > 0) {
       setPlayingMusic(playList[playList.length - 1]);
       showToast(t('music.already_first'), 'warning');
@@ -329,15 +345,14 @@ const MusicCtrlProvider = props => {
     } else {
       showToast(t('music.no_music'), 'warning');
     }
-  }, [playList, playingMusicIndex]);
+  };
 
   // 播放或暂停
-  const playOrPauseTrack = useCallback(async () => {
+  const playOrPauseTrack = async () => {
     if (isMusicLoading) {
       showToast(t('music.loading'), 'warning', true);
     }
     if (isMusicPlaying) {
-      console.log('isMusicPlaying', isMusicPlaying);
       await audioPlayer.pausePlayer();
     } else {
       if (isEmptyObject(playingMusic)) {
@@ -346,10 +361,10 @@ const MusicCtrlProvider = props => {
       }
       await audioPlayer.resumePlayer();
     }
-  }, [playingMusic, isMusicLoading, isMusicPlaying]);
+  };
 
   // 播放或暂停
-  const pauseTrack = useCallback(async () => {
+  const pauseTrack = async () => {
     if (isEmptyObject(playingMusic)) {
       return;
     }
@@ -357,10 +372,10 @@ const MusicCtrlProvider = props => {
       pausePlayerCtrl();
       await audioPlayer.pausePlayer();
     }
-  }, [playingMusic, isMusicLoading, isMusicPlaying]);
+  };
 
   // 下一首
-  const nextTrack = useCallback(() => {
+  const nextTrack = () => {
     if (isRandomPlay) {
       getRandMusic();
       return;
@@ -377,25 +392,17 @@ const MusicCtrlProvider = props => {
       showToast(t('music.no_music'), 'warning');
       return;
     }
-  }, [isRandomPlay, playList, playingMusicIndex]);
+  };
 
   // 调整播放进度
-  const onSliderChange = useCallback(async position => {
+  const onSliderChange = async position => {
     setIsMusicLoading(true);
+    setIsMusicLoading(false);
     await audioPlayer.seekToPlayer(position);
-  }, []);
-
-  // 重置音乐播放所有状态
-  const restMusicStatus = async () => {
-    stopPlayerCtrl();
-    resetPlayingState();
-    resetLyricState();
-    _setPlayingMusic({});
-    await audioPlayer.stopPlayer();
   };
 
   // 获取随机歌曲
-  const getRandMusic = useCallback(async () => {
+  const getRandMusic = async () => {
     const index = getRandomInt(randomNum.min, randomNum.max);
     try {
       const res = await getMusic({current: index, pageSize: 1});
@@ -407,7 +414,7 @@ const MusicCtrlProvider = props => {
     } catch (error) {
       console.error(error);
     }
-  }, [randomNum]);
+  };
 
   // 播放新音乐的方法
   const playNewMusic = async () => {
@@ -428,22 +435,20 @@ const MusicCtrlProvider = props => {
       await audioPlayer.stopPlayer();
       await audioPlayer.startPlayer(url);
       const index = playList.findIndex(item => item.id === playingMusic.id);
-      setIsMusicPlaying(true);
       setPlayingMusicIndex(index);
       setNowPlayingCtrl(playingMusic);
       recordPlayHistory(playingMusic);
     } catch (error) {
       console.error(error);
       showToast(t('music.unable_to_play'), 'error');
-      restMusicStatus();
+      restAllMusicState();
     } finally {
       setIsMusicLoading(false);
     }
   };
 
   // 加载音乐名
-  const renderMarquee = useCallback(() => {
-    const {id} = playingMusic;
+  const renderMarquee = () => {
     let musicText = renderMusicTitle(playingMusic);
     if (isMusicLoading) {
       musicText = t('music.loading');
@@ -454,7 +459,6 @@ const MusicCtrlProvider = props => {
       <View>
         <Marquee
           withGesture={false}
-          key={id + String(isMusicLoading)}
           speed={speed}
           spacing={spacing}
           style={[styles.marquee, {width: fullWidth * 0.56}]}>
@@ -462,7 +466,7 @@ const MusicCtrlProvider = props => {
         </Marquee>
       </View>
     );
-  }, [isMusicLoading, playingMusic?.id]);
+  };
 
   // 编辑用户收藏的音乐
   const [isLike, setIsLike] = useState(false);
@@ -567,7 +571,6 @@ const MusicCtrlProvider = props => {
     if (playingMusic?.id) {
       playNewMusic();
     }
-    console.log(playingMusic?.id);
   }, [playingMusic?.id]);
 
   useEffect(() => {
@@ -607,6 +610,7 @@ const MusicCtrlProvider = props => {
     } else {
       pausePlayerCtrl();
     }
+    console.log('isMusicPlaying', isMusicPlaying);
   }, [isMusicPlaying]);
 
   // 是否要定时关闭音乐
@@ -673,7 +677,7 @@ const MusicCtrlProvider = props => {
   useEffect(() => {
     return () => {
       stopLyricService();
-      restMusicStatus();
+      restAllMusicState();
     };
   }, []);
 

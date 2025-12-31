@@ -8,8 +8,7 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-
-const HIDDEN_TEXTS = ['//', '本翻译作品'];
+import {HIDDEN_TEXTS} from '@utils/system/lyric_utils';
 
 const styles = StyleSheet.create({
   lyricViewAbs: {
@@ -20,7 +19,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const LrcItem = React.memo(props => {
+const LrcItem = props => {
   const {
     lyric = '',
     trans = '',
@@ -174,6 +173,6 @@ const LrcItem = React.memo(props => {
       )}
     </View>
   );
-});
+};
 
 export default LrcItem;

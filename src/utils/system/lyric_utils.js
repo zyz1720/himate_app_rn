@@ -2,6 +2,8 @@ import {isEmptyString} from '@utils/common/string_utils';
 import {mergeArraysByIndex} from '@utils/common/array_utils';
 import i18n from 'i18next';
 
+export const HIDDEN_TEXTS = ['//', '本翻译作品'];
+
 /**
  * 渲染艺术家文本函数
  * @param {Array} artists 艺术家数组

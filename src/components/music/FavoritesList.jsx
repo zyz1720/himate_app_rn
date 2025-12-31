@@ -42,6 +42,7 @@ const FavoritesList = props => {
         numColumns={2}
         containerWidth={fullWidth - 24}
         keyExtractor={(_, index) => index.toString()}
+        showsVerticalScrollIndicator={false}
         onEndReachedThreshold={0.8}
         onEndReached={onEndReached}
         renderItem={({item}) => (
