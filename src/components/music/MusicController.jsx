@@ -196,38 +196,33 @@ const MusicCtrlProvider = props => {
     getMusicDetailFunc(music?.id);
   };
 
-  // 添加播放列表
+  // 优化后的添加播放列表函数
   const addPlayList = (list = []) =>
     setPlayList(prevPlayList => {
-      list.forEach(item => {
-        if (!prevPlayList.find(e => e?.id === item?.id)) {
-          prevPlayList.push(item);
-        }
-      });
-      return prevPlayList;
+      const existingIds = new Set(prevPlayList.map(item => item?.id));
+      const newItems = list.filter(item => !existingIds.has(item?.id));
+      if (newItems.length === 0) {
+        return prevPlayList;
+      }
+      return [...prevPlayList, ...newItems];
     });
 
   // 从播放列表头部添加音乐
   const unshiftPlayList = (list = []) =>
     setPlayList(prevPlayList => {
-      list.forEach(item => {
-        if (!prevPlayList.find(e => e?.id === item?.id)) {
-          prevPlayList.unshift(item);
-        }
-      });
-      return prevPlayList;
+      const existingIds = new Set(prevPlayList.map(item => item?.id));
+      const newItems = list.filter(item => !existingIds.has(item?.id));
+      if (newItems.length === 0) {
+        return prevPlayList;
+      }
+      return [...newItems, ...prevPlayList];
     });
 
   // 从播放列表中移除音乐
   const removePlayList = (list = []) =>
     setPlayList(prevPlayList => {
-      list.forEach(item => {
-        const index = prevPlayList.findIndex(e => e?.id === item?.id);
-        if (index > -1) {
-          prevPlayList.splice(index, 1);
-        }
-      });
-      return prevPlayList;
+      const idsToRemove = new Set(list.map(item => item?.id));
+      return prevPlayList.filter(item => !idsToRemove.has(item?.id));
     });
 
   // 设置播放位置
