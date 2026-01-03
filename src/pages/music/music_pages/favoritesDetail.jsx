@@ -66,7 +66,7 @@ const FavoritesDetail = ({navigation, route}) => {
     <>
       {isEmptyObject(favoritesInfo) ? null : (
         <>
-          <View padding-24 row spread>
+          <View padding-12 row spread>
             <View flexS row width={'70%'}>
               <TouchableOpacity
                 onPress={() => {
@@ -132,7 +132,7 @@ const FavoritesDetail = ({navigation, route}) => {
             )}
           </View>
           <TouchableOpacity
-            paddingH-16
+            paddingH-12
             onPress={() => {
               setDetailModalVisible(true);
             }}>

@@ -147,6 +147,7 @@ const MusicCtrlProvider = props => {
   const [playingMusicIndex, setPlayingMusicIndex] = useState(0);
   const [playingMusicProgress, setPlayingMusicProgress] = useState(0);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const [seekPosition, setSeekPosition] = useState(0);
 
   const [musicModalVisible, setMusicModalVisible] = useState(false);
   const [listModalVisible, setListModalVisible] = useState(false);
@@ -255,6 +256,7 @@ const MusicCtrlProvider = props => {
 
   // 重置正在播放的音乐状态
   const resetPlayingState = () => {
+    setSeekPosition(0);
     setPlayPosition(0);
     setMusicDuration(0);
     setPlayingMusicProgress(0);
@@ -290,6 +292,8 @@ const MusicCtrlProvider = props => {
     const elapsedTime = Math.round(currentPosition / 1000);
     const progress = Math.round((currentPosition / duration) * 100);
     const isPlaying = currentPosition !== playPosition;
+    const isSeekSuccess =
+      seekPosition !== 0 && currentPosition !== seekPosition;
 
     setIsMusicPlaying(isPlaying);
 
@@ -302,6 +306,10 @@ const MusicCtrlProvider = props => {
         setPlayingMusicProgress(progress);
       }
       seekToPlayerCtrl(elapsedTime);
+    }
+    if (isSeekSuccess) {
+      setSeekPosition(0);
+      setIsMusicLoading(false);
     }
 
     if (isFinished) {
@@ -394,9 +402,10 @@ const MusicCtrlProvider = props => {
 
   // 调整播放进度
   const onSliderChange = async position => {
-    await audioPlayer.seekToPlayer(position);
-    setIsMusicPlaying(false);
     setIsMusicLoading(true);
+    const roundedPosition = Math.round(position);
+    await audioPlayer.seekToPlayer(roundedPosition);
+    setSeekPosition(roundedPosition);
   };
 
   // 获取随机歌曲
@@ -454,13 +463,13 @@ const MusicCtrlProvider = props => {
     const speed = musicText.length > 16 ? 0.4 : 0;
     const spacing = musicText.length > 16 ? fullWidth * 0.2 : fullWidth * 0.6;
     return (
-      <View>
+      <View width={fullWidth * 0.56}>
         <Marquee
           key={String(isMusicLoading)}
           withGesture={false}
           speed={speed}
           spacing={spacing}
-          style={[styles.marquee, {width: fullWidth * 0.56}]}>
+          style={styles.marquee}>
           <Text white>{musicText}</Text>
         </Marquee>
       </View>
@@ -604,7 +613,6 @@ const MusicCtrlProvider = props => {
       return;
     }
     if (isMusicPlaying) {
-      setIsMusicLoading(false);
       resumePlayerCtrl();
     } else {
       pausePlayerCtrl();
@@ -745,7 +753,7 @@ const MusicCtrlProvider = props => {
                     </AnimatedCircularProgress>
                   </View>
                 </TouchableOpacity>
-                <View row centerV>
+                <View width={fullWidth - 86} row centerV spread>
                   <TouchableOpacity
                     centerV
                     onPress={() => {
