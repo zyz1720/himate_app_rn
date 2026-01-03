@@ -394,8 +394,9 @@ const MusicCtrlProvider = props => {
 
   // 调整播放进度
   const onSliderChange = async position => {
-    setIsMusicLoading(true);
     await audioPlayer.seekToPlayer(position);
+    setIsMusicPlaying(false);
+    setIsMusicLoading(true);
   };
 
   // 获取随机歌曲
