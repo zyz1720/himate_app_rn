@@ -79,7 +79,7 @@
   "download_complete": "Download complete",
   "download_failed": "Download failed for song {{index}}",
   "download_music": "Download Music",
-  "download_complete_tips": "Downloaded {{now}} out of {{total}} songs",
+  "download_complete_tips": "Downloading {{now}} out of {{total}} songs",
   "scan_error": "Error scanning local music",
   "scan_complete_tips": "Scanned {{total}} new music for you",
   "no_new_music": "No new music found",

@@ -79,7 +79,7 @@
   "download_complete": "歌曲下载完成",
   "download_failed": "第{{index}}首歌曲下载失败",
   "download_music": "歌曲下载",
-  "download_complete_tips": "共{{total}}首歌曲，已下载{{now}}首",
+  "download_complete_tips": "共{{total}}首歌曲，正在下载第{{now}}首歌曲",
   "scan_error": "扫描音乐时发生错误",
   "scan_complete_tips": "为您扫描到{{total}}首新音乐",
   "no_new_music": "没有找到新音乐",

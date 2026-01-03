@@ -246,13 +246,13 @@ const MusicList = props => {
     }
     try {
       const res = await appendMusicToFavorites({
-        ids: selectedIds,
+        ids: musicIds,
         favoritesIds: selectedFavoriteIds,
       });
       if (res.code === 0) {
         showToast(
           t('music.add_to_favorites_success', {
-            count1: selectedIds.length,
+            count1: musicIds.length,
             count2: selectedFavoriteIds.length,
           }),
           'success',

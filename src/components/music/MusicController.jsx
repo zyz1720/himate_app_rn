@@ -395,7 +395,6 @@ const MusicCtrlProvider = props => {
   // 调整播放进度
   const onSliderChange = async position => {
     setIsMusicLoading(true);
-    setIsMusicLoading(false);
     await audioPlayer.seekToPlayer(position);
   };
 
