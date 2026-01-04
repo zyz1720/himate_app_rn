@@ -124,6 +124,7 @@ const MusicList = props => {
         }
         showToast(t('music.add_success'), 'success');
         setModalVisible(false);
+        resetMultiSelect();
       },
     },
     {
@@ -173,6 +174,7 @@ const MusicList = props => {
         });
         setNowMusic({});
         setModalVisible(false);
+        resetMultiSelect();
       },
     },
     {
@@ -223,6 +225,7 @@ const MusicList = props => {
             onRefresh();
             setNowMusic({});
             setModalVisible(false);
+            resetMultiSelect();
           });
       },
     },
