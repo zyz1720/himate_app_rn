@@ -7,7 +7,11 @@ import {useMusicStore} from '@store/musicStore';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
 import {renderArtists} from '@utils/system/lyric_utils';
-import {useMusicCtrl} from './MusicController';
+import {
+  useMusicCtrl,
+  useMusicPlayPosition,
+  useMusicPlayback,
+} from './MusicController';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LrcItem from './LrcItem';
 
@@ -66,19 +70,19 @@ const styles = StyleSheet.create({
   },
 });
 
-const LrcView = props => {
+const LrcView = React.memo(props => {
   const {isHorizontal = false} = props;
   const {t} = useTranslation();
   const {fullWidth, fullHeight} = useScreenDimensions();
   const {
-    playPosition = 0,
     playingMusic = {},
     lyrics = [],
     isHasYrc,
     isHasTrans,
     isHasRoma,
-    nowLyricIndex = -1,
   } = useMusicCtrl();
+  const {nowLyricIndex} = useMusicPlayback();
+  const {playPosition} = useMusicPlayPosition();
 
   const {envConfig} = useConfigStore();
   const {switchCount, setSwitchCount} = useMusicStore();
@@ -284,7 +288,7 @@ const LrcView = props => {
       for (const word of item.words) {
         if (playPosition >= word.startTime) {
           displayChars += word.char;
-          yrcDuration = word.endTime - word.startTime;
+          yrcDuration = word.duration;
         } else {
           break;
         }
@@ -297,6 +301,7 @@ const LrcView = props => {
         trans={item?.trans}
         roma={item?.roma}
         index={index}
+        nowLyricIndex={nowLyricIndex}
         yrcDuration={yrcDuration}
         progress={progress}
         displayChars={displayChars}
@@ -398,6 +403,6 @@ const LrcView = props => {
       )}
     </View>
   );
-};
+});
 
 export default LrcView;

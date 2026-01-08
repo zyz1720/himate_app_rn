@@ -4,6 +4,7 @@ import React, {
   createContext,
   useContext,
   useMemo,
+  useCallback,
 } from 'react';
 import {StyleSheet} from 'react-native';
 import {Image, View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
@@ -82,7 +83,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export const MusicCtrlContext = createContext();
+const MusicCtrlContext = createContext();
+const MusicPlaybackContext = createContext();
+const MusicPlayPositionContext = createContext();
 
 const MusicCtrlProvider = props => {
   const {children} = props;
@@ -142,6 +145,7 @@ const MusicCtrlProvider = props => {
   const [playList, setPlayList] = useState([]);
   const [playingMusic, _setPlayingMusic] = useState({});
   const [playPosition, setPlayPosition] = useState(0);
+  const [progressPosition, setProgressPosition] = useState(0);
   const [isMusicLoading, setIsMusicLoading] = useState(false);
   const [musicDuration, setMusicDuration] = useState(0);
   const [playingMusicIndex, setPlayingMusicIndex] = useState(0);
@@ -186,7 +190,7 @@ const MusicCtrlProvider = props => {
   };
 
   // 设置正在播放的音乐
-  const setPlayingMusic = async music => {
+  const setPlayingMusic = useCallback(async music => {
     resetLyricState();
     if (!music || isEmptyObject(music)) {
       return _setPlayingMusic({});
@@ -195,36 +199,45 @@ const MusicCtrlProvider = props => {
       return _setPlayingMusic(music);
     }
     getMusicDetailFunc(music?.id);
-  };
+  }, []);
 
   // 优化后的添加播放列表函数
-  const addPlayList = (list = []) =>
-    setPlayList(prevPlayList => {
-      const existingIds = new Set(prevPlayList.map(item => item?.id));
-      const newItems = list.filter(item => !existingIds.has(item?.id));
-      if (newItems.length === 0) {
-        return prevPlayList;
-      }
-      return [...prevPlayList, ...newItems];
-    });
+  const addPlayList = useCallback(
+    (list = []) =>
+      setPlayList(prevPlayList => {
+        const existingIds = new Set(prevPlayList.map(item => item?.id));
+        const newItems = list.filter(item => !existingIds.has(item?.id));
+        if (newItems.length === 0) {
+          return prevPlayList;
+        }
+        return [...prevPlayList, ...newItems];
+      }),
+    [],
+  );
 
   // 从播放列表头部添加音乐
-  const unshiftPlayList = (list = []) =>
-    setPlayList(prevPlayList => {
-      const existingIds = new Set(prevPlayList.map(item => item?.id));
-      const newItems = list.filter(item => !existingIds.has(item?.id));
-      if (newItems.length === 0) {
-        return prevPlayList;
-      }
-      return [...newItems, ...prevPlayList];
-    });
+  const unshiftPlayList = useCallback(
+    (list = []) =>
+      setPlayList(prevPlayList => {
+        const existingIds = new Set(prevPlayList.map(item => item?.id));
+        const newItems = list.filter(item => !existingIds.has(item?.id));
+        if (newItems.length === 0) {
+          return prevPlayList;
+        }
+        return [...newItems, ...prevPlayList];
+      }),
+    [],
+  );
 
   // 从播放列表中移除音乐
-  const removePlayList = (list = []) =>
-    setPlayList(prevPlayList => {
-      const idsToRemove = new Set(list.map(item => item?.id));
-      return prevPlayList.filter(item => !idsToRemove.has(item?.id));
-    });
+  const removePlayList = useCallback(
+    (list = []) =>
+      setPlayList(prevPlayList => {
+        const idsToRemove = new Set(list.map(item => item?.id));
+        return prevPlayList.filter(item => !idsToRemove.has(item?.id));
+      }),
+    [],
+  );
 
   // 设置播放位置
   const setPlayPositionWithLyrics = position => {
@@ -235,7 +248,7 @@ const MusicCtrlProvider = props => {
     if (lyrics.length === 0) {
       return;
     }
-    const nowIndex = findLyricIndex(lyrics, position, isHasYrc) - 1;
+    const nowIndex = findLyricIndex(lyrics, position, isHasYrc);
     if (nowLyricIndex === nowIndex) {
       return;
     }
@@ -243,21 +256,22 @@ const MusicCtrlProvider = props => {
 
     const _nowLyric = lyrics[nowIndex] || {};
     const transText = _nowLyric?.trans || '';
+    const _nowRoma = _nowLyric?.roma || '';
+    setNowRoma(_nowRoma);
+    const _nowLyricText = _nowLyric?.lyric || '';
+    setNowLyric(_nowLyricText);
     const _nowTrans =
       transText && HIDDEN_TEXTS.some(hidden => transText.includes(hidden))
         ? ''
         : transText;
-    const _nowRoma = _nowLyric?.roma || '';
-    const _nowLyricText = _nowLyric?.lyric || '';
-    setNowLyric(_nowLyricText);
     setNowTrans(_nowTrans);
-    setNowRoma(_nowRoma);
   };
 
   // 重置正在播放的音乐状态
   const resetPlayingState = () => {
     setSeekPosition(0);
     setPlayPosition(0);
+    setProgressPosition(0);
     setMusicDuration(0);
     setPlayingMusicProgress(0);
     setIsMusicLoading(false);
@@ -289,8 +303,6 @@ const MusicCtrlProvider = props => {
   // 处理播放更新
   const handlePlaybackUpdate = playbackMeta => {
     const {currentPosition, duration, isFinished} = playbackMeta;
-    const elapsedTime = Math.round(currentPosition / 1000);
-    const progress = Math.round((currentPosition / duration) * 100);
     const isPlaying = currentPosition !== playPosition;
     const isSeekSuccess =
       seekPosition !== 0 && currentPosition !== seekPosition;
@@ -299,13 +311,19 @@ const MusicCtrlProvider = props => {
 
     if (isPlaying) {
       setPlayPositionWithLyrics(currentPosition);
-      if (duration !== musicDuration) {
-        setMusicDuration(duration);
+      if (currentPosition - progressPosition >= 1000) {
+        const progress = Math.round((currentPosition / duration) * 100);
+        const elapsedTime = Math.round(currentPosition / 1000);
+
+        if (duration !== musicDuration) {
+          setMusicDuration(duration);
+        }
+        if (progress !== playingMusicProgress) {
+          setPlayingMusicProgress(progress);
+        }
+        setProgressPosition(currentPosition);
+        seekToPlayerCtrl(elapsedTime);
       }
-      if (progress !== playingMusicProgress) {
-        setPlayingMusicProgress(progress);
-      }
-      seekToPlayerCtrl(elapsedTime);
     }
     if (isSeekSuccess) {
       setSeekPosition(0);
@@ -406,6 +424,7 @@ const MusicCtrlProvider = props => {
     const roundedPosition = Math.round(position);
     await audioPlayer.seekToPlayer(roundedPosition);
     setSeekPosition(roundedPosition);
+    setProgressPosition(roundedPosition);
   };
 
   // 获取随机歌曲
@@ -687,166 +706,178 @@ const MusicCtrlProvider = props => {
     };
   }, []);
 
+  const contextValue = useMemo(
+    () => ({
+      playingMusic,
+      playList,
+      musicDuration,
+      musicPlayMode,
+      isMusicPlaying,
+      setPlayingMusic,
+      addPlayList,
+      unshiftPlayList,
+      removePlayList,
+      setPlayList,
+      lyrics,
+      isHasYrc,
+      isHasTrans,
+      isHasRoma,
+    }),
+    [
+      playingMusic,
+      playList,
+      musicDuration,
+      musicPlayMode,
+      isMusicPlaying,
+      setPlayingMusic,
+      addPlayList,
+      unshiftPlayList,
+      removePlayList,
+      setPlayList,
+      lyrics,
+      isHasYrc,
+      isHasTrans,
+      isHasRoma,
+    ],
+  );
+
   return (
-    <MusicCtrlContext.Provider
-      value={{
-        playingMusic,
-        playList,
-        nowLyric,
-        playPosition,
-        musicDuration,
-        musicPlayMode,
-        isMusicPlaying,
-        setPlayingMusic,
-        addPlayList,
-        unshiftPlayList,
-        removePlayList,
-        setPlayList,
-        lyrics,
-        isHasYrc,
-        isHasTrans,
-        isHasRoma,
-        nowLyricIndex,
-      }}>
-      {children}
-      <View style={[styles.CtrlContainer, {width: fullWidth}]}>
-        <Animated.View
-          style={[
-            expandAnimatedStyle,
-            fadeDownAnimatedStyle,
-            styles.ctrlBackImage,
-          ]}>
-          <BaseImageBackground
-            blurRadius={40}
-            source={{
-              uri: envConfig.THUMBNAIL_URL + userInfo?.user_bg_img,
-            }}
-            resizeMode="cover">
-            <GestureHandlerRootView>
-              <View row centerV spread>
-                <TouchableOpacity
-                  row
-                  centerV
-                  onPress={() => {
-                    setIsExpand(!isExpand);
-                    ctrlWidth.value = withTiming(
-                      ctrlWidth.value === 50 ? fullWidth - 32 : 50,
-                    );
-                  }}>
-                  <View>
-                    <AnimatedCircularProgress
-                      key={playingMusic?.id}
-                      size={50}
-                      width={3}
-                      fill={playingMusicProgress}
-                      tintColor={Colors.red40}
-                      rotation={0}
-                      lineCap="square">
-                      {() => (
-                        <Animated.View style={rotateAnimatedStyle}>
-                          <Image
-                            source={musicCoverSource}
-                            style={styles.image}
-                          />
-                        </Animated.View>
-                      )}
-                    </AnimatedCircularProgress>
-                  </View>
-                </TouchableOpacity>
-                <View width={fullWidth - 86} row centerV spread>
-                  <TouchableOpacity
-                    centerV
-                    onPress={() => {
-                      setMusicModalVisible(true);
-                    }}>
-                    {renderMarquee()}
-                  </TouchableOpacity>
-                  <View row centerV>
+    <MusicCtrlContext.Provider value={contextValue}>
+      <MusicPlaybackContext.Provider
+        value={{nowLyric, progressPosition, nowLyricIndex}}>
+        <MusicPlayPositionContext.Provider value={{playPosition}}>
+          {children}
+          <View style={[styles.CtrlContainer, {width: fullWidth}]}>
+            <Animated.View
+              style={[
+                expandAnimatedStyle,
+                fadeDownAnimatedStyle,
+                styles.ctrlBackImage,
+              ]}>
+              <BaseImageBackground
+                blurRadius={40}
+                source={{
+                  uri: envConfig.THUMBNAIL_URL + userInfo?.user_bg_img,
+                }}
+                resizeMode="cover">
+                <GestureHandlerRootView>
+                  <View row centerV spread>
                     <TouchableOpacity
-                      style={styles.musicBut}
+                      row
+                      centerV
                       onPress={() => {
-                        playOrPauseTrack();
+                        setIsExpand(!isExpand);
+                        ctrlWidth.value = withTiming(
+                          ctrlWidth.value === 50 ? fullWidth - 32 : 50,
+                        );
                       }}>
-                      {isMusicPlaying ? (
-                        <AntDesign
-                          name="pausecircleo"
-                          color={Colors.white}
-                          size={24}
-                        />
-                      ) : (
-                        <AntDesign
-                          name="playcircleo"
-                          color={Colors.white}
-                          size={24}
-                        />
-                      )}
+                      <View>
+                        <AnimatedCircularProgress
+                          key={playingMusic?.id}
+                          size={50}
+                          width={3}
+                          fill={playingMusicProgress}
+                          tintColor={Colors.red40}
+                          rotation={0}
+                          lineCap="square">
+                          {() => (
+                            <Animated.View style={rotateAnimatedStyle}>
+                              <Image
+                                source={musicCoverSource}
+                                style={styles.image}
+                              />
+                            </Animated.View>
+                          )}
+                        </AnimatedCircularProgress>
+                      </View>
                     </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.musicBut}
-                      marginL-6
-                      marginR-12
-                      onPress={() => setListModalVisible(true)}>
-                      <AntDesign
-                        name="menuunfold"
-                        color={Colors.white}
-                        size={22}
-                      />
-                    </TouchableOpacity>
+                    <View width={fullWidth - 86} row centerV spread>
+                      <TouchableOpacity
+                        centerV
+                        onPress={() => {
+                          setMusicModalVisible(true);
+                        }}>
+                        {renderMarquee()}
+                      </TouchableOpacity>
+                      <View row centerV>
+                        <TouchableOpacity
+                          style={styles.musicBut}
+                          onPress={() => {
+                            playOrPauseTrack();
+                          }}>
+                          {isMusicPlaying ? (
+                            <AntDesign
+                              name="pausecircleo"
+                              color={Colors.white}
+                              size={24}
+                            />
+                          ) : (
+                            <AntDesign
+                              name="playcircleo"
+                              color={Colors.white}
+                              size={24}
+                            />
+                          )}
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.musicBut}
+                          marginL-6
+                          marginR-12
+                          onPress={() => setListModalVisible(true)}>
+                          <AntDesign
+                            name="menuunfold"
+                            color={Colors.white}
+                            size={22}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
                   </View>
-                </View>
-              </View>
-            </GestureHandlerRootView>
-          </BaseImageBackground>
-        </Animated.View>
-      </View>
-      <LyricModal
-        playingMusic={playingMusic}
-        playPosition={playPosition}
-        musicDuration={musicDuration}
-        musicPlayMode={musicPlayMode}
-        isMusicPlaying={isMusicPlaying}
-        nowLyric={nowLyric}
-        nowLyricIndex={nowLyricIndex}
-        lyrics={lyrics}
-        isHasYrc={isHasYrc}
-        isHasTrans={isHasTrans}
-        isHasRoma={isHasRoma}
-        visible={musicModalVisible}
-        onClose={() => setMusicModalVisible(false)}
-        isLike={isLike}
-        onPressLike={editMyFavorite}
-        onSliderChange={value => {
-          onSliderChange(value);
-        }}
-        onModeChange={() => {
-          let newPlayMode;
-          if (musicPlayMode === 'order') {
-            showToast(t('music.random_play'), 'success', true);
-            newPlayMode = 'random';
-          }
-          if (musicPlayMode === 'random') {
-            showToast(t('music.single_play'), 'success', true);
-            newPlayMode = 'single';
-          }
-          if (musicPlayMode === 'single') {
-            showToast(t('music.order_play'), 'success', true);
-            newPlayMode = 'order';
-          }
-          setMusicPlayMode(newPlayMode);
-        }}
-        onBackWard={previousTrack}
-        onPlay={playOrPauseTrack}
-        onForWard={nextTrack}
-        onPressMenu={() => setListModalVisible(true)}
-      />
-      <ToBePlayedModal
-        visible={listModalVisible}
-        onClose={() => setListModalVisible(false)}
-      />
+                </GestureHandlerRootView>
+              </BaseImageBackground>
+            </Animated.View>
+          </View>
+          <LyricModal
+            visible={musicModalVisible}
+            onClose={() => setMusicModalVisible(false)}
+            isLike={isLike}
+            onPressLike={editMyFavorite}
+            onSliderChange={value => {
+              onSliderChange(value);
+            }}
+            onModeChange={() => {
+              let newPlayMode;
+              if (musicPlayMode === 'order') {
+                showToast(t('music.random_play'), 'success', true);
+                newPlayMode = 'random';
+              }
+              if (musicPlayMode === 'random') {
+                showToast(t('music.single_play'), 'success', true);
+                newPlayMode = 'single';
+              }
+              if (musicPlayMode === 'single') {
+                showToast(t('music.order_play'), 'success', true);
+                newPlayMode = 'order';
+              }
+              setMusicPlayMode(newPlayMode);
+            }}
+            onBackWard={previousTrack}
+            onPlay={playOrPauseTrack}
+            onForWard={nextTrack}
+            onPressMenu={() => setListModalVisible(true)}
+          />
+          <ToBePlayedModal
+            visible={listModalVisible}
+            onClose={() => setListModalVisible(false)}
+          />
+        </MusicPlayPositionContext.Provider>
+      </MusicPlaybackContext.Provider>
     </MusicCtrlContext.Provider>
   );
 };
 
 export const useMusicCtrl = () => useContext(MusicCtrlContext);
+export const useMusicPlayback = () => useContext(MusicPlaybackContext);
+export const useMusicPlayPosition = () => useContext(MusicPlayPositionContext);
 
 export default MusicCtrlProvider;

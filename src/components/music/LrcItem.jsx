@@ -9,7 +9,6 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import {HIDDEN_TEXTS} from '@utils/system/lyric_utils';
-import {useMusicCtrl} from './MusicController';
 
 const styles = StyleSheet.create({
   lyricViewAbs: {
@@ -35,10 +34,10 @@ const LrcItem = React.memo(props => {
     romaVisible = false,
     onItemLayout = () => {},
     isHorizontal = false,
+    nowLyricIndex = -1,
   } = props;
 
   const {fullWidth} = useScreenDimensions();
-  const {nowLyricIndex} = useMusicCtrl();
 
   const fullWidthRef = useRef(fullWidth);
 

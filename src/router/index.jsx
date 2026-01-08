@@ -23,7 +23,7 @@ const RootView = () => {
   install();
   const {t} = useTranslation();
   const {showToast} = useToast();
-  const {isLogin, setUserInfo} = useUserStore();
+  const {isLogin, setUserInfo, access_token} = useUserStore();
   const {envConfig, configLoading, updateEnvConfig} = useConfigStore();
   const {isFastStatic, themeColor, language, isFullScreen} = useSettingStore();
   const {errorMsg, clearMsgStore} = useErrorMsgStore();
@@ -68,7 +68,7 @@ const RootView = () => {
       socketInit();
       sseInit();
     }
-  }, [isLogin, configLoading]);
+  }, [isLogin, configLoading, access_token]);
 
   // 是否启用高速静态资源
   useEffect(() => {

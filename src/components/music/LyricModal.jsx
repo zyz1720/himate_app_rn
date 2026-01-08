@@ -18,7 +18,7 @@ import {getWhitenessScore} from '@utils/system/color_utils';
 import {useKeepAwake} from 'expo-keep-awake';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
-import {useMusicCtrl} from './MusicController';
+import {useMusicCtrl, useMusicPlayback} from './MusicController';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import BaseImageBackground from '@components/common/BaseImageBackground';
@@ -83,12 +83,11 @@ const LyricModal = props => {
     useScreenDimensions();
   const {
     playingMusic,
-    nowLyric,
-    playPosition,
     musicDuration,
     musicPlayMode,
     isMusicPlaying,
   } = useMusicCtrl();
+  const {nowLyric, progressPosition} = useMusicPlayback();
 
   const {envConfig} = useConfigStore();
   const musicExtra = playingMusic?.musicExtra;
@@ -104,8 +103,8 @@ const LyricModal = props => {
 
   // 当前时间和总时长格式化
   const currentTimeFormatted = useMemo(
-    () => formatMilliSeconds(playPosition),
-    [playPosition],
+    () => formatMilliSeconds(progressPosition),
+    [progressPosition],
   );
 
   const durationFormatted = useMemo(
@@ -226,7 +225,7 @@ const LyricModal = props => {
                     </View>
                     <View marginT-8>
                       <Slider
-                        value={playPosition}
+                        value={progressPosition}
                         minimumValue={0}
                         disabled={!musicDuration}
                         maximumValue={musicDuration || 100}
@@ -380,7 +379,7 @@ const LyricModal = props => {
                   ) : null}
                   <View marginT-16>
                     <Slider
-                      value={playPosition}
+                      value={progressPosition}
                       minimumValue={0}
                       disabled={!musicDuration}
                       maximumValue={musicDuration || 100}
