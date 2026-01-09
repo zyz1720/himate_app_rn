@@ -275,17 +275,30 @@ const LrcView = React.memo(props => {
   // 渲染每行歌词
   const renderItem = ({item, index}) => {
     const isActive = nowLyricIndex === index;
+    const hasWords = item?.words;
+    const fullText = hasWords
+      ? item.words.map(w => w.char).join('')
+      : item?.text;
+
     let progress = 0;
     let displayChars = '';
     let yrcDuration = 0;
-    const fullText = item?.words
-      ? item.words.map(w => w.char).join('')
-      : item?.text;
-    if (isActive && item?.words) {
-      const lineTime = playPosition - item.startTime;
-      progress = Math.min(Math.max(lineTime / item.duration, 0), 1);
 
-      for (const word of item.words) {
+    if (isActive && hasWords) {
+      const lineTime = playPosition - item.startTime;
+
+      progress = lineTime / item.duration;
+      if (progress < 0) {
+        progress = 0;
+      } else if (progress > 1) {
+        progress = 1;
+      }
+
+      const words = item.words;
+      const wordsLength = words.length;
+
+      for (let i = 0; i < wordsLength; i++) {
+        const word = words[i];
         if (playPosition >= word.startTime) {
           displayChars += word.char;
           yrcDuration = word.duration;
@@ -318,7 +331,7 @@ const LrcView = React.memo(props => {
   // 自动滚动到当前歌词
   useEffect(() => {
     if (flatListRef.current && nowLyricIndex >= 0) {
-      flatListRef.current.scrollToIndex({index: nowLyricIndex, animated: true});
+      flatListRef.current.scrollToIndex({index: nowLyricIndex});
     }
   }, [nowLyricIndex]);
 

@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const ToBePlayedModal = props => {
+const ToBePlayedModal = React.memo(props => {
   const {visible = false, onClose = () => {}} = props;
   const {t} = useTranslation();
   const {fullHeight, statusBarHeight} = useScreenDimensions();
@@ -152,6 +152,6 @@ const ToBePlayedModal = props => {
       </View>
     </Modal>
   );
-};
+});
 
 export default ToBePlayedModal;

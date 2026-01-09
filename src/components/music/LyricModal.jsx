@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const LyricModal = props => {
+const LyricModal = React.memo(props => {
   const {
     visible = false,
     isLike = false,
@@ -81,12 +81,8 @@ const LyricModal = props => {
   const {t} = useTranslation();
   const {fullWidth, fullHeight, isHorizontal, statusBarHeight} =
     useScreenDimensions();
-  const {
-    playingMusic,
-    musicDuration,
-    musicPlayMode,
-    isMusicPlaying,
-  } = useMusicCtrl();
+  const {playingMusic, musicDuration, musicPlayMode, isMusicPlaying} =
+    useMusicCtrl();
   const {nowLyric, progressPosition} = useMusicPlayback();
 
   const {envConfig} = useConfigStore();
@@ -475,6 +471,6 @@ const LyricModal = props => {
       </View>
     </Modal>
   );
-};
+});
 
 export default LyricModal;

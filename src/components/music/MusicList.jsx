@@ -65,8 +65,6 @@ const MusicList = props => {
     setPlayList,
   } = useMusicCtrl();
 
-  console.log('MusicList');
-
   /* 音乐是否收藏 */
   const [isLiked, setIsLiked] = useState(false);
   const getMusicIsLikedFunc = async id => {

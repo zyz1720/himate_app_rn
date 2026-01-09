@@ -448,6 +448,8 @@ const MusicCtrlProvider = props => {
       if (!playingMusic?.file_key) {
         return;
       }
+      await audioPlayer.stopPlayer();
+
       resetPlayingState();
       setIsMusicLoading(true);
       let url = '';
@@ -458,7 +460,6 @@ const MusicCtrlProvider = props => {
         url = playingMusic?.file_key;
       }
 
-      await audioPlayer.stopPlayer();
       await audioPlayer.startPlayer(url);
       const index = playList.findIndex(item => item.id === playingMusic.id);
       setPlayingMusicIndex(index);

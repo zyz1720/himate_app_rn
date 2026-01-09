@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const FavoriteModal = React.memo(props => {
+const FavoriteModal = props => {
   const {
     visible = false,
     onClose = () => {},
@@ -109,6 +109,6 @@ const FavoriteModal = React.memo(props => {
       </View>
     </Modal>
   );
-});
+};
 
 export default FavoriteModal;
