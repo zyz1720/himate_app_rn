@@ -84,8 +84,8 @@ android {
         applicationId "com.himate"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "0.3.1"
+        versionCode 3
+        versionName "0.3.2"
         // 选取头像配置
         vectorDrawables.useSupportLibrary = true
     }

@@ -422,9 +422,11 @@ const MusicCtrlProvider = props => {
   const onSliderChange = async position => {
     setIsMusicLoading(true);
     const roundedPosition = Math.round(position);
+    const elapsedTime = Math.round(position / 1000);
     await audioPlayer.seekToPlayer(roundedPosition);
     setSeekPosition(roundedPosition);
     setProgressPosition(roundedPosition);
+    seekToPlayerCtrl(elapsedTime);
   };
 
   // 获取随机歌曲
@@ -449,6 +451,7 @@ const MusicCtrlProvider = props => {
         return;
       }
       await audioPlayer.stopPlayer();
+      seekToPlayerCtrl(0);
 
       resetPlayingState();
       setIsMusicLoading(true);
