@@ -86,11 +86,11 @@ const NewMate = ({navigation}) => {
   const deleteApplyInfo = async () => {
     try {
       const delRes = await deleteMate(mateId);
-      if (delRes.success) {
+      if (delRes.code === 0) {
         setDeleteVisible(false);
         refreshDataRefused();
       }
-      showToast(delRes.message, delRes.success ? 'success' : 'error');
+      showToast(delRes.message, delRes.code === 0 ? 'success' : 'error');
     } catch (error) {
       console.error(error);
     }
@@ -126,7 +126,7 @@ const NewMate = ({navigation}) => {
           </View>
         </View>
       </TouchableOpacity>
-      <View marginL-10 flexG row>
+      <View marginL-10 flexS row>
         <Button
           label={t('common.agree')}
           borderRadius={6}
@@ -184,7 +184,7 @@ const NewMate = ({navigation}) => {
           </View>
         </View>
       </TouchableOpacity>
-      <View flexG row>
+      <View flexS row>
         <View center>
           <Text grey30 text90L>
             {t('mate.refused')}

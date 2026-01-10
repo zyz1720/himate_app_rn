@@ -93,11 +93,16 @@ const LrcItem = React.memo(props => {
   }));
 
   const isHorizontalPadding = useMemo(
-    () => (fullWidth / 2) * 0.215,
+    () => (fullWidth / 2) * 0.105,
     [fullWidth],
   );
 
   const unHorizontalPadding = useMemo(() => fullWidth * 0.105, [fullWidth]);
+
+  const lyricWidth = useMemo(
+    () => (isHorizontal ? (fullWidth / 2) * 0.95 : fullWidth * 0.95),
+    [fullWidth, isHorizontal],
+  );
 
   useEffect(() => {
     const isActive = nowLyricIndex === index;
@@ -145,7 +150,7 @@ const LrcItem = React.memo(props => {
   return (
     <View paddingV-12 paddingH-20 onLayout={itemLayout(index)}>
       {yrcVisible ? (
-        <Animated.View style={[{width: fullWidth * 0.95}, animatedStyle]}>
+        <Animated.View style={[{width: lyricWidth}, animatedStyle]}>
           <Text color={Colors.lyricColor} text70BO onLayout={handleTextLayout}>
             {fullText}
           </Text>
@@ -160,7 +165,7 @@ const LrcItem = React.memo(props => {
           </Animated.View>
         </Animated.View>
       ) : (
-        <Animated.Text style={animatedStyle}>
+        <Animated.Text style={[{width: lyricWidth}, animatedStyle]}>
           <Text color={Colors.lyricColor} text70BO>
             {lyric}
           </Text>

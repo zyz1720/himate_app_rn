@@ -228,7 +228,7 @@ const Music = ({navigation}) => {
         const trueUrl = urls?.[0];
         showToast(t('music.import_loading'), 'success');
         const res = await importFavorites(trueUrl);
-        showToast(res.message, res.success ? 'success' : 'error');
+        showToast(res.message, res.code === 0 ? 'success' : 'error');
         refreshData();
         getAllMusicCount();
       } else {
