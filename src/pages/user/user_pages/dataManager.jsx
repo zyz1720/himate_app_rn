@@ -330,7 +330,7 @@ const DataManager = ({navigation}) => {
         bg-white
         onLongPress={() => {
           Vibration.vibrate(50);
-          Clipboard.setString(item.content);
+          Clipboard.setString(showMessageText(item));
           showToast(t('common.copy_text_success'), 'success');
         }}>
         {isMultiSelect ? (
