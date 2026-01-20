@@ -6,7 +6,8 @@ const defaultState = {
   showMusicCtrl: false, // 是否显示音乐控制器
   closeTime: 0, // 关闭时间
   isClosed: false, // 是否关闭
-  randomNum: {min: 0, max: 1}, // 随机数范围
+  randomNumMin: 1, // 随机数范围
+  randomNumMax: 1, // 随机数范围
   switchCount: 0, // 切换次数
   isRandomPlay: false, // 是否随机播放
   musicPlayMode: 'order', // 列表播放类型 single order random
@@ -16,7 +17,7 @@ const defaultState = {
 
 export const useMusicStore = create(
   persist(
-    (set, get) => ({
+    set => ({
       ...defaultState,
       setShowMusicCtrl: router => {
         if (router.includes('Music') || router.includes('Favorites')) {
@@ -27,7 +28,8 @@ export const useMusicStore = create(
       },
       setCloseTime: time => set({closeTime: time || 0}),
       setIsClosed: flag => set({isClosed: flag ?? false}),
-      setRandomNum: (min = 0, max = 1) => set({randomNum: {min, max}}),
+      setRandomNumMin: min => set({randomNumMin: min || 1}),
+      setRandomNumMax: max => set({randomNumMax: max || 1}),
       setIsRandomPlay: flag => set({isRandomPlay: flag ?? false}),
       setSwitchCount: count => set({switchCount: count || 0}),
       setIsMusicResumePlay: flag => set({isMusicResumePlay: flag ?? false}),
@@ -38,6 +40,8 @@ export const useMusicStore = create(
       name: 'music-storage',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: state => ({
+        randomNumMin: state.randomNumMin,
+        randomNumMax: state.randomNumMax,
         switchCount: state.switchCount,
         musicPlayMode: state.musicPlayMode,
       }),

@@ -52,14 +52,23 @@ const MOMENTS = ['00:00', '00:30', '01:00', '01:30', '02:00'];
 
 const Music = ({navigation}) => {
   const {showToast} = useToast();
-  const {fullWidth, fullHeight} = useScreenDimensions();
+  const {fullWidth} = useScreenDimensions();
   const {t} = useTranslation();
   const isFocused = useIsFocused();
 
   const {userInfo} = useUserStore();
-  const {isClosed, randomNum, setRandomNum, setCloseTime, setIsRandomPlay} =
-    useMusicStore();
+  const {
+    isClosed,
+    randomNumMin,
+    randomNumMax,
+    setRandomNumMin,
+    setRandomNumMax,
+    setCloseTime,
+    setIsRandomPlay,
+  } = useMusicStore();
   const {envConfig} = useConfigStore();
+
+  const [musicCloseTime, setMusicCloseTime] = useState('');
 
   const {list, total, onEndReached, refreshData} =
     useInfiniteScroll(getOneselfFavorites);
@@ -196,7 +205,9 @@ const Music = ({navigation}) => {
       const res = await getMusic({pageSize: 0});
       if (res.code === 0) {
         setAllMusicNum(res.data.total);
-        setRandomNum(1, res.data.total);
+        if (randomNumMax === 1) {
+          setRandomNumMax(res.data.total);
+        }
       }
     } catch (error) {
       console.error(error);
@@ -255,6 +266,13 @@ const Music = ({navigation}) => {
       setAlarmSwitch(false);
     }
   }, [isClosed]);
+
+  useEffect(() => {
+    if (alarmTime) {
+      const closeTime = dayjs().add(alarmTime, 'minute');
+      setMusicCloseTime(closeTime.format('HH:mm'));
+    }
+  }, [alarmTime]);
 
   return (
     <View top padding-16>
@@ -644,19 +662,27 @@ const Music = ({navigation}) => {
               value={alarmSwitch}
               onValueChange={value => {
                 if (value) {
-                  setCloseTime(alarmTime);
+                  if (alarmTime > 0) {
+                    setCloseTime(alarmTime);
+                    setAlarmSwitch(value);
+                    return;
+                  } else {
+                    showToast(t('music.alarm_time_tips'), 'warning');
+                  }
                 } else {
                   setAlarmTime(0);
                   setCloseTime(0);
+                  setAlarmSwitch(value);
                 }
-                setAlarmSwitch(value);
               }}
             />
           </View>
           <View marginT-8>
-            <Text text90L grey30 marginV-6>
-              {t('music.alarm_close_tips', {time: alarmTime})}
-            </Text>
+            {alarmSwitch && alarmTime > 0 ? (
+              <Text text90L grey30 marginV-6>
+                {t('music.alarm_close_tips', {time: musicCloseTime})}
+              </Text>
+            ) : null}
             <Slider
               thumbTintColor={Colors.primary}
               minimumTrackTintColor={Colors.primary}
@@ -702,7 +728,8 @@ const Music = ({navigation}) => {
                   setIsRandomPlay(value);
                   showToast(t('music.random_play_on'), 'success');
                 } else {
-                  setRandomNum(1, allMusicNum);
+                  setRandomNumMin(1);
+                  setRandomNumMax(allMusicNum);
                   setIsRandomPlay(value);
                   showToast(t('music.random_play_off'), 'success');
                 }
@@ -713,25 +740,43 @@ const Music = ({navigation}) => {
           <View marginT-8>
             <Text text90L grey30 marginV-4>
               {t('music.random_play_range', {
-                min: randomNum?.min,
-                max: randomNum?.max,
+                min: randomNumMin,
+                max: randomNumMax,
               })}
             </Text>
-            <Slider
-              thumbTintColor={Colors.primary}
-              minimumTrackTintColor={Colors.primary}
-              thumbStyle={styles.thumbStyle}
-              minimumValue={1}
-              maximumValue={allMusicNum}
-              initialMinimumValue={randomNum?.min}
-              initialMaximumValue={randomNum?.max}
-              useGap={true}
-              useRange={true}
-              step={1}
-              onRangeChange={values => {
-                setRandomNum(values.min, values.max);
-              }}
-            />
+            <View flexS row>
+              <View width={'50%'}>
+                <Slider
+                  thumbTintColor={Colors.primary}
+                  minimumTrackTintColor={Colors.$backgroundDisabled}
+                  maximumTrackTintColor={Colors.primary}
+                  trackStyle={styles.leftTrackStyle}
+                  thumbStyle={styles.thumbStyle}
+                  minimumValue={1}
+                  maximumValue={randomNumMax}
+                  value={randomNumMin}
+                  step={1}
+                  onValueChange={value => {
+                    setRandomNumMin(value);
+                  }}
+                />
+              </View>
+              <View width={'50%'}>
+                <Slider
+                  thumbTintColor={Colors.primary}
+                  minimumTrackTintColor={Colors.primary}
+                  thumbStyle={styles.thumbStyle}
+                  trackStyle={styles.rightTrackStyle}
+                  minimumValue={randomNumMin}
+                  maximumValue={allMusicNum}
+                  value={randomNumMax}
+                  step={1}
+                  onValueChange={value => {
+                    setRandomNumMax(value);
+                  }}
+                />
+              </View>
+            </View>
           </View>
         </Card>
       </Dialog>
@@ -770,6 +815,14 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderWidth: 2,
     borderColor: Colors.white,
+  },
+  leftTrackStyle: {
+    borderTopRightRadius: 0,
+    borderBottomRightRadius: 0,
+  },
+  rightTrackStyle: {
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
   },
   importStyle: {
     transform: [{rotate: '180deg'}],

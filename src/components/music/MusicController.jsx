@@ -96,7 +96,8 @@ const MusicCtrlProvider = props => {
   const {
     showMusicCtrl,
     closeTime,
-    randomNum,
+    randomNumMin,
+    randomNumMax,
     isRandomPlay,
     setIsClosed,
     setIsMusicResumePlay,
@@ -431,7 +432,7 @@ const MusicCtrlProvider = props => {
 
   // 获取随机歌曲
   const getRandMusic = async () => {
-    const index = getRandomInt(randomNum.min, randomNum.max);
+    const index = getRandomInt(randomNumMin, randomNumMax);
     try {
       const res = await getMusic({current: index, pageSize: 1});
       if (res.code === 0 && res.data.list.length > 0) {

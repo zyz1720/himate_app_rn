@@ -241,18 +241,14 @@ const EditUser = ({route}) => {
           />
         }>
         <View flexG padding-16>
-          <View marginB-16 flexG center>
-            <Text center>
-              <FontAwesome
-                name="exclamation-circle"
-                color={Colors.yellow40}
-                size={14}
-              />
-              <Text text90L grey30>
-                {t('user.change_email')}
-              </Text>
-            </Text>
-          </View>
+          <Text marginB-16 text90L grey30 center>
+            <FontAwesome
+              name="exclamation-circle"
+              color={Colors.yellow40}
+              size={14}
+            />
+            &nbsp;{t('user.change_email')}
+          </Text>
           <Card flexS padding-16>
             <View flexG row spread centerV style={styles.inputLine}>
               <TextField

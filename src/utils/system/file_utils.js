@@ -142,8 +142,8 @@ export const getFileFromImageCropPicker = fileInfo => {
 
   const file = {
     name: 'file',
-    filename: fileInfo.filename,
-    data: ReactNativeBlobUtil.wrap(fileInfo.path),
+    filename: fileInfo?.filename || getFileName(uri),
+    data: ReactNativeBlobUtil.wrap(uri),
   };
 
   return {
@@ -419,6 +419,7 @@ export const getVideoMetaDataInfo = async videoPath => {
 export const createVideoThumbnailImg = async videoPath => {
   try {
     const thumbnail = await createVideoThumbnail(videoPath);
+    console.log(thumbnail);
     return thumbnail;
   } catch (error) {
     console.error(error);
