@@ -226,16 +226,7 @@ const DataManager = ({navigation}) => {
   const clickFile = file => {
     const fileUrl = envConfig.STATIC_URL + file.file_key;
     if (file.file_type === FileTypeEnum.image) {
-      const imgs = [];
-      fileList.forEach((item, index) => {
-        if (item.file_type === FileTypeEnum.image) {
-          imgs.push(envConfig.STATIC_URL + item.file_key);
-        }
-        if (item.id === file.id) {
-          setInitialIndex(index);
-        }
-      });
-      setPreviewImgUris(imgs);
+      setPreviewImgUris([fileUrl]);
       setImageShow(true);
     } else if (
       file.file_type === FileTypeEnum.video ||

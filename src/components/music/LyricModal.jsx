@@ -15,7 +15,7 @@ import {formatMilliSeconds} from '@utils/common/time_utils';
 import Animated, {FadeInUp, FadeOutDown} from 'react-native-reanimated';
 import {getColors} from 'react-native-image-colors';
 import {getWhitenessScore} from '@utils/system/color_utils';
-import {useKeepAwake} from 'expo-keep-awake';
+import {activateKeepAwakeAsync, deactivateKeepAwake} from 'expo-keep-awake';
 import {useConfigStore} from '@store/configStore';
 import {useTranslation} from 'react-i18next';
 import {useMusicCtrl, useMusicPlayback} from './MusicController';
@@ -77,7 +77,6 @@ const LyricModal = React.memo(props => {
     onPressMenu = () => {},
   } = props;
 
-  useKeepAwake();
   const {t} = useTranslation();
   const {fullWidth, fullHeight, isHorizontal, statusBarHeight} =
     useScreenDimensions();
@@ -161,6 +160,14 @@ const LyricModal = React.memo(props => {
         });
     }
   }, [musicExtra?.music_cover]);
+
+  useEffect(() => {
+    if (visible) {
+      activateKeepAwakeAsync();
+    } else {
+      deactivateKeepAwake();
+    }
+  }, [visible]);
 
   return (
     <Modal
