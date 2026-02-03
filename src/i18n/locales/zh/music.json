@@ -97,5 +97,6 @@
   "desktop_lyric_color": "桌面歌词颜色",
   "desktop_trans_color": "桌面翻译歌词颜色",
   "reset": "恢复默认",
-  "reset_confirm": "您确定要恢复为默认设置吗？"
+  "reset_confirm": "您确定要恢复为默认设置吗？",
+  "search": "搜索你想听的音乐"
 }

@@ -97,5 +97,6 @@
   "desktop_lyric_color": "Desktop Lyric Color",
   "desktop_trans_color": "Desktop Trans Lyric Color",
   "reset": "Reset",
-  "reset_confirm": "Are you sure you want to reset to default settings?"
+  "reset_confirm": "Are you sure you want to reset to default settings?",
+  "search": "Search you want"
 }

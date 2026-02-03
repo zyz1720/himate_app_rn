@@ -1,4 +1,5 @@
 import {useState, useCallback, useRef, useEffect} from 'react';
+import {isEmptyObject} from '@utils/common/object_utils';
 
 export const useInfiniteScroll = fetchData => {
   const [list, setList] = useState([]);
@@ -29,7 +30,9 @@ export const useInfiniteScroll = fetchData => {
         setLoading(true);
       }
 
-      paramsRef.current = params;
+      if (!isEmptyObject(params)) {
+        paramsRef.current = params;
+      }
 
       try {
         const result = await fetchData({

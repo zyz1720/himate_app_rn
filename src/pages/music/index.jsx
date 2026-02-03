@@ -293,7 +293,7 @@ const Music = ({navigation}) => {
                   }}>
                   <FontAwesome name="search" color={Colors.primary} size={16} />
                   <View marginL-8>
-                    <TextField readOnly placeholder={t('common.search')} />
+                    <TextField readOnly placeholder={t('music.search')} />
                   </View>
                 </Card>
                 <Card marginT-16 padding-12>
