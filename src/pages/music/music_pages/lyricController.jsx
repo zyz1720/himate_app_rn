@@ -53,6 +53,47 @@ const LyricController = () => {
       <View padding-16>
         <Card flexS>
           <ListItem
+            itemName={t('music.statusBar_lyric')}
+            renderRight={
+              <Switch
+                onColor={Colors.primary}
+                offColor={Colors.grey50}
+                value={isShowStatusBarLyric}
+                onValueChange={value => setIsShowStatusBarLyric(value)}
+              />
+            }
+          />
+          {isShowStatusBarLyric ? (
+            <Animated.View entering={FadeInUp}>
+              <ListItem
+                renderRight={
+                  <SegmentedControl
+                    segments={[
+                      {label: t('music.lrc')},
+                      {label: t('music.trans')},
+                      {label: t('music.roma')},
+                    ]}
+                    initialIndex={LYRIC_TYPE.indexOf(statusBarLyricType)}
+                    borderRadius={12}
+                    outlineColor={Colors.primary}
+                    outlineWidth={2}
+                    activeColor={Colors.primary}
+                    onChangeIndex={value => {
+                      setStatusBarLyricType(LYRIC_TYPE[value]);
+                    }}
+                  />
+                }
+              />
+            </Animated.View>
+          ) : null}
+          <View paddingH-16 paddingB-16>
+            <Text grey30 text90L>
+              {t('music.lyric_tips')}
+            </Text>
+          </View>
+        </Card>
+        <Card flexS marginT-16>
+          <ListItem
             itemName={t('music.desktop_lyric')}
             renderRight={
               <Switch
@@ -62,8 +103,10 @@ const LyricController = () => {
                 onValueChange={async value => {
                   if (value) {
                     if (!accessOverlay) {
-                      showToast(t('permissions.overlay_please'));
-                      setAccessOverlay();
+                      showToast(t('permissions.overlay_please'), 'warning');
+                      setTimeout(() => {
+                        setAccessOverlay();
+                      }, 1000);
                       return;
                     }
                   }
@@ -156,47 +199,7 @@ const LyricController = () => {
             </Animated.View>
           ) : null}
         </Card>
-        <Card flexS marginT-16>
-          <ListItem
-            itemName={t('music.statusBar_lyric')}
-            renderRight={
-              <Switch
-                onColor={Colors.primary}
-                offColor={Colors.grey50}
-                value={isShowStatusBarLyric}
-                onValueChange={value => setIsShowStatusBarLyric(value)}
-              />
-            }
-          />
-          {isShowStatusBarLyric ? (
-            <Animated.View entering={FadeInUp}>
-              <ListItem
-                renderRight={
-                  <SegmentedControl
-                    segments={[
-                      {label: t('music.lrc')},
-                      {label: t('music.trans')},
-                      {label: t('music.roma')},
-                    ]}
-                    initialIndex={LYRIC_TYPE.indexOf(statusBarLyricType)}
-                    borderRadius={12}
-                    outlineColor={Colors.primary}
-                    outlineWidth={2}
-                    activeColor={Colors.primary}
-                    onChangeIndex={value => {
-                      setStatusBarLyricType(LYRIC_TYPE[value]);
-                    }}
-                  />
-                }
-              />
-            </Animated.View>
-          ) : null}
-          <View paddingH-16 paddingB-16>
-            <Text grey30 text90L>
-              {t('music.lyric_tips')}
-            </Text>
-          </View>
-        </Card>
+
         <BaseDialog
           title={true}
           onConfirm={() => {

@@ -63,6 +63,7 @@ const ChatHistory = ({navigation, route}) => {
   };
 
   const [clearVisible, setClearVisible] = useState(false);
+  const [syncVisible, setSyncVisible] = useState(false);
 
   return (
     <View flexG paddingH-16 paddingT-16>
@@ -120,7 +121,7 @@ const ChatHistory = ({navigation, route}) => {
           iconSize={20}
           iconColor={Colors.blue30}
           onConfirm={() => {
-            getCouldChatHistory(1);
+            setSyncVisible(true);
           }}
         />
       </Card>
@@ -132,6 +133,15 @@ const ChatHistory = ({navigation, route}) => {
         visible={clearVisible}
         setVisible={setClearVisible}
         description={t('mate.clear_chat_history_tips')}
+      />
+      <BaseDialog
+        title={true}
+        onConfirm={() => {
+          getCouldChatHistory(1);
+        }}
+        visible={syncVisible}
+        setVisible={setSyncVisible}
+        description={t('mate.sync_chat_history_tips')}
       />
       {loadingAll ? <FullScreenLoading message={t('common.syncing')} /> : null}
     </View>

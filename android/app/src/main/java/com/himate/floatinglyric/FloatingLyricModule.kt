@@ -5,6 +5,10 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
+import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler
+import com.facebook.react.modules.core.PermissionAwareActivity
+import com.facebook.react.modules.core.PermissionListener
+import com.facebook.react.bridge.ActivityEventListener
 import android.content.Intent
 import android.provider.Settings
 import android.app.Activity
@@ -15,7 +19,7 @@ import android.content.IntentFilter
 // 导入WidgetService类，用于使用ACTION_CLICK_EVENT常量
 import com.himate.floatinglyric.WidgetService
 
-class FloatingLyricModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
+class FloatingLyricModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext), ActivityEventListener {
 
     private val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -25,6 +29,9 @@ class FloatingLyricModule(reactContext: ReactApplicationContext) : ReactContextB
             }
         }
     }
+
+    // 用于存储权限请求的回调
+    private var overlayPermissionCallback: com.facebook.react.bridge.Callback? = null
 
     init {
         // 注册广播接收器
@@ -36,6 +43,9 @@ class FloatingLyricModule(reactContext: ReactApplicationContext) : ReactContextB
         } else {
             reactContext.registerReceiver(broadcastReceiver, filter)
         }
+
+        // 注册ActivityEventListener
+        reactContext.addActivityEventListener(this)
     }
 
     override fun getName(): String {
@@ -53,6 +63,20 @@ class FloatingLyricModule(reactContext: ReactApplicationContext) : ReactContextB
         super.onCatalystInstanceDestroy()
         // 取消注册广播接收器
         reactApplicationContext.unregisterReceiver(broadcastReceiver)
+        // 取消注册ActivityEventListener
+        reactApplicationContext.removeActivityEventListener(this)
+    }
+
+    override fun onActivityResult(activity: Activity?, requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == OVERLAY_PERMISSION_REQUEST_CODE) {
+            val hasPermission = Settings.canDrawOverlays(reactApplicationContext)
+            overlayPermissionCallback?.invoke(hasPermission)
+            overlayPermissionCallback = null
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        // 不需要实现
     }
 
     @ReactMethod
@@ -89,11 +113,14 @@ class FloatingLyricModule(reactContext: ReactApplicationContext) : ReactContextB
     }
 
     @ReactMethod
-    fun requestOverlayPermission() {
+    fun requestOverlayPermission(callback: com.facebook.react.bridge.Callback) {
         val currentActivity = currentActivity
         currentActivity?.let {
+            overlayPermissionCallback = callback
             val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
             it.startActivityForResult(intent, OVERLAY_PERMISSION_REQUEST_CODE)
+        } ?: run {
+            callback.invoke(false)
         }
     }
 

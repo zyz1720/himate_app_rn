@@ -3,6 +3,7 @@ import {StyleSheet, Modal} from 'react-native';
 import {View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
 import {useSettingStore} from '@store/settingStore';
 import {useConfigStore} from '@store/configStore';
+import {useTranslation} from 'react-i18next';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import VideoPlayer from 'react-native-video-player';
 
@@ -14,6 +15,7 @@ const VideoModal = React.memo(props => {
     onError = () => {},
     uri = '',
   } = props;
+  const {t} = useTranslation();
 
   const {envConfig} = useConfigStore();
   const {isFullScreen} = useSettingStore();
@@ -31,7 +33,7 @@ const VideoModal = React.memo(props => {
           </TouchableOpacity>
           <View paddingT-4>
             <Text white text70>
-              视频播放器
+              {t('component.video_player')}
             </Text>
           </View>
         </View>

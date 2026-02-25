@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {StyleSheet} from 'react-native';
 import {
   Colors,
@@ -7,17 +7,10 @@ import {
   Slider,
   Text,
 } from 'react-native-ui-lib';
-import {
-  addPlayBackListener,
-  startPlayer,
-  pausePlayer,
-  resumePlayer,
-  stopPlayer,
-  seekToPlayer,
-} from '@utils/system/audioPlayer';
 import {useMusicStore} from '@store/musicStore';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Video from 'react-native-video';
 
 const styles = StyleSheet.create({
   audioBut: {
@@ -50,78 +43,68 @@ const AudioMsg = React.memo(props => {
 
   const {setIsMusicResumePlay, setIsMusicBreak} = useMusicStore();
 
+  const videoRef = useRef(null);
+
   const [curPosition, setCurPosition] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
-
   const [audioIsPlaying, setAudioIsPlaying] = useState(false);
 
-  // 停止播放
-  const stopPlay = async () => {
+  const stopPlay = () => {
+    if (videoRef.current) {
+      videoRef.current.seek(0);
+    }
     setNowPlayAudioId(null);
     setCurPosition(0);
     setAudioDuration(0);
     setAudioIsPlaying(false);
-    await stopPlayer();
   };
 
-  // 恢复播放
-  const resumePlay = async () => {
+  const resumePlay = () => {
     setAudioIsPlaying(true);
-    await resumePlayer();
   };
 
-  // 暂停播放
-  const pausePlay = async () => {
+  const pausePlay = () => {
     setAudioIsPlaying(false);
-    await pausePlayer();
   };
 
-  // 开始播放
-  const startPlay = async () => {
+  const startPlay = () => {
     setIsMusicBreak(true);
-    await stopPlay();
-    await startPlayer(currentMessage.audio);
+    stopPlay();
     setNowPlayAudioId(currentMessage._id);
     setAudioIsPlaying(true);
   };
 
-  // 跳转播放
-  const seekToPlay = async value => {
+  const seekToPlay = value => {
     const newPosition = parseInt(value, 10);
     setCurPosition(newPosition);
-    await seekToPlayer(newPosition);
+    if (videoRef.current) {
+      videoRef.current.seek(newPosition / 1000);
+    }
+  };
+
+  const handleLoad = meta => {
+    setAudioDuration(meta.duration * 1000);
+  };
+
+  const handleProgress = data => {
+    setCurPosition(data.currentTime * 1000);
+  };
+
+  const handleEnd = () => {
+    stopPlay();
+    setIsMusicResumePlay(true);
   };
 
   useEffect(() => {
-    if (nowPlayAudioId === currentMessage._id) {
-      addPlayBackListener(playbackMeta => {
-        const {currentPosition, duration, isFinished} = playbackMeta;
-
-        setCurPosition(currentPosition);
-
-        if (duration !== audioDuration) {
-          setAudioDuration(duration);
-        }
-
-        if (isFinished) {
-          stopPlay();
-          setIsMusicResumePlay(true);
-        }
-      });
-    }
-  }, [nowPlayAudioId, currentMessage._id, audioDuration]);
-
-  useEffect(() => {
     return () => {
-      stopPlay();
-      setIsMusicResumePlay(true);
+      handleEnd();
     };
   }, []);
 
   return (
     <View style={styles.audioBut}>
       <TouchableOpacity
-        onPress={async () => startPlay()}
+        onPress={() => startPlay()}
         onLongPress={() => {
           onLongPress({
             type: 'media',
@@ -187,6 +170,18 @@ const AudioMsg = React.memo(props => {
           />
         )}
       </TouchableOpacity>
+      {nowPlayAudioId === currentMessage._id && (
+        <Video
+          ref={videoRef}
+          source={{uri: currentMessage.audio}}
+          paused={!audioIsPlaying}
+          onProgress={handleProgress}
+          onLoad={handleLoad}
+          onEnd={handleEnd}
+          allowsExternalPlayback={false}
+          controls={false}
+        />
+      )}
     </View>
   );
 });

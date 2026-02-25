@@ -12,11 +12,13 @@ const Permissions = () => {
     accessMicrophone,
     accessFolder,
     accessNotify,
-    setAllPermissions,
+    accessOverlay,
     setAccessNotify,
     setAccessCamera,
     setAccessMicrophone,
     setAccessFolder,
+    setAccessOverlay,
+    setAllPermissions,
   } = usePermissionStore();
 
   const {showToast} = useToast();
@@ -35,7 +37,11 @@ const Permissions = () => {
             iconName={'camera'}
             iconColor={Colors.grey10}
             iconSize={20}
-            rightText={accessCamera ? t('permissions.authorized') : t('permissions.unauthorized')}
+            rightText={
+              accessCamera
+                ? t('permissions.authorized')
+                : t('permissions.unauthorized')
+            }
             onConfirm={() => {
               if (!accessCamera) {
                 showToast(t('permissions.camera_please'), 'warning');
@@ -55,7 +61,11 @@ const Permissions = () => {
             iconName={'bell'}
             iconColor={Colors.grey10}
             iconSize={20}
-            rightText={accessNotify ? t('permissions.authorized') : t('permissions.unauthorized')}
+            rightText={
+              accessNotify
+                ? t('permissions.authorized')
+                : t('permissions.unauthorized')
+            }
             onConfirm={() => {
               if (!accessNotify) {
                 showToast(t('permissions.notify_please'), 'warning');
@@ -75,7 +85,11 @@ const Permissions = () => {
             iconName={'microphone'}
             iconColor={Colors.grey10}
             iconSize={20}
-            rightText={accessMicrophone ? t('permissions.authorized') : t('permissions.unauthorized')}
+            rightText={
+              accessMicrophone
+                ? t('permissions.authorized')
+                : t('permissions.unauthorized')
+            }
             onConfirm={() => {
               if (!accessMicrophone) {
                 showToast(t('permissions.microphone_please'), 'warning');
@@ -95,7 +109,11 @@ const Permissions = () => {
             iconName={'folder'}
             iconColor={Colors.grey10}
             iconSize={20}
-            rightText={accessFolder ? t('permissions.authorized') : t('permissions.unauthorized')}
+            rightText={
+              accessFolder
+                ? t('permissions.authorized')
+                : t('permissions.unauthorized')
+            }
             onConfirm={() => {
               if (!accessFolder) {
                 showToast(t('permissions.folder_please'), 'warning');
@@ -106,6 +124,32 @@ const Permissions = () => {
           <View paddingH-16 paddingB-16>
             <Text grey30 text90L>
               {t('permissions.folder_desc')}
+            </Text>
+          </View>
+        </View>
+        <View>
+          <ListItem
+            itemName={t('permissions.overlay')}
+            iconName={'window-maximize'}
+            iconColor={Colors.grey10}
+            iconSize={20}
+            rightText={
+              accessOverlay
+                ? t('permissions.authorized')
+                : t('permissions.unauthorized')
+            }
+            onConfirm={() => {
+              if (!accessOverlay) {
+                showToast(t('permissions.overlay_please'), 'warning');
+                setTimeout(() => {
+                  setAccessOverlay();
+                }, 1000);
+              }
+            }}
+          />
+          <View paddingH-16 paddingB-16>
+            <Text grey30 text90L>
+              {t('permissions.overlay_desc')}
             </Text>
           </View>
         </View>

@@ -418,14 +418,13 @@ const MusicList = props => {
       <View row centerV spread>
         <View row centerV>
           <TouchableOpacity
-            style={styles.musicBut}
             onPress={() => {
               setPlayList(list);
               setPlayingMusic(list[0]);
             }}>
-            <FontAwesome name="play-circle" color={Colors.grey50} size={26} />
+            <FontAwesome name="play-circle" color={Colors.grey50} size={24} />
           </TouchableOpacity>
-          <Text marginL-4 text80BO grey20>
+          <Text marginL-5 text80BO grey20>
             {t('music.total_music', {total: total || list.length})}
           </Text>
         </View>

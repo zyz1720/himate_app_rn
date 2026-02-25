@@ -1,4 +1,4 @@
-import React, {useRef, useEffect} from 'react';
+import React, {useRef, useLayoutEffect} from 'react';
 import {StyleSheet, Vibration} from 'react-native';
 import {View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
 import {
@@ -58,7 +58,7 @@ const CodeScanner = ({navigation}) => {
     },
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!accessCamera) {
       showToast(t('permissions.camera_please'), 'warning');
       setAccessCamera();

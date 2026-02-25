@@ -9,5 +9,6 @@
   "save_failed": "Save failed",
   "choose_img": "Choose Image",
   "batch_save_tips": "Total {{total}} files, {{type}} file {{index}}...",
-  "save_file": "Save file"
+  "save_file": "Save file",
+  "video_player": "Video Player"
 }

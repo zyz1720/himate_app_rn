@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo} from 'react';
-import {StyleSheet, Modal} from 'react-native';
+import {StyleSheet, Modal, ActivityIndicator} from 'react-native';
 import {
   View,
   Text,
@@ -66,7 +66,8 @@ const styles = StyleSheet.create({
 const LyricModal = React.memo(props => {
   const {
     visible = false,
-    isLike = false,
+    isLiked = false,
+    isMusicLoading = false,
     onPressLike = () => {},
     onClose = () => {},
     onSliderChange = () => {},
@@ -220,7 +221,7 @@ const LyricModal = React.memo(props => {
                         style={styles.musicBut}
                         onPress={onPressLike}>
                         <AntDesign
-                          name={isLike ? 'heart' : 'hearto'}
+                          name={isLiked ? 'heart' : 'hearto'}
                           color={Colors.lyricColor}
                           size={18}
                         />
@@ -283,17 +284,25 @@ const LyricModal = React.memo(props => {
                           size={24}
                         />
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={onPlay}>
-                        <Ionicons
-                          name={
-                            isMusicPlaying
-                              ? 'pause-circle-outline'
-                              : 'play-circle-outline'
-                          }
+                      {isMusicLoading ? (
+                        <ActivityIndicator
                           color={Colors.lyricColor}
-                          size={64}
+                          size={56}
                         />
-                      </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity onPress={onPlay}>
+                          <Ionicons
+                            name={
+                              isMusicPlaying
+                                ? 'pause-circle-outline'
+                                : 'play-circle-outline'
+                            }
+                            color={Colors.lyricColor}
+                            size={64}
+                          />
+                        </TouchableOpacity>
+                      )}
+
                       <TouchableOpacity
                         style={styles.musicBut}
                         onPress={onForWard}>
@@ -361,7 +370,7 @@ const LyricModal = React.memo(props => {
                       style={styles.musicBut}
                       onPress={onPressLike}>
                       <AntDesign
-                        name={isLike ? 'heart' : 'hearto'}
+                        name={isLiked ? 'heart' : 'hearto'}
                         color={Colors.lyricColor}
                         size={22}
                       />
@@ -437,17 +446,21 @@ const LyricModal = React.memo(props => {
                         size={24}
                       />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={onPlay}>
-                      <Ionicons
-                        name={
-                          isMusicPlaying
-                            ? 'pause-circle-outline'
-                            : 'play-circle-outline'
-                        }
-                        color={Colors.lyricColor}
-                        size={64}
-                      />
-                    </TouchableOpacity>
+                    {isMusicLoading ? (
+                      <ActivityIndicator color={Colors.lyricColor} size={56} />
+                    ) : (
+                      <TouchableOpacity onPress={onPlay}>
+                        <Ionicons
+                          name={
+                            isMusicPlaying
+                              ? 'pause-circle-outline'
+                              : 'play-circle-outline'
+                          }
+                          color={Colors.lyricColor}
+                          size={64}
+                        />
+                      </TouchableOpacity>
+                    )}
                     <TouchableOpacity
                       style={styles.musicBut}
                       onPress={onForWard}>

@@ -183,7 +183,9 @@ export const requestNotifyPermission = async () => {
 
 // 请求悬浮窗权限
 export const requestOverlayPermission = async () => {
-  FloatingLyric.requestOverlayPermission();
-  const isGranted = await checkOverlayPermission();
-  return isGranted;
+  return new Promise(resolve => {
+    FloatingLyric.requestOverlayPermission(isHasPermission => {
+      resolve(isHasPermission);
+    });
+  });
 };

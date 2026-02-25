@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
+import android.provider.Settings
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -33,6 +34,10 @@ class WidgetService : Service() {
     }
 
     private fun initFloatingView() {
+        if (!Settings.canDrawOverlays(this)) {
+            return
+        }
+
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
         // 创建悬浮视图
@@ -209,6 +214,10 @@ class WidgetService : Service() {
     }
 
     private fun showWidget() {
+        if (!Settings.canDrawOverlays(this)) {
+            return
+        }
+
         if (!isInitialized) {
             initFloatingView()
         }

@@ -58,6 +58,7 @@ const GroupInfo = ({navigation, route}) => {
 
   const [clearVisible, setClearVisible] = useState(false);
   const [deleteVisible, setDeleteVisible] = useState(false);
+  const [syncVisible, setSyncVisible] = useState(false);
 
   // 初始化数据
   const dataInit = async id => {
@@ -436,7 +437,7 @@ const GroupInfo = ({navigation, route}) => {
               iconSize={20}
               iconColor={Colors.blue30}
               onConfirm={() => {
-                getCouldChatHistory();
+                setSyncVisible(true);
               }}
             />
           </Card>
@@ -521,6 +522,15 @@ const GroupInfo = ({navigation, route}) => {
         visible={existVisible}
         setVisible={setExistVisible}
         description={t('group.exit_group_confirm')}
+      />
+      <BaseDialog
+        title={true}
+        onConfirm={() => {
+          getCouldChatHistory(1);
+        }}
+        visible={syncVisible}
+        setVisible={setSyncVisible}
+        description={t('mate.sync_chat_history_tips')}
       />
       <BaseDialog
         title={true}

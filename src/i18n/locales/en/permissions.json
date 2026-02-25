@@ -20,5 +20,5 @@
     "photo": "Photo Gallery",
     "overlay": "Overlay",
     "overlay_please": "Please grant overlay permission to the app",
-    "overlay_desc": "After authorization, the app can display overlays on the screen"
+    "overlay_desc": "After authorization, the app can display overlays on top of other apps (e.g. desktop lyrics)"
 }

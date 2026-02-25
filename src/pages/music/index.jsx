@@ -16,13 +16,7 @@ import {
   Dialog,
   Slider,
 } from 'react-native-ui-lib';
-import {
-  FlatList,
-  StyleSheet,
-  Vibration,
-  Platform,
-  ScrollView,
-} from 'react-native';
+import {FlatList, StyleSheet, Vibration, Platform} from 'react-native';
 import {useToast} from '@components/common/useToast';
 import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
 import {
@@ -49,6 +43,7 @@ import BaseDialog from '@components/common/BaseDialog';
 import dayjs from 'dayjs';
 
 const MOMENTS = ['00:00', '00:30', '01:00', '01:30', '02:00'];
+const STICKY_ARR = [{key: 'sticky'}];
 
 const Music = ({navigation}) => {
   const {showToast} = useToast();
@@ -275,305 +270,320 @@ const Music = ({navigation}) => {
   }, [alarmTime]);
 
   return (
-    <View top padding-16>
+    <View top paddingH-16>
       <View flexS>
         <FlatList
-          data={list}
+          data={STICKY_ARR.concat(list)}
+          stickyHeaderIndices={[1]}
           ListHeaderComponent={
-            <>
-              <ScrollView>
-                <Card
-                  borderRadius={20}
-                  padding-6
-                  paddingL-12
-                  row
-                  centerV
-                  onPress={() => {
-                    navigation.navigate('SearchMusic');
-                  }}>
-                  <FontAwesome name="search" color={Colors.primary} size={16} />
-                  <View marginL-8>
-                    <TextField readOnly placeholder={t('music.search')} />
-                  </View>
-                </Card>
-                <Card marginT-16 padding-12>
-                  <View flexS row centerV spread marginB-12>
-                    <View row centerV>
-                      <Image
-                        source={{
-                          uri: envConfig.STATIC_URL + userInfo?.user_avatar,
-                        }}
-                        errorSource={require('@assets/images/empty.jpg')}
-                        style={styles.image}
-                      />
-                      <View marginL-12>
-                        <View row centerV>
-                          <Text grey20 text70BO>
-                            {userInfo?.user_name}
-                          </Text>
-                        </View>
-                        <Text grey20 text100L marginT-6>
-                          {latelyDay > 0 ? (
-                            <Text grey20 text100L marginT-6>
-                              {t('music.recent_play_tips')}
-                              <Text blue60 text80L marginT-6>
-                                {latelyDay}
-                              </Text>
-                              {t('music.recent_play_day')}
-                            </Text>
-                          ) : (
-                            t('music.welcome')
-                          )}
+            <View marginT-16>
+              <Card
+                borderRadius={20}
+                padding-6
+                paddingL-12
+                row
+                centerV
+                onPress={() => {
+                  navigation.navigate('SearchMusic');
+                }}>
+                <FontAwesome name="search" color={Colors.primary} size={16} />
+                <View marginL-8>
+                  <TextField readOnly placeholder={t('music.search')} />
+                </View>
+              </Card>
+              <Card marginT-16 padding-12>
+                <View flexS row centerV spread marginB-12>
+                  <View row centerV>
+                    <Image
+                      source={{
+                        uri: envConfig.STATIC_URL + userInfo?.user_avatar,
+                      }}
+                      errorSource={require('@assets/images/empty.jpg')}
+                      style={styles.image}
+                    />
+                    <View marginL-12>
+                      <View row centerV>
+                        <Text grey20 text70BO>
+                          {userInfo?.user_name}
                         </Text>
                       </View>
+                      <Text grey20 text100L marginT-6>
+                        {latelyDay > 0 ? (
+                          <Text grey20 text100L marginT-6>
+                            {t('music.recent_play_tips')}
+                            <Text blue60 text80L marginT-6>
+                              {latelyDay}
+                            </Text>
+                            {t('music.recent_play_day')}
+                          </Text>
+                        ) : (
+                          t('music.welcome')
+                        )}
+                      </Text>
                     </View>
-                    {Platform.OS === 'android' ? (
+                  </View>
+                  {Platform.OS === 'android' ? (
+                    <TouchableOpacity
+                      padding-12
+                      onPress={() => {
+                        navigation.navigate('LyricController');
+                      }}>
+                      <MaterialDesignIcons
+                        name="card-text"
+                        color={Colors.grey50}
+                        size={22}
+                      />
+                    </TouchableOpacity>
+                  ) : null}
+                </View>
+                <View paddingT-12 row centerV style={styles.funBox}>
+                  <View width={'50%'} center>
+                    <TouchableOpacity
+                      centerV
+                      row
+                      onPress={() => {
+                        setShowRandomDialog(true);
+                      }}>
+                      <MaterialIcons
+                        name="library-music"
+                        color={randomSwitch ? Colors.primary : Colors.grey50}
+                        size={20}
+                      />
+                      <Text text80 marginL-4 grey30>
+                        {t('music.random_play')}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View width={'50%'} center style={styles.rightBox}>
+                    <TouchableOpacity
+                      row
+                      centerV
+                      onPress={() => {
+                        setShowAlarmDialog(true);
+                      }}>
+                      <MaterialIcons
+                        name="access-alarm"
+                        color={alarmSwitch ? Colors.primary : Colors.grey50}
+                        size={20}
+                      />
+                      <Text text80 marginL-4 grey30>
+                        {t('music.alarm_close')}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </Card>
+              <View marginT-16>
+                <GridList
+                  scrollEnabled={false}
+                  data={itemData}
+                  containerWidth={fullWidth - 32}
+                  numColumns={2}
+                  keyExtractor={(_, index) => index.toString()}
+                  renderItem={({item}) => (
+                    <Card flexS centerV enableShadow={true} padding-12>
                       <TouchableOpacity
-                        padding-12
                         onPress={() => {
-                          navigation.navigate('LyricController');
+                          navigation.navigate(item.route);
                         }}>
-                        <MaterialDesignIcons
-                          name="card-text"
-                          color={Colors.grey50}
+                        <FontAwesome
+                          name={item.icon}
+                          color={item.iconColor}
                           size={22}
                         />
+                        <View row bottom>
+                          <Text marginT-6 text70BO grey20>
+                            {item.title}
+                          </Text>
+                          <Text text90L grey40 marginL-4 marginB-2>
+                            {item.num}
+                          </Text>
+                        </View>
                       </TouchableOpacity>
-                    ) : null}
-                  </View>
-                  <View paddingT-12 row centerV style={styles.funBox}>
-                    <View width={'50%'} center>
-                      <TouchableOpacity
-                        centerV
-                        row
-                        onPress={() => {
-                          setShowRandomDialog(true);
-                        }}>
-                        <MaterialIcons
-                          name="library-music"
-                          color={randomSwitch ? Colors.primary : Colors.grey50}
-                          size={20}
-                        />
-                        <Text text80 marginL-4 grey30>
-                          {t('music.random_play')}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                    <View width={'50%'} center style={styles.rightBox}>
-                      <TouchableOpacity
-                        row
-                        centerV
-                        onPress={() => {
-                          setShowAlarmDialog(true);
-                        }}>
-                        <MaterialIcons
-                          name="access-alarm"
-                          color={alarmSwitch ? Colors.primary : Colors.grey50}
-                          size={20}
-                        />
-                        <Text text80 marginL-4 grey30>
-                          {t('music.alarm_close')}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </Card>
-                <View marginT-16>
-                  <GridList
-                    scrollEnabled={false}
-                    data={itemData}
-                    containerWidth={fullWidth - 32}
-                    numColumns={2}
-                    keyExtractor={(_, index) => index.toString()}
-                    renderItem={({item}) => (
-                      <Card flexS centerV enableShadow={true} padding-12>
-                        <TouchableOpacity
-                          onPress={() => {
-                            navigation.navigate(item.route);
-                          }}>
-                          <FontAwesome
-                            name={item.icon}
-                            color={item.iconColor}
-                            size={22}
-                          />
-                          <View row bottom>
-                            <Text marginT-6 text70BO grey20>
-                              {item.title}
-                            </Text>
-                            <Text text90L grey40 marginL-4 marginB-2>
-                              {item.num}
-                            </Text>
-                          </View>
-                        </TouchableOpacity>
-                      </Card>
-                    )}
-                  />
-                </View>
-              </ScrollView>
-              <View row centerV spread marginT-16>
-                <View row centerV>
-                  <Text text70BL>{t('music.my_playlist')}</Text>
-                  <Text text80L grey40 marginL-4>
-                    {total}
-                  </Text>
-                </View>
-                <View row centerV>
-                  {isMultiSelect ? (
-                    <>
-                      <Button
-                        marginR-12
-                        size={'xSmall'}
-                        label={t('common.delete')}
-                        link
-                        color={Colors.red30}
-                        onPress={() => {
-                          if (selectedIds.length) {
-                            setDelVisible(true);
-                            return;
-                          }
-                          showToast(t('common.delete_select'), 'error');
-                        }}
-                      />
-                      <Button
-                        marginR-12
-                        size={'xSmall'}
-                        label={
-                          isAllSelect
-                            ? t('common.unselect_all')
-                            : t('common.select_all')
-                        }
-                        link
-                        color={Colors.primary}
-                        onPress={() => {
-                          setIsAllSelect(prev => {
-                            if (!prev) {
-                              setSelectedIds(list.map(item => item.id));
-                            } else {
-                              setSelectedIds([]);
-                            }
-                            return !prev;
-                          });
-                        }}
-                      />
-                      <Button
-                        marginR-12
-                        size={'xSmall'}
-                        label={t('common.cancel')}
-                        link
-                        color={Colors.blue40}
-                        onPress={() => {
-                          resetMultiSelect();
-                        }}
-                      />
-                    </>
-                  ) : null}
-                  <TouchableOpacity
-                    row
-                    centerV
-                    padding-4
-                    marginR-10
-                    onPress={() => {
-                      setShowAddDialog(true);
-                      setFavoritesName('');
-                    }}>
-                    <AntDesign
-                      name="pluscircleo"
-                      color={Colors.grey40}
-                      size={18}
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    row
-                    centerV
-                    padding-4
-                    onPress={() => {
-                      setShowImportDialog(true);
-                      setImportUrl('');
-                    }}>
-                    <AntDesign
-                      name="login"
-                      style={styles.importStyle}
-                      color={Colors.grey40}
-                      size={18}
-                    />
-                  </TouchableOpacity>
-                </View>
+                    </Card>
+                  )}
+                />
               </View>
-            </>
+            </View>
           }
           keyExtractor={(_, index) => index.toString()}
           onEndReached={onEndReached}
           showsVerticalScrollIndicator={false}
-          renderItem={({item}) => (
-            <View marginT-8 row centerV>
-              {isMultiSelect ? (
-                <Checkbox
-                  marginR-12
-                  color={Colors.primary}
-                  size={20}
-                  borderRadius={10}
-                  value={selectedIds.includes(item.id)}
-                  onValueChange={value => {
-                    if (value) {
-                      setSelectedIds(prevItem => {
-                        const newItem = [...new Set([...prevItem, item.id])];
-                        return newItem;
-                      });
-                    } else {
-                      setSelectedIds(prevItem => {
-                        const newItem = prevItem.filter(id => id !== item.id);
-                        return newItem;
-                      });
-                    }
-                  }}
-                />
-              ) : null}
-              <Drawer
-                disableHaptic={true}
-                itemsTintColor={Colors.red30}
-                rightItems={[
-                  {
-                    text: isMultiSelect ? '' : t('common.delete'),
-                    background: Colors.background,
-                    onPress: () => {
-                      if (isMultiSelect) {
-                        return;
-                      }
-                      setSelectedIds([item.id]);
-                      setDelVisible(true);
-                    },
-                  },
-                ]}
-                leftItem={{background: Colors.background}}>
-                <TouchableOpacity
+          renderItem={({item}) => {
+            if (item.key === 'sticky') {
+              return (
+                <View
                   row
                   centerV
-                  onLongPress={() => {
-                    Vibration.vibrate(50);
-                    setIsMultiSelect(true);
-                  }}
-                  onPress={() => {
-                    navigation.navigate('FavoritesDetail', {
-                      favoritesId: item.id,
-                    });
-                  }}>
-                  <Image
-                    source={{
-                      uri: envConfig.THUMBNAIL_URL + item.favorites_cover,
-                    }}
-                    style={styles.favoritesCover}
-                    errorSource={require('@assets/images/favorites_cover.jpg')}
-                  />
-                  <View centerV marginL-12>
-                    <Text>{item.favorites_name}</Text>
-                    <Text marginT-4 text90L grey40>
-                      {t('music.num_songs', {num: item.musicCount || 0})}
+                  spread
+                  paddingV-12
+                  backgroundColor={Colors.background}>
+                  <View row centerV>
+                    <Text text70BL>{t('music.my_playlist')}</Text>
+                    <Text text80L grey40 marginL-4>
+                      {total}
                     </Text>
                   </View>
-                </TouchableOpacity>
-              </Drawer>
-            </View>
-          )}
+                  <View row centerV>
+                    {isMultiSelect ? (
+                      <>
+                        <Button
+                          marginR-12
+                          size={'xSmall'}
+                          label={t('common.delete')}
+                          link
+                          color={Colors.red30}
+                          onPress={() => {
+                            if (selectedIds.length) {
+                              setDelVisible(true);
+                              return;
+                            }
+                            showToast(t('common.delete_select'), 'error');
+                          }}
+                        />
+                        <Button
+                          marginR-12
+                          size={'xSmall'}
+                          label={
+                            isAllSelect
+                              ? t('common.unselect_all')
+                              : t('common.select_all')
+                          }
+                          link
+                          color={Colors.primary}
+                          onPress={() => {
+                            setIsAllSelect(prev => {
+                              if (!prev) {
+                                setSelectedIds(list.map(i => i.id));
+                              } else {
+                                setSelectedIds([]);
+                              }
+                              return !prev;
+                            });
+                          }}
+                        />
+                        <Button
+                          marginR-12
+                          size={'xSmall'}
+                          label={t('common.cancel')}
+                          link
+                          color={Colors.blue40}
+                          onPress={() => {
+                            resetMultiSelect();
+                          }}
+                        />
+                      </>
+                    ) : null}
+                    <TouchableOpacity
+                      row
+                      centerV
+                      padding-4
+                      marginR-10
+                      onPress={() => {
+                        setShowAddDialog(true);
+                        setFavoritesName('');
+                      }}>
+                      <AntDesign
+                        name="pluscircleo"
+                        color={Colors.grey40}
+                        size={18}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      row
+                      centerV
+                      padding-4
+                      onPress={() => {
+                        setShowImportDialog(true);
+                        setImportUrl('');
+                      }}>
+                      <AntDesign
+                        name="login"
+                        style={styles.importStyle}
+                        color={Colors.grey40}
+                        size={18}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              );
+            } else {
+              return (
+                <View marginB-8 row centerV>
+                  {isMultiSelect ? (
+                    <Checkbox
+                      marginR-12
+                      color={Colors.primary}
+                      size={20}
+                      borderRadius={10}
+                      value={selectedIds.includes(item.id)}
+                      onValueChange={value => {
+                        if (value) {
+                          setSelectedIds(prevItem => {
+                            const newItem = [
+                              ...new Set([...prevItem, item.id]),
+                            ];
+                            return newItem;
+                          });
+                        } else {
+                          setSelectedIds(prevItem => {
+                            const newItem = prevItem.filter(
+                              id => id !== item.id,
+                            );
+                            return newItem;
+                          });
+                        }
+                      }}
+                    />
+                  ) : null}
+                  <Drawer
+                    disableHaptic={true}
+                    itemsTintColor={Colors.red30}
+                    rightItems={[
+                      {
+                        text: isMultiSelect ? '' : t('common.delete'),
+                        background: Colors.background,
+                        onPress: () => {
+                          if (isMultiSelect) {
+                            return;
+                          }
+                          setSelectedIds([item.id]);
+                          setDelVisible(true);
+                        },
+                      },
+                    ]}
+                    leftItem={{background: Colors.background}}>
+                    <TouchableOpacity
+                      row
+                      centerV
+                      onLongPress={() => {
+                        Vibration.vibrate(50);
+                        setIsMultiSelect(true);
+                      }}
+                      onPress={() => {
+                        navigation.navigate('FavoritesDetail', {
+                          favoritesId: item.id,
+                        });
+                      }}>
+                      <Image
+                        source={{
+                          uri: envConfig.THUMBNAIL_URL + item.favorites_cover,
+                        }}
+                        style={styles.favoritesCover}
+                        errorSource={require('@assets/images/favorites_cover.jpg')}
+                      />
+                      <View centerV marginL-12>
+                        <Text>{item.favorites_name}</Text>
+                        <Text marginT-4 text90L grey40>
+                          {t('music.num_songs', {num: item.musicCount || 0})}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  </Drawer>
+                </View>
+              );
+            }
+          }}
           ListEmptyComponent={
             <View marginT-16 center>
               <Text text90L grey40>

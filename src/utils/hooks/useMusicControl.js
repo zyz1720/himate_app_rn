@@ -13,6 +13,10 @@ export const useMusicControl = () => {
   const [isInit, setIsInit] = useState(false);
 
   const initMusicControl = () => {
+    if (isInit) {
+      return;
+    }
+
     MusicControl.setNotificationId(1001, 'music_controller_channel');
     MusicControl.enableControl('play', true);
     MusicControl.enableControl('pause', true);
@@ -46,7 +50,7 @@ export const useMusicControl = () => {
         isLiveStream: true,
       });
     },
-    [envConfig.STATIC_URL, userInfo?.user_avatar],
+    [envConfig.STATIC_URL, userInfo?.user_avatar, isInit],
   );
 
   // 更新歌词

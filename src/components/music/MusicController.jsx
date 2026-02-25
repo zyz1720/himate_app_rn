@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useCallback,
 } from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, ActivityIndicator} from 'react-native';
 import {Image, View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
@@ -14,7 +14,13 @@ import {Marquee} from '@animatereactnative/marquee';
 import {isEmptyObject, excludeFields} from '@utils/common/object_utils';
 import {getRandomInt} from '@utils/common/number_utils';
 import {useToast} from '@components/common/useToast';
-import {getMusic, likeMusic, dislikeMusic, getMusicDetail} from '@api/music';
+import {
+  getMusic,
+  likeMusic,
+  dislikeMusic,
+  getMusicDetail,
+  getMusicIsLiked,
+} from '@api/music';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
@@ -190,6 +196,20 @@ const MusicCtrlProvider = props => {
     }
   };
 
+  // 获取音乐是否被收藏
+  const getMusicIsLikedFunc = async id => {
+    try {
+      const res = await getMusicIsLiked(id);
+      console.log(res);
+
+      if (res.code === 0) {
+        setIsLiked(res.data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   // 设置正在播放的音乐
   const setPlayingMusic = useCallback(async music => {
     resetLyricState();
@@ -200,6 +220,7 @@ const MusicCtrlProvider = props => {
       return _setPlayingMusic(music);
     }
     getMusicDetailFunc(music?.id);
+    getMusicIsLikedFunc(music?.id);
   }, []);
 
   // 优化后的添加播放列表函数
@@ -369,6 +390,7 @@ const MusicCtrlProvider = props => {
       setPlayingMusic(playList[playingMusicIndex - 1]);
     } else {
       showToast(t('music.no_music'), 'warning');
+      restAllMusicState();
     }
   };
 
@@ -376,6 +398,7 @@ const MusicCtrlProvider = props => {
   const playOrPauseTrack = async () => {
     if (isMusicLoading) {
       showToast(t('music.loading'), 'warning', true);
+      return;
     }
     if (isMusicPlaying) {
       await audioPlayer.pausePlayer();
@@ -385,17 +408,6 @@ const MusicCtrlProvider = props => {
         return;
       }
       await audioPlayer.resumePlayer();
-    }
-  };
-
-  // 播放或暂停
-  const pauseTrack = async () => {
-    if (isEmptyObject(playingMusic)) {
-      return;
-    }
-    if (isMusicPlaying || isMusicLoading) {
-      pausePlayerCtrl();
-      await audioPlayer.pausePlayer();
     }
   };
 
@@ -415,7 +427,7 @@ const MusicCtrlProvider = props => {
       return;
     } else {
       showToast(t('music.no_music'), 'warning');
-      return;
+      restAllMusicState();
     }
   };
 
@@ -472,7 +484,7 @@ const MusicCtrlProvider = props => {
     } catch (error) {
       console.error(error);
       showToast(t('music.unable_to_play'), 'error');
-      restAllMusicState();
+      nextTrack();
     } finally {
       setIsMusicLoading(false);
     }
@@ -501,7 +513,7 @@ const MusicCtrlProvider = props => {
   };
 
   // 编辑用户收藏的音乐
-  const [isLike, setIsLike] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
   const [cloudMusicId, setCloudMusicId] = useState(null);
   const editMyFavorite = async () => {
     try {
@@ -509,13 +521,13 @@ const MusicCtrlProvider = props => {
         showToast(t('music.unable_favorite'), 'warning');
         return;
       }
-      if (isLike) {
+      if (isLiked) {
         const res = await dislikeMusic({
           ids: [cloudMusicId],
         });
         if (res.code === 0) {
           showToast(t('music.unfavorite'), 'success');
-          setIsLike(false);
+          setIsLiked(false);
           return;
         }
         showToast(res.message, 'error');
@@ -525,7 +537,7 @@ const MusicCtrlProvider = props => {
         });
         if (res.code === 0) {
           showToast(t('music.already_favorite'), 'success');
-          setIsLike(true);
+          setIsLiked(true);
           return;
         }
         showToast(res.message, 'error');
@@ -605,22 +617,19 @@ const MusicCtrlProvider = props => {
     }
   }, [playingMusic?.id]);
 
+  // 是否需要恢复播放
   useEffect(() => {
     if (isMusicResumePlay) {
+      audioPlayer.resumePlayer();
       setIsMusicResumePlay(false);
-      setIsMusicBreak(false);
-      playNewMusic().then(() => {
-        if (playPosition) {
-          onSliderChange(playPosition);
-        }
-      });
     }
   }, [isMusicResumePlay]);
 
   // 是否被其它组件中断播放
   useEffect(() => {
     if (isMusicBreak) {
-      pauseTrack();
+      audioPlayer.pausePlayer();
+      setIsMusicBreak(false);
     }
   }, [isMusicBreak]);
 
@@ -805,25 +814,30 @@ const MusicCtrlProvider = props => {
                         {renderMarquee()}
                       </TouchableOpacity>
                       <View row centerV>
-                        <TouchableOpacity
-                          style={styles.musicBut}
-                          onPress={() => {
-                            playOrPauseTrack();
-                          }}>
-                          {isMusicPlaying ? (
-                            <AntDesign
-                              name="pausecircleo"
-                              color={Colors.white}
-                              size={24}
-                            />
-                          ) : (
-                            <AntDesign
-                              name="playcircleo"
-                              color={Colors.white}
-                              size={24}
-                            />
-                          )}
-                        </TouchableOpacity>
+                        {isMusicLoading ? (
+                          <ActivityIndicator color={Colors.white} size={24} />
+                        ) : (
+                          <TouchableOpacity
+                            style={styles.musicBut}
+                            onPress={() => {
+                              playOrPauseTrack();
+                            }}>
+                            {isMusicPlaying ? (
+                              <AntDesign
+                                name="pausecircleo"
+                                color={Colors.white}
+                                size={24}
+                              />
+                            ) : (
+                              <AntDesign
+                                name="playcircleo"
+                                color={Colors.white}
+                                size={24}
+                              />
+                            )}
+                          </TouchableOpacity>
+                        )}
+
                         <TouchableOpacity
                           style={styles.musicBut}
                           marginL-6
@@ -844,8 +858,9 @@ const MusicCtrlProvider = props => {
           </View>
           <LyricModal
             visible={musicModalVisible}
+            isMusicLoading={isMusicLoading}
             onClose={() => setMusicModalVisible(false)}
-            isLike={isLike}
+            isLiked={isLiked}
             onPressLike={editMyFavorite}
             onSliderChange={value => {
               onSliderChange(value);

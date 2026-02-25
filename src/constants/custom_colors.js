@@ -39,6 +39,6 @@ export const THEME_COLORS = {
   black3: 'rgba(0,0,0,0.3)',
   black2: 'rgba(0,0,0,0.2)',
   black1: 'rgba(0,0,0,0.1)',
-  background: '#f0f0f2',
+  background: '#f2f2f2',
   lyricColor: Colors.white,
 };

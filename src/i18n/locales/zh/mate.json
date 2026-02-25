@@ -28,5 +28,6 @@
   "clear_chat_history_tips": "您确定要清除历史消息吗？",
   "clear_success": "清除成功",
   "sync_success": "同步成功",
-  "sync_failed": "同步失败"
+  "sync_failed": "同步失败",
+  "sync_chat_history_tips": "您确定要从云端同步消息吗？这将覆盖本地已有的消息！"
 }
