@@ -19,6 +19,7 @@ declare const MusicControl: {
     updatePlayback: (info: TPlayingInfo) => void;
     updateElapsedTime: (elapsedSeconds: number) => void;
     setFlymeLyric: (lyric: string) => void;
+    closeFlymeLyric: () => void;
     resetNowPlaying: () => void;
     enableControl: (controlName: string, enable: boolean, options?: {}) => void;
     handleCommand: (commandName: Command, value: any) => void;

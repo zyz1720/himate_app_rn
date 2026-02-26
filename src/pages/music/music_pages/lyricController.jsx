@@ -19,6 +19,7 @@ import {useToast} from '@components/common/useToast';
 import Animated, {FadeInUp} from 'react-native-reanimated';
 import ListItem from '@components/common/ListItem';
 import BaseDialog from '@components/common/BaseDialog';
+import MusicControl from 'react-native-music-control';
 
 const LYRIC_TYPE = ['lrc', 'trans', 'roma'];
 
@@ -59,7 +60,12 @@ const LyricController = () => {
                 onColor={Colors.primary}
                 offColor={Colors.grey50}
                 value={isShowStatusBarLyric}
-                onValueChange={value => setIsShowStatusBarLyric(value)}
+                onValueChange={async value => {
+                  setIsShowStatusBarLyric(value);
+                  if (!value) {
+                    MusicControl.closeFlymeLyric();
+                  }
+                }}
               />
             }
           />

@@ -53,6 +53,11 @@ var MusicControl = {
              NativeMusicControl.setFlymeLyric(lyric);
         }
     },
+    closeFlymeLyric: function () {
+        if (IS_ANDROID) {
+            NativeMusicControl.closeFlymeLyric();
+        }
+    },
     updateElapsedTime: function (elapsedSeconds) {
         if (IS_ANDROID) {
             NativeMusicControl.updateElapsedTime(elapsedSeconds);

@@ -517,6 +517,17 @@ public class MusicControlModule extends ReactContextBaseJavaModule implements Co
     }
 
     @ReactMethod
+    synchronized public void closeFlymeLyric() {
+        init();
+        if (notification == null) return;
+
+        nb.setTicker(null);
+        previousLyric = null;
+
+        if(session.isActive()) notification.show(nb, isPlaying);
+    }
+
+    @ReactMethod
     synchronized public void resetNowPlaying() {
         if(!init) return;
         if(artworkThread != null && artworkThread.isAlive()) artworkThread.interrupt();

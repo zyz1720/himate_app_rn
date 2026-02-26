@@ -29,5 +29,5 @@
   "clear_success": "Clear Success",
   "sync_success": "Sync Success",
   "sync_failed": "Sync Failed",
-  "sync_chat_history_tips": "Are you sure you want to sync chat history from cloud? This will overwrite local chat history!"
+  "sync_chat_history_tips": "Are you sure you want to sync chat history from cloud?"
 }

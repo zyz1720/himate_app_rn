@@ -4,10 +4,13 @@ import {StyleSheet} from 'react-native';
 import {getMusic} from '@api/music';
 import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
 import {useTranslation} from 'react-i18next';
+import {useToast} from '@components/common/useToast';
 import MusicList from '@components/music/MusicList';
 
 const SearchMusic = () => {
   const {t} = useTranslation();
+  const {showToast} = useToast();
+
   const {list, total, loading, onRefresh, onEndReached, refreshData} =
     useInfiniteScroll(getMusic);
   /* 获取收藏夹列表 */
@@ -27,7 +30,7 @@ const SearchMusic = () => {
           onChangeText={value => {
             setKeyword(value);
             if (!value) {
-              refreshData();
+              refreshData({keyword: value});
             }
           }}
         />
@@ -36,6 +39,10 @@ const SearchMusic = () => {
           link
           linkColor={Colors.primary}
           onPress={() => {
+            if (!keyword) {
+              showToast(t('common.search_keyword'), 'warning');
+              return;
+            }
             refreshData({keyword});
           }}
         />

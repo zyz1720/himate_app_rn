@@ -36,7 +36,6 @@ import {
 import {useMusicControl} from '@utils/hooks/useMusicControl';
 import {recordPlayHistory} from '@utils/realm/useMusicInfo';
 import {useAppStateStore} from '@store/appStateStore';
-import {isEmptyString} from '@/utils/common/string_utils';
 import {useFloatingLyric} from '@utils/hooks/useFloatingLyric';
 import Animated, {
   useSharedValue,
@@ -112,8 +111,10 @@ const MusicCtrlProvider = props => {
     setIsMusicBreak,
     musicPlayMode,
     setMusicPlayMode,
+    setIsRandomPlay,
   } = useMusicStore();
-  const {statusBarLyricType, isShowDesktopLyric} = useSettingStore();
+  const {statusBarLyricType, isShowDesktopLyric, isShowStatusBarLyric} =
+    useSettingStore();
   const {isAppActive} = useAppStateStore();
 
   const {
@@ -315,10 +316,10 @@ const MusicCtrlProvider = props => {
 
   // 重置音乐播放所有状态
   const restAllMusicState = async () => {
-    stopPlayerCtrl();
     resetPlayingState();
     resetLyricState();
     _setPlayingMusic({});
+    await stopPlayerCtrl();
     await audioPlayer.stopPlayer();
   };
 
@@ -463,11 +464,14 @@ const MusicCtrlProvider = props => {
       if (!playingMusic?.file_key) {
         return;
       }
+      //resetMusicControl();
       await audioPlayer.stopPlayer();
       seekToPlayerCtrl(0);
 
       resetPlayingState();
       setIsMusicLoading(true);
+      setNowPlayingCtrl(playingMusic);
+
       let url = '';
       if (typeof playingMusic?.id === 'number') {
         setCloudMusicId(playingMusic?.id);
@@ -479,7 +483,6 @@ const MusicCtrlProvider = props => {
       await audioPlayer.startPlayer(url);
       const index = playList.findIndex(item => item.id === playingMusic.id);
       setPlayingMusicIndex(index);
-      setNowPlayingCtrl(playingMusic);
       recordPlayHistory(playingMusic);
     } catch (error) {
       console.error(error);
@@ -501,7 +504,7 @@ const MusicCtrlProvider = props => {
     return (
       <View width={fullWidth * 0.56}>
         <Marquee
-          key={String(isMusicLoading)}
+          key={String(isMusicLoading) + String(isMusicPlaying)}
           withGesture={false}
           speed={speed}
           spacing={spacing}
@@ -668,14 +671,18 @@ const MusicCtrlProvider = props => {
   }, [closeTime]);
 
   useEffect(() => {
-    if (!isEmptyString(nowLyric) && statusBarLyricType === 'lrc') {
-      setFlymeLyric(nowLyric);
-    }
-    if (!isEmptyString(nowTrans) && statusBarLyricType === 'trans') {
-      setFlymeLyric(nowTrans);
-    }
-    if (!isEmptyString(nowRoma) && statusBarLyricType === 'roma') {
-      setFlymeLyric(nowRoma);
+    if (isShowStatusBarLyric) {
+      switch (statusBarLyricType) {
+        case 'lrc':
+          setFlymeLyric(nowLyric);
+          break;
+        case 'trans':
+          setFlymeLyric(nowTrans);
+          break;
+        case 'roma':
+          setFlymeLyric(nowRoma);
+          break;
+      }
     }
     if (isShowDesktopLyric) {
       updateLyric(nowLyric, nowTrans);
@@ -714,9 +721,10 @@ const MusicCtrlProvider = props => {
   }, [handlePlaybackUpdate]);
 
   useEffect(() => {
-    return () => {
+    return async () => {
       stopLyricService();
-      restAllMusicState();
+      await restAllMusicState();
+      setIsRandomPlay(false);
     };
   }, []);
 

@@ -287,7 +287,7 @@ const LyricModal = React.memo(props => {
                       {isMusicLoading ? (
                         <ActivityIndicator
                           color={Colors.lyricColor}
-                          size={56}
+                          size={64}
                         />
                       ) : (
                         <TouchableOpacity onPress={onPlay}>
@@ -447,7 +447,7 @@ const LyricModal = React.memo(props => {
                       />
                     </TouchableOpacity>
                     {isMusicLoading ? (
-                      <ActivityIndicator color={Colors.lyricColor} size={56} />
+                      <ActivityIndicator color={Colors.lyricColor} size={64} />
                     ) : (
                       <TouchableOpacity onPress={onPlay}>
                         <Ionicons

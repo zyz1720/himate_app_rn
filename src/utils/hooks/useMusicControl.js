@@ -2,13 +2,12 @@ import MusicControl, {Command} from 'react-native-music-control';
 import {useCallback, useState} from 'react';
 import {useUserStore} from '@store/userStore';
 import {useConfigStore} from '@store/configStore';
-import {useSettingStore} from '@store/settingStore';
 import {cancelNotification, deleteChannel} from '@utils/system/notification';
+import {isEmptyString} from '@utils/common/string_utils';
 
 export const useMusicControl = () => {
   const {userInfo} = useUserStore();
   const {envConfig} = useConfigStore();
-  const {isShowStatusBarLyric} = useSettingStore();
 
   const [isInit, setIsInit] = useState(false);
 
@@ -17,7 +16,6 @@ export const useMusicControl = () => {
       return;
     }
 
-    MusicControl.setNotificationId(1001, 'music_controller_channel');
     MusicControl.enableControl('play', true);
     MusicControl.enableControl('pause', true);
     MusicControl.enableControl('stop', false);
@@ -27,6 +25,7 @@ export const useMusicControl = () => {
     MusicControl.enableControl('closeNotification', true, {when: 'paused'});
     MusicControl.enableBackgroundMode(true);
     MusicControl.handleAudioInterruptions(true);
+    MusicControl.setNotificationId(1001, 'music_controller_channel');
     setIsInit(true);
   };
 
@@ -40,7 +39,7 @@ export const useMusicControl = () => {
       MusicControl.setNowPlaying({
         title: title,
         artwork:
-          envConfig.STATIC_URL +
+          envConfig.THUMBNAIL_URL +
           (musicExtra?.music_cover || userInfo?.user_avatar),
         artist: artist || '',
         album: album || '',
@@ -54,14 +53,11 @@ export const useMusicControl = () => {
   );
 
   // 更新歌词
-  const setFlymeLyric = useCallback(
-    (lyric = '') => {
-      if (isShowStatusBarLyric) {
-        MusicControl.setFlymeLyric(lyric);
-      }
-    },
-    [isShowStatusBarLyric],
-  );
+  const setFlymeLyric = useCallback((lyric = '') => {
+    if (!isEmptyString(lyric)) {
+      MusicControl.setFlymeLyric(lyric);
+    }
+  }, []);
 
   // 恢复播放
   const resumePlayerCtrl = useCallback(() => {
@@ -82,11 +78,17 @@ export const useMusicControl = () => {
     MusicControl.updateElapsedTime(seconds);
   }, []);
 
+  // 重置音乐控制器
+  const resetMusicControl = useCallback(() => {
+    MusicControl.resetNowPlaying();
+  }, []);
+
   // 停止播放
-  const stopPlayerCtrl = useCallback(() => {
+  const stopPlayerCtrl = useCallback(async () => {
     MusicControl.stopControl();
-    cancelNotification('1001');
-    deleteChannel('music_controller_channel');
+    await cancelNotification('1001');
+    await deleteChannel('music_controller_channel');
+    setIsInit(false);
   }, []);
 
   /* 控件操作 */
@@ -131,6 +133,7 @@ export const useMusicControl = () => {
     pausePlayerCtrl,
     seekToPlayerCtrl,
     stopPlayerCtrl,
+    resetMusicControl,
     onPauseCtrl,
     onPlayCtrl,
     onNextTrackCtrl,

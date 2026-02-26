@@ -4,10 +4,13 @@ import {StyleSheet} from 'react-native';
 import {getFavorites} from '@api/favorites';
 import {useInfiniteScroll} from '@utils/hooks/useInfiniteScroll';
 import {useTranslation} from 'react-i18next';
+import {useToast} from '@components/common/useToast';
 import FavoritesList from '@components/music/FavoritesList';
 
 const FindFavorites = ({navigation}) => {
   const {t} = useTranslation();
+  const {showToast} = useToast();
+
   const {list, onEndReached, loading, refreshData, onRefresh} =
     useInfiniteScroll(getFavorites);
 
@@ -28,7 +31,7 @@ const FindFavorites = ({navigation}) => {
             onChangeText={value => {
               setKeyword(value);
               if (!value) {
-                refreshData();
+                refreshData({keyword: value});
               }
             }}
           />
@@ -37,6 +40,10 @@ const FindFavorites = ({navigation}) => {
             link
             linkColor={Colors.primary}
             onPress={() => {
+              if (!keyword) {
+                showToast(t('common.search_keyword'), 'warning');
+                return;
+              }
               refreshData({keyword});
             }}
           />
