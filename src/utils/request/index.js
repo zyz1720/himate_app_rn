@@ -27,8 +27,6 @@ instance.interceptors.request.use(
     const {language} = useSettingStore.getState();
     const {access_token, token_type} = useUserStore.getState();
 
-    console.log('BASE_URL ', envConfig?.BASE_URL);
-
     if (envConfig?.BASE_URL) {
       requestConfig.baseURL = envConfig.BASE_URL + API_PREFIX;
       requestConfig.timeout = 16000;

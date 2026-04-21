@@ -34,8 +34,8 @@ const RootView = () => {
 
   // 监听网络状态变化
   const unsubscribeNetInfo = addEventListener(state => {
-    const {isConnected, isInternetReachable} = state;
-    setNetworkIsConnected(isConnected && isInternetReachable);
+    const {isConnected} = state;
+    setNetworkIsConnected(isConnected);
   });
 
   // 监听应用状态
