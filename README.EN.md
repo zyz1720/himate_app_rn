@@ -9,7 +9,7 @@ Himate is a lightweight chat and music mobile application developed based on Rea
 
 ### Project Screenshots
 
-<table>
+<table style="border:0">
   <tr>
     <td><img src="public/screenshot/screenshot_1.jpg" width="220" alt="Screenshot 1"></td>
     <td><img src="public/screenshot/screenshot_2.jpg" width="220" alt="Screenshot 2"></td>
