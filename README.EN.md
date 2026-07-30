@@ -9,9 +9,20 @@ Himate is a lightweight chat and music mobile application developed based on Rea
 
 ### Project Screenshots
 
-![Screenshot 1](public/screenshot/screenshot_1.jpg)  ![Screenshot 2](public/screenshot/screenshot_2.jpg)  ![Screenshot 3](public/screenshot/screenshot_3.jpg)  ![Screenshot 4](public/screenshot/screenshot_4.jpg)
-
-![Screenshot 5](public/screenshot/screenshot_5.jpg)  ![Screenshot 6](public/screenshot/screenshot_6.jpg)  ![Screenshot 7](public/screenshot/screenshot_7.jpg)  ![Screenshot 8](public/screenshot/screenshot_8.jpg)
+<table>
+  <tr>
+    <td><img src="public/screenshot/screenshot_1.jpg" width="220" alt="Screenshot 1"></td>
+    <td><img src="public/screenshot/screenshot_2.jpg" width="220" alt="Screenshot 2"></td>
+    <td><img src="public/screenshot/screenshot_3.jpg" width="220" alt="Screenshot 3"></td>
+    <td><img src="public/screenshot/screenshot_4.jpg" width="220" alt="Screenshot 4"></td>
+  </tr>
+  <tr>
+    <td><img src="public/screenshot/screenshot_5.jpg" width="220" alt="Screenshot 5"></td>
+    <td><img src="public/screenshot/screenshot_6.jpg" width="220" alt="Screenshot 6"></td>
+    <td><img src="public/screenshot/screenshot_7.jpg" width="220" alt="Screenshot 7"></td>
+    <td><img src="public/screenshot/screenshot_8.jpg" width="220" alt="Screenshot 8"></td>
+  </tr>
+</table>
 
 
 ## Features

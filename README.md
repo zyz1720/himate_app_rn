@@ -9,9 +9,20 @@ Himate是一款基于React Native 0.75.5开发的轻量级聊天和音乐移动�
 
 ### 项目截图
 
-![输入图片说明](public/screenshot/screenshot_1.jpg)  ![输入图片说明](public/screenshot/screenshot_2.jpg)  ![输入图片说明](public/screenshot/screenshot_3.jpg)  ![输入图片说明](public/screenshot/screenshot_4.jpg)
-
-![输入图片说明](public/screenshot/screenshot_5.jpg)  ![输入图片说明](public/screenshot/screenshot_6.jpg)  ![输入图片说明](public/screenshot/screenshot_7.jpg)  ![输入图片说明](public/screenshot/screenshot_8.jpg)
+<table>
+  <tr>
+    <td><img src="public/screenshot/screenshot_1.jpg" width="220" alt="屏幕截图1"></td>
+    <td><img src="public/screenshot/screenshot_2.jpg" width="220" alt="屏幕截图2"></td>
+    <td><img src="public/screenshot/screenshot_3.jpg" width="220" alt="屏幕截图3"></td>
+    <td><img src="public/screenshot/screenshot_4.jpg" width="220" alt="屏幕截图4"></td>
+  </tr>
+  <tr>
+    <td><img src="public/screenshot/screenshot_5.jpg" width="220" alt="屏幕截图5"></td>
+    <td><img src="public/screenshot/screenshot_6.jpg" width="220" alt="屏幕截图6"></td>
+    <td><img src="public/screenshot/screenshot_7.jpg" width="220" alt="屏幕截图7"></td>
+    <td><img src="public/screenshot/screenshot_8.jpg" width="220" alt="屏幕截图8"></td>
+  </tr>
+</table>
 
 
 ## 功能特点
