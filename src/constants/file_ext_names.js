@@ -1,6 +1,6 @@
-export const audioExtNames = ['mp3', 'wav', 'aac', 'm4a', 'flac', 'ogg', 'wma'];
+export const AUDIO_EXTS = ['mp3', 'wav', 'aac', 'm4a', 'flac', 'ogg', 'wma'];
 
-export const videoExtNames = [
+export const VIDEO_EXTS = [
   'mp4',
   'avi',
   'mkv',
@@ -13,7 +13,7 @@ export const videoExtNames = [
   'ogv',
 ];
 
-export const imageExtNames = [
+export const IMAGE_EXTS = [
   'jpg',
   'jpeg',
   'png',
@@ -29,7 +29,7 @@ export const imageExtNames = [
   'cr2',
 ];
 
-export const textExtNames = [
+export const TEXT_EXTS = [
   'txt',
   'md',
   'text',
@@ -52,7 +52,7 @@ export const textExtNames = [
   'yml',
 ];
 
-export const docTypes = ['doc', 'docx'];
-export const excelTypes = ['xls', 'xlsx'];
-export const pptTypes = ['ppt', 'pptx'];
-export const pdfTypes = ['pdf'];
+export const DOC_EXTS = ['doc', 'docx'];
+export const EXCEL_EXTS = ['xls', 'xlsx'];
+export const PPT_EXTS = ['ppt', 'pptx'];
+export const PDF_EXTS = ['pdf'];

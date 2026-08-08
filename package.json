@@ -10,6 +10,7 @@
     "start:clean": "react-native start --reset-cache",
     "start:dev": "set RN_ENV=local&& react-native start --experimental-debugger",
     "start:prod": "set RN_ENV=prod&& react-native start",
+    "fix":"node scripts/replace-packages.js",
     "test": "jest"
   },
   "dependencies": {

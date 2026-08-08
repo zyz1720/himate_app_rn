@@ -1,4 +1,4 @@
-import {audioExtNames} from '@const/file_ext_names';
+import {AUDIO_EXTS} from '@const/file_ext_names';
 import {v4 as uuid} from 'uuid';
 import {Platform} from 'react-native';
 import ReactNativeBlobUtil from 'react-native-blob-util';
@@ -28,7 +28,7 @@ export const deleteDir = async dir => {
  * @returns {boolean} - 是否为音频文件
  */
 export const isAudioFile = fileName => {
-  return audioExtNames.some(ext => fileName.toLowerCase().endsWith(ext));
+  return AUDIO_EXTS.some(ext => fileName.toLowerCase().endsWith(ext));
 };
 
 /**

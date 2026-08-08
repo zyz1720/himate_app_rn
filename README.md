@@ -119,7 +119,7 @@ Himate是一款基于React Native 0.75.5开发的轻量级聊天和音乐移动�
    - react-native-audio-recorder-player: 优化网络卡顿时加载音乐导致的UI极其卡顿的问题。
    - react-native-music-control: 增加flyme状态栏歌词，优化对Android14的支持。
    ```bash
-   node scripts/replace-packages.js
+   yarn fix
    ```
 
 ## 运行应用

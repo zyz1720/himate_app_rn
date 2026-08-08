@@ -1,13 +1,13 @@
 import {Platform} from 'react-native';
 import {
-  audioExtNames,
-  imageExtNames,
-  videoExtNames,
-  textExtNames,
-  docTypes,
-  excelTypes,
-  pptTypes,
-  pdfTypes,
+  AUDIO_EXTS,
+  IMAGE_EXTS,
+  VIDEO_EXTS,
+  TEXT_EXTS,
+  DOC_EXTS,
+  EXCEL_EXTS,
+  PPT_EXTS,
+  PDF_EXTS,
 } from '@const/file_ext_names';
 import {Colors} from 'react-native-ui-lib';
 import {displayName} from '@root/app.json';
@@ -83,19 +83,19 @@ export const getFileExt = url => {
  */
 export const getFileColor = ext => {
   let color = Colors.yellow40;
-  if (textExtNames.includes(ext)) {
+  if (TEXT_EXTS.includes(ext)) {
     color = Colors.grey40;
   }
-  if (docTypes.includes(ext)) {
+  if (DOC_EXTS.includes(ext)) {
     color = Colors.blue40;
   }
-  if (excelTypes.includes(ext)) {
+  if (EXCEL_EXTS.includes(ext)) {
     color = Colors.green40;
   }
-  if (pptTypes.includes(ext)) {
+  if (PPT_EXTS.includes(ext)) {
     color = Colors.orange40;
   }
-  if (pdfTypes.includes(ext)) {
+  if (PDF_EXTS.includes(ext)) {
     color = Colors.red40;
   }
   return color;
@@ -163,14 +163,14 @@ export const getFileFromDocumentPicker = fileInfo => {
   const baseType = fileInfo.type;
   const originalName = fileInfo.name;
   const ext = getFileExt(originalName);
-  const documentTypes = [...docTypes, ...excelTypes, ...pptTypes, ...pdfTypes];
+  const documentTypes = [...DOC_EXTS, ...EXCEL_EXTS, ...PPT_EXTS, ...PDF_EXTS];
 
   let type = FileTypeEnum.other;
-  if (baseType.startsWith('image/') || imageExtNames.includes(ext)) {
+  if (baseType.startsWith('image/') || IMAGE_EXTS.includes(ext)) {
     type = FileTypeEnum.image;
-  } else if (baseType.startsWith('video/') || videoExtNames.includes(ext)) {
+  } else if (baseType.startsWith('video/') || VIDEO_EXTS.includes(ext)) {
     type = FileTypeEnum.video;
-  } else if (baseType.startsWith('audio/') || audioExtNames.includes(ext)) {
+  } else if (baseType.startsWith('audio/') || AUDIO_EXTS.includes(ext)) {
     type = FileTypeEnum.audio;
   } else if (documentTypes.includes(ext)) {
     type = FileTypeEnum.document;
