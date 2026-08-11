@@ -1,16 +1,16 @@
-import {useState, useRef} from 'react';
-import {useUserStore} from '@store/userStore';
-import {useConfigStore} from '@store/configStore';
-import {useChatMsgStore} from '@store/chatMsgStore';
-import {setLocalSession} from '@utils/realm/useSessionInfo';
-import {batchDisplayMsgNotifications} from '@utils/system/notification';
+import { useState, useRef } from 'react';
+import { useUserStore } from '@store/userStore';
+import { useConfigStore } from '@store/configStore';
+import { useChatMsgStore } from '@store/chatMsgStore';
+import { setLocalSession } from '@utils/realm/useSessionInfo';
+import { batchDisplayMsgNotifications } from '@utils/system/notification';
 import EventSource from 'react-native-sse';
 
 export const useSse = path => {
-  const {token_type, access_token} = useUserStore();
-  const {envConfig} = useConfigStore();
+  const { token_type, access_token } = useUserStore();
+  const { envConfig } = useConfigStore();
   const [isConnected, setIsConnected] = useState(false);
-  const {setRemindSessions, setUpdateKey} = useChatMsgStore();
+  const { setRemindSessions, setUpdateKey } = useChatMsgStore();
   let sseInstanceRef = useRef(null);
   let sseTimer = useRef(null);
 

@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from 'react';
-import {Animated, Easing, StyleSheet} from 'react-native';
-import {Colors, View} from 'react-native-ui-lib';
+import React, { useEffect, useState } from 'react';
+import { Animated, Easing, StyleSheet, useAnimatedValue } from 'react-native';
+import { Colors, View } from 'react-native-ui-lib';
 
 const styles = StyleSheet.create({
   container: {
@@ -18,8 +18,8 @@ const styles = StyleSheet.create({
 });
 
 const AnimatedScanner = React.memo(props => {
-  const {borderRadius = 0, progress = 0} = props;
-  const progressAnimation = new Animated.Value(progress || 0);
+  const { borderRadius = 0, progress = 0 } = props;
+  const progressAnimation = useAnimatedValue(progress || 0);
   const animateProgress = toValue => {
     if (toValue) {
       Animated.timing(progressAnimation, {
@@ -54,7 +54,8 @@ const AnimatedScanner = React.memo(props => {
         width={'100%'}
         height={'100%'}
         borderRadius={borderRadius}
-        backgroundColor={Colors.white1}>
+        backgroundColor={Colors.white1}
+      >
         <Animated.View
           style={[
             styles.progress,

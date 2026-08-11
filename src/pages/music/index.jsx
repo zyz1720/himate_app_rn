@@ -12,7 +12,7 @@ import {
   Checkbox,
   Button,
   Switch,
-  PanningProvider,
+  PanView,
   Dialog,
   Slider,
 } from 'react-native-ui-lib';
@@ -660,7 +660,7 @@ const Music = ({navigation}) => {
         useSafeArea={true}
         onDismiss={() => setShowAlarmDialog(false)}
         width={'90%'}
-        panDirection={PanningProvider.Directions.DOWN}>
+        direction={PanView.directions.DOWN}>
         <Card flexS padding-16>
           <View row centerV>
             <Text text70BL marginR-12>
@@ -723,7 +723,7 @@ const Music = ({navigation}) => {
         useSafeArea={true}
         onDismiss={() => setShowRandomDialog(false)}
         width={'90%'}
-        panDirection={PanningProvider.Directions.DOWN}>
+        direction={PanView.directions.DOWN}>
         <Card flexS padding-16>
           <View row centerV>
             <Text text70BL marginR-12>

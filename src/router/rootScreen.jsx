@@ -1,16 +1,16 @@
 import * as React from 'react';
-import {Platform} from 'react-native';
+import { Platform } from 'react-native';
 import {
   NavigationContainer,
   useNavigationContainerRef,
 } from '@react-navigation/native';
-import {Colors, TouchableOpacity} from 'react-native-ui-lib';
-import {createStackNavigator} from '@react-navigation/stack';
-import {useUserStore} from '@store/userStore';
-import {useSettingStore} from '@store/settingStore';
-import {useMusicStore} from '@store/musicStore';
-import {useTranslation} from 'react-i18next';
-import {displayName} from '@root/app.json';
+import { Colors, TouchableOpacity } from 'react-native-ui-lib';
+import { createStackNavigator } from '@react-navigation/stack';
+import { useUserStore } from '@store/userStore';
+import { useSettingStore } from '@store/settingStore';
+import { useMusicStore } from '@store/musicStore';
+import { useTranslation } from 'react-i18next';
+import { displayName } from '@root/app.json';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import BootSplash from 'react-native-bootsplash';
 import Login from '@pages/login/login';
@@ -20,10 +20,10 @@ import BaseWebView from '@pages/common/baseWebView';
 const Stack = createStackNavigator();
 
 const RootScreen = () => {
-  const {t} = useTranslation();
-  const {isLogin} = useUserStore();
-  const {themeColor, isFullScreen} = useSettingStore();
-  const {setShowMusicCtrl} = useMusicStore();
+  const { t } = useTranslation();
+  const { isLogin } = useUserStore();
+  const { themeColor, isFullScreen } = useSettingStore();
+  const { setShowMusicCtrl } = useMusicStore();
   const navigationRef = useNavigationContainerRef();
 
   return (
@@ -37,7 +37,8 @@ const RootScreen = () => {
       onStateChange={async () => {
         const curRouteName = navigationRef.current.getCurrentRoute().name;
         setShowMusicCtrl(curRouteName);
-      }}>
+      }}
+    >
       <Stack.Navigator>
         {isLogin ? (
           <Stack.Screen
@@ -68,7 +69,7 @@ const RootScreen = () => {
         )}
         {/*  公共屏幕 */}
         <Stack.Group
-          screenOptions={({navigation}) => ({
+          screenOptions={({ navigation }) => ({
             // eslint-disable-next-line react/no-unstable-nested-components
             headerLeft: () => (
               <TouchableOpacity paddingH-26 onPress={() => navigation.goBack()}>
@@ -79,11 +80,12 @@ const RootScreen = () => {
                 />
               </TouchableOpacity>
             ),
-          })}>
+          })}
+        >
           <Stack.Screen
             name="WebView"
             component={BaseWebView}
-            options={({route}) => ({
+            options={({ route }) => ({
               title: route.params?.title || displayName,
             })}
           />

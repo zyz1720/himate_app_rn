@@ -1,14 +1,14 @@
-import React, {useState, useEffect} from 'react';
-import {StyleSheet, ScrollView} from 'react-native';
-import {View, TouchableOpacity, Text, Colors} from 'react-native-ui-lib';
-import Animated, {FadeInLeft, FadeOutRight} from 'react-native-reanimated';
-import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, ScrollView } from 'react-native';
+import { View, TouchableOpacity, Text, Colors } from 'react-native-ui-lib';
+import Animated, { FadeInLeft, FadeOutRight } from 'react-native-reanimated';
+import { useScreenDimensions } from '@components/contexts/ScreenDimensionsContext';
 
 const BaseTopBar = props => {
-  const {routes = [], initialIndex = 0, onChange = () => {}} = props;
+  const { routes = [], initialIndex = 0, onChange = () => {} } = props;
 
   const [focusedIndex, setFocusedIndex] = useState(initialIndex);
-  const {fullWidth} = useScreenDimensions();
+  const { fullWidth } = useScreenDimensions();
 
   const [isOverflow, setIsOverflow] = useState(false);
 
@@ -26,9 +26,8 @@ const BaseTopBar = props => {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={
-            !isOverflow ? styles.flexContainerStyle : null
-          }>
+          contentContainerStyle={!isOverflow ? styles.flexContainerStyle : null}
+        >
           {routes.map((item, index) => {
             return (
               <View key={item.key} flex>
@@ -37,11 +36,13 @@ const BaseTopBar = props => {
                   onPress={() => {
                     setFocusedIndex(index);
                     onChange(index, item);
-                  }}>
+                  }}
+                >
                   <Text
                     color={
                       index === focusedIndex ? Colors.primary : Colors.grey30
-                    }>
+                    }
+                  >
                     {item.title}
                   </Text>
                 </TouchableOpacity>
@@ -64,7 +65,7 @@ const BaseTopBar = props => {
 };
 
 const styles = StyleSheet.create({
-  flexContainerStyle: {flex: 1, justifyContent: 'center'},
+  flexContainerStyle: { flex: 1, justifyContent: 'center' },
   topStyle: {
     borderBottomWidth: 0.8,
     borderBottomColor: Colors.grey70,

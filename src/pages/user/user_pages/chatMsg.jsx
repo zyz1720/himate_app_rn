@@ -13,7 +13,7 @@ import {
 import {usePermissionStore} from '@store/permissionStore';
 import {useTranslation} from 'react-i18next';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import DocumentPicker from 'react-native-document-picker';
+import DocumentPicker from '@react-native-documents/picker';
 import ListItem from '@components/common/ListItem';
 import BaseDialog from '@components/common/BaseDialog';
 import PasswordEye from '@components/form/PasswordEye';

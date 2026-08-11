@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {FlatList, SectionList, RefreshControl} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { FlatList, SectionList, RefreshControl } from 'react-native';
 import {
   View,
   Text,
@@ -7,13 +7,13 @@ import {
   Avatar,
   TouchableOpacity,
   Dialog,
-  PanningProvider,
+  PanView,
   Checkbox,
 } from 'react-native-ui-lib';
-import {getFirstLetter} from '@utils/common/string_utils';
-import {useConfigStore} from '@store/configStore';
-import {useTranslation} from 'react-i18next';
-import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
+import { getFirstLetter } from '@utils/common/string_utils';
+import { useConfigStore } from '@store/configStore';
+import { useTranslation } from 'react-i18next';
+import { useScreenDimensions } from '@components/contexts/ScreenDimensionsContext';
 
 const MateList = props => {
   const {
@@ -29,9 +29,9 @@ const MateList = props => {
     heightScale = 1,
   } = props;
 
-  const {t} = useTranslation();
-  const {fullHeight} = useScreenDimensions();
-  const {envConfig} = useConfigStore();
+  const { t } = useTranslation();
+  const { fullHeight } = useScreenDimensions();
+  const { envConfig } = useConfigStore();
 
   const [mateList, setMateList] = useState([]);
   const [alphabetList, setAlphabetList] = useState([]);
@@ -128,7 +128,7 @@ const MateList = props => {
 
   const [selectedItem, setSelectedItem] = useState(initialSelectIds);
 
-  const renderItem = ({item}) => {
+  const renderItem = ({ item }) => {
     return allowSelect ? (
       <View flexS row centerV backgroundColor={Colors.white} padding-12>
         <Checkbox
@@ -164,7 +164,7 @@ const MateList = props => {
             source={{
               uri: envConfig.STATIC_URL + item.theOther.user_avatar,
             }}
-            imageProps={{errorSource: require('@assets/images/empty.jpg')}}
+            imageProps={{ errorSource: require('@assets/images/empty.jpg') }}
             backgroundColor={Colors.transparent}
             size={40}
           />
@@ -183,12 +183,13 @@ const MateList = props => {
           padding-12
           onPress={() => {
             onConfirm(item);
-          }}>
+          }}
+        >
           <Avatar
             source={{
               uri: envConfig.STATIC_URL + item.theOther.user_avatar,
             }}
-            imageProps={{errorSource: require('@assets/images/empty.jpg')}}
+            imageProps={{ errorSource: require('@assets/images/empty.jpg') }}
             backgroundColor={Colors.transparent}
             size={40}
           />
@@ -203,7 +204,7 @@ const MateList = props => {
   return (
     <>
       <SectionList
-        style={{height: fullHeight * heightScale}}
+        style={{ height: fullHeight * heightScale }}
         refreshControl={
           <RefreshControl
             colors={[Colors.primary]}
@@ -219,7 +220,7 @@ const MateList = props => {
         onEndReached={onEndReached()}
         renderItem={renderItem}
         ListFooterComponent={<View marginB-280 />}
-        renderSectionHeader={({section: {title}}) => (
+        renderSectionHeader={({ section: { title } }) => (
           <View padding-4 marginL-10>
             <Text grey30 text80>
               {title}
@@ -250,14 +251,15 @@ const MateList = props => {
           setPressIndex(-1);
         }}
         onLayout={event => {
-          const {height: group_height} = event.nativeEvent.layout;
+          const { height: group_height } = event.nativeEvent.layout;
           setGroupHeight(group_height);
-        }}>
+        }}
+      >
         <View>
           <FlatList
             data={alphabetList}
             keyExtractor={(item, index) => item + index}
-            renderItem={({item, index}) => (
+            renderItem={({ item, index }) => (
               <View
                 width={20}
                 height={20}
@@ -265,12 +267,14 @@ const MateList = props => {
                 center
                 backgroundColor={
                   index === pressIndex ? Colors.primary : Colors.transparent
-                }>
+                }
+              >
                 <Text
                   text90L
                   style={{
                     color: index === pressIndex ? Colors.white : Colors.grey30,
-                  }}>
+                  }}
+                >
                   {item}
                 </Text>
               </View>
@@ -280,9 +284,10 @@ const MateList = props => {
       </View>
       <Dialog
         visible={hintVisible}
-        overlayBackgroundColor={Colors.transparent}
+        modalProps={{ overlayBackgroundColor: Colors.transparent }}
         onDismiss={() => setHintVisible(false)}
-        panDirection={PanningProvider.Directions.RIGHT}>
+        direction={PanView.directions.RIGHT}
+      >
         <View flexG center>
           <View
             padding-8
@@ -290,7 +295,8 @@ const MateList = props => {
             center
             width={80}
             backgroundColor={Colors.black3}
-            br40>
+            br40
+          >
             <Text white text20>
               {alphabetList[pressIndex]}
             </Text>

@@ -1,40 +1,41 @@
-import React, {useEffect, useState} from 'react';
-import {StatusBar, AppState} from 'react-native';
-import {Colors} from 'react-native-ui-lib';
-import {useToast} from '@components/common/useToast';
-import {displayName} from '@root/app.json';
-import {install} from 'react-native-quick-crypto';
-import {useConfigStore} from '@store/configStore';
-import {useUserStore} from '@store/userStore';
-import {useSettingStore} from '@store/settingStore';
-import {useErrorMsgStore} from '@store/errorMsgStore';
-import {useTranslation} from 'react-i18next';
-import {useSocketStore} from '@store/socketStore';
-import {useAppStateStore} from '@store/appStateStore';
-import {UNREAD} from '@const/sse_path';
-import {useSse} from '@utils/hooks/useSse';
-import {addEventListener} from '@react-native-community/netinfo';
+import React, { useEffect, useState } from 'react';
+import { StatusBar, AppState } from 'react-native';
+import { Colors } from 'react-native-ui-lib';
+import { useToast } from '@components/common/useToast';
+import { displayName } from '@root/app.json';
+import { install as installQuickCrypto } from 'react-native-quick-crypto';
+import { useConfigStore } from '@store/configStore';
+import { useUserStore } from '@store/userStore';
+import { useSettingStore } from '@store/settingStore';
+import { useErrorMsgStore } from '@store/errorMsgStore';
+import { useTranslation } from 'react-i18next';
+import { useSocketStore } from '@store/socketStore';
+import { useAppStateStore } from '@store/appStateStore';
+import { UNREAD } from '@const/sse_path';
+import { useSse } from '@utils/hooks/useSse';
+import { addEventListener } from '@react-native-community/netinfo';
 import FullScreenLoading from '@components/common/FullScreenLoading';
 import RootScreen from './rootScreen';
 import i18n from 'i18next';
 import 'react-native-get-random-values';
 
 const RootView = () => {
-  install();
-  const {t} = useTranslation();
-  const {showToast} = useToast();
-  const {isLogin, setUserInfo, access_token} = useUserStore();
-  const {envConfig, configLoading, updateEnvConfig} = useConfigStore();
-  const {isFastStatic, themeColor, language, isFullScreen} = useSettingStore();
-  const {errorMsg, clearMsgStore} = useErrorMsgStore();
-  const {setNetworkIsConnected, setIsAppActive} = useAppStateStore();
+  installQuickCrypto();
+  const { t } = useTranslation();
+  const { showToast } = useToast();
+  const { isLogin, setUserInfo, access_token } = useUserStore();
+  const { envConfig, configLoading, updateEnvConfig } = useConfigStore();
+  const { isFastStatic, themeColor, language, isFullScreen } =
+    useSettingStore();
+  const { errorMsg, clearMsgStore } = useErrorMsgStore();
+  const { setNetworkIsConnected, setIsAppActive } = useAppStateStore();
 
-  const {socketInit} = useSocketStore();
-  const {sseInit} = useSse(UNREAD);
+  const { socketInit } = useSocketStore();
+  const { sseInit } = useSse(UNREAD);
 
   // 监听网络状态变化
   const unsubscribeNetInfo = addEventListener(state => {
-    const {isConnected} = state;
+    const { isConnected } = state;
     setNetworkIsConnected(isConnected);
   });
 
@@ -51,7 +52,7 @@ const RootView = () => {
   const initializeApp = async () => {
     await useSettingStore.persist.rehydrate();
     await useUserStore.persist.rehydrate();
-    const {initThemeColors, initLanguage} = useSettingStore.getState();
+    const { initThemeColors, initLanguage } = useSettingStore.getState();
     initThemeColors();
     initLanguage();
     setIsInitialized(true);
@@ -73,7 +74,7 @@ const RootView = () => {
   // 是否启用高速静态资源
   useEffect(() => {
     if (isFastStatic && envConfig?.FAST_STATIC_URL) {
-      const config = {...envConfig, STATIC_URL: envConfig.FAST_STATIC_URL};
+      const config = { ...envConfig, STATIC_URL: envConfig.FAST_STATIC_URL };
       updateEnvConfig(config);
     }
   }, [isFastStatic, envConfig?.FAST_STATIC_URL]);

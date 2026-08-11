@@ -1,4 +1,4 @@
-import {realm} from './index';
+import { realm } from './index';
 
 /**
  * 获取本地音乐

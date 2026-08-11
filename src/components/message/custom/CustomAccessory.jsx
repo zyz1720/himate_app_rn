@@ -1,7 +1,13 @@
-import React, {useState} from 'react';
-import {StyleSheet, Vibration, ActivityIndicator, Modal} from 'react-native';
-import {Colors, TouchableOpacity, Text, View, Card} from 'react-native-ui-lib';
-import {useToast} from '@components/common/useToast';
+import React, { useState } from 'react';
+import { StyleSheet, Vibration, ActivityIndicator, Modal } from 'react-native';
+import {
+  Colors,
+  TouchableOpacity,
+  Text,
+  View,
+  Card,
+} from 'react-native-ui-lib';
+import { useToast } from '@components/common/useToast';
 import {
   Gesture,
   GestureDetector,
@@ -14,16 +20,16 @@ import Animated, {
   withSpring,
   runOnJS,
 } from 'react-native-reanimated';
-import {usePermissionStore} from '@store/permissionStore';
-import {useTranslation} from 'react-i18next';
+import { usePermissionStore } from '@store/permissionStore';
+import { useTranslation } from 'react-i18next';
 import {
   getFileFromAudioRecorderPlayer,
   getFileFromImageCropPicker,
   getFileFromDocumentPicker,
 } from '@utils/system/file_utils';
+import Sound from 'react-native-nitro-sound';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import AudioRecorderPlayer from 'react-native-audio-recorder-player';
-import DocumentPicker from 'react-native-document-picker';
+import DocumentPicker from '@react-native-documents/picker';
 import ImagePicker from 'react-native-image-crop-picker';
 
 const styles = StyleSheet.create({
@@ -60,7 +66,6 @@ const styles = StyleSheet.create({
 });
 
 let recordTimer = null;
-const audioRecorderPlayer = new AudioRecorderPlayer();
 
 /* 自定义操作 accessory */
 const CustomAccessory = React.memo(props => {
@@ -77,8 +82,8 @@ const CustomAccessory = React.memo(props => {
     onFilePickComplete = () => {},
     onClose = () => {},
   } = props;
-  const {showToast} = useToast();
-  const {t} = useTranslation();
+  const { showToast } = useToast();
+  const { t } = useTranslation();
   const {
     accessCamera,
     setAccessCamera,
@@ -112,8 +117,7 @@ const CustomAccessory = React.memo(props => {
     }
     Vibration.vibrate(50);
     setVisible(true);
-    audioRecorderPlayer
-      .startRecorder()
+    Sound.startRecorder()
       .then(() => {
         setRecordTimeValue();
       })
@@ -128,8 +132,7 @@ const CustomAccessory = React.memo(props => {
   const stopRecord = () => {
     clearInterval(recordTimer);
     setRecordTime(0);
-    audioRecorderPlayer
-      .stopRecorder()
+    Sound.stopRecorder()
       .then(res => {
         if (recordFlag === 'sure') {
           const fileInfo = getFileFromAudioRecorderPlayer(res);
@@ -156,7 +159,7 @@ const CustomAccessory = React.memo(props => {
       recorderVisible.value = true;
       runOnJS(startRecord)();
     })
-    .onUpdate(({translationX, translationY}) => {
+    .onUpdate(({ translationX, translationY }) => {
       if (
         translationX > 0 &&
         translationX < 70 &&
@@ -220,7 +223,8 @@ const CustomAccessory = React.memo(props => {
               return;
             }
             showToast(t('chat.record_placeholder'), 'warning');
-          }}>
+          }}
+        >
           <GestureHandlerRootView>
             <GestureDetector gesture={gesture}>
               <View
@@ -229,7 +233,8 @@ const CustomAccessory = React.memo(props => {
                 backgroundColor={Colors.primary}
                 width={36}
                 height={36}
-                br60>
+                br60
+              >
                 <FontAwesome name="microphone" color={Colors.white} size={24} />
               </View>
             </GestureDetector>
@@ -261,14 +266,16 @@ const CustomAccessory = React.memo(props => {
                   onShootComplete();
                   onClose();
                 });
-            }}>
+            }}
+          >
             <View
               flexS
               center
               backgroundColor={Colors.grey40}
               width={36}
               height={36}
-              br30>
+              br30
+            >
               <FontAwesome name="camera" color={Colors.white} size={20} />
             </View>
             <Text marginT-4 text90L grey30>
@@ -296,14 +303,16 @@ const CustomAccessory = React.memo(props => {
                   onVideoRecordComplete();
                   onClose();
                 });
-            }}>
+            }}
+          >
             <View
               flexS
               center
               backgroundColor={Colors.blue40}
               width={36}
               height={36}
-              br30>
+              br30
+            >
               <FontAwesome name="video-camera" color={Colors.white} size={24} />
             </View>
             <Text marginT-4 text90L grey30>
@@ -333,14 +342,16 @@ const CustomAccessory = React.memo(props => {
                   onImgPickComplete();
                   onClose();
                 });
-            }}>
+            }}
+          >
             <View
               flexS
               center
               backgroundColor={Colors.cyan40}
               width={36}
               height={36}
-              br30>
+              br30
+            >
               <FontAwesome name="image" color={Colors.white} size={24} />
             </View>
             <Text marginT-4 text90L grey30>
@@ -372,14 +383,16 @@ const CustomAccessory = React.memo(props => {
                   onFilePickComplete();
                   onClose();
                 });
-            }}>
+            }}
+          >
             <View
               flexS
               center
               backgroundColor={Colors.yellow40}
               width={36}
               height={36}
-              br30>
+              br30
+            >
               <FontAwesome name="folder-open" color={Colors.white} size={24} />
             </View>
             <Text marginT-4 text90L grey30>
@@ -392,12 +405,13 @@ const CustomAccessory = React.memo(props => {
         animationType="fade"
         transparent={true}
         statusBarTranslucent
-        visible={visible}>
+        visible={visible}
+      >
         <View flexG center backgroundColor={Colors.black2}>
           <Card flexS padding-16 center width={160}>
             <ActivityIndicator color={Colors.primary} size={24} />
             <Text grey30 marginT-4>
-              {t('chat.record_tips', {recordTime})}
+              {t('chat.record_tips', { recordTime })}
             </Text>
             {recordFlag === 'sure' ? (
               <Text green40 marginT-4>
@@ -413,11 +427,13 @@ const CustomAccessory = React.memo(props => {
         </View>
       </Modal>
       <Animated.View
-        style={[styles.cancelBut, sureButAnimatedStyles, butAnimatedStyles]}>
+        style={[styles.cancelBut, sureButAnimatedStyles, butAnimatedStyles]}
+      >
         <FontAwesome name="check" color={Colors.white} size={28} />
       </Animated.View>
       <Animated.View
-        style={[styles.sureBut, cancelButAnimated, butAnimatedStyles]}>
+        style={[styles.sureBut, cancelButAnimated, butAnimatedStyles]}
+      >
         <FontAwesome name="remove" color={Colors.white} size={28} />
       </Animated.View>
     </>

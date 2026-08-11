@@ -36,7 +36,7 @@ import VideoModal from '@components/common/VideoModal';
 import ImgModal from '@components/common/ImgModal';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import DocumentPicker from 'react-native-document-picker';
+import DocumentPicker from '@react-native-documents/picker';
 import BaseDialog from '@components/common/BaseDialog';
 import dayjs from 'dayjs';
 

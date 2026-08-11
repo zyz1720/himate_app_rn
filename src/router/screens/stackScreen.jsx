@@ -1,10 +1,10 @@
 import * as React from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
-import {Colors, TouchableOpacity} from 'react-native-ui-lib';
-import {useSettingStore} from '@store/settingStore';
-import {useTranslation} from 'react-i18next';
-import {ChatTypeEnum} from '@const/database_enum';
-import {useToast} from '@components/common/useToast';
+import { createStackNavigator } from '@react-navigation/stack';
+import { Colors, TouchableOpacity } from 'react-native-ui-lib';
+import { useSettingStore } from '@store/settingStore';
+import { useTranslation } from 'react-i18next';
+import { ChatTypeEnum } from '@const/database_enum';
+import { useToast } from '@components/common/useToast';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import TabScreen from './tabScreen';
 import EditUser from '@pages/user/user_pages/editUser';
@@ -30,9 +30,9 @@ import Permissions from '@pages/common/permissions';
 const Stack = createStackNavigator();
 
 function StackScreen() {
-  const {themeColor, isFullScreen} = useSettingStore();
-  const {showToast} = useToast();
-  const {t} = useTranslation();
+  const { themeColor, isFullScreen } = useSettingStore();
+  const { showToast } = useToast();
+  const { t } = useTranslation();
 
   return (
     <Stack.Navigator initialRouteName="TabBar">
@@ -44,18 +44,19 @@ function StackScreen() {
         }}
       />
       <Stack.Group
-        screenOptions={({navigation}) => ({
+        screenOptions={({ navigation }) => ({
           headerShown: !isFullScreen,
-          headerStyle: {backgroundColor: themeColor, height: 46},
+          headerStyle: { backgroundColor: themeColor, height: 46 },
           headerTitleAlign: 'center',
-          headerTitleStyle: {fontSize: 16, color: Colors.white},
+          headerTitleStyle: { fontSize: 16, color: Colors.white },
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
             <TouchableOpacity paddingH-26 onPress={() => navigation.goBack()}>
               <FontAwesome name="angle-left" color={Colors.white} size={26} />
             </TouchableOpacity>
           ),
-        })}>
+        })}
+      >
         {/* 用户 */}
         <Stack.Group>
           <Stack.Screen
@@ -132,14 +133,14 @@ function StackScreen() {
           <Stack.Screen
             name="Chat"
             component={Chat}
-            options={({route, navigation}) => ({
+            options={({ route, navigation }) => ({
               title: route.params.session_name,
               // eslint-disable-next-line react/no-unstable-nested-components
               headerRight: () => (
                 <TouchableOpacity
                   paddingR-16
                   onPress={() => {
-                    const {chat_type, groupId, userId} = route.params;
+                    const { chat_type, groupId, userId } = route.params;
                     if (chat_type === ChatTypeEnum.private && userId) {
                       navigation.navigate('ChatHistory', route.params);
                     } else if (chat_type === ChatTypeEnum.group && groupId) {
@@ -147,7 +148,8 @@ function StackScreen() {
                     } else {
                       showToast(t('common.invalid_session'));
                     }
-                  }}>
+                  }}
+                >
                   <FontAwesome name="reorder" color={Colors.white} size={20} />
                 </TouchableOpacity>
               ),
@@ -174,7 +176,7 @@ function StackScreen() {
           <Stack.Screen
             name="CreateGroup"
             component={CreateGroup}
-            options={({route}) => ({
+            options={({ route }) => ({
               title: route.params.isCreate
                 ? t('screen.CreateGroup')
                 : t('screen.InviteNewMember'),

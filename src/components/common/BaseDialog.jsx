@@ -6,7 +6,7 @@ import {
   Colors,
   Dialog,
   Button,
-  PanningProvider,
+  PanView,
 } from 'react-native-ui-lib';
 import {useTranslation} from 'react-i18next';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -35,7 +35,7 @@ const BaseDialog = props => {
         onCancel();
       }}
       width={width}
-      panDirection={PanningProvider.Directions.DOWN}>
+      direction={PanView.directions.DOWN}>
       <Card flexS padding-16>
         {title ? (
           <View row>

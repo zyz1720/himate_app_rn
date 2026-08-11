@@ -5,9 +5,6 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
-import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler
-import com.facebook.react.modules.core.PermissionAwareActivity
-import com.facebook.react.modules.core.PermissionListener
 import com.facebook.react.bridge.ActivityEventListener
 import android.content.Intent
 import android.provider.Settings
@@ -61,13 +58,17 @@ class FloatingLyricModule(reactContext: ReactApplicationContext) : ReactContextB
     @Suppress("DEPRECATION")
     override fun onCatalystInstanceDestroy() {
         super.onCatalystInstanceDestroy()
-        // 取消注册广播接收器
-        reactApplicationContext.unregisterReceiver(broadcastReceiver)
+        try {
+            // 取消注册广播接收器
+            reactApplicationContext.unregisterReceiver(broadcastReceiver)
+        } catch (e: Exception) {
+            // Receiver might not be registered
+        }
         // 取消注册ActivityEventListener
         reactApplicationContext.removeActivityEventListener(this)
     }
 
-    override fun onActivityResult(activity: Activity?, requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(activity: Activity, requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == OVERLAY_PERMISSION_REQUEST_CODE) {
             val hasPermission = Settings.canDrawOverlays(reactApplicationContext)
             overlayPermissionCallback?.invoke(hasPermission)
@@ -75,8 +76,9 @@ class FloatingLyricModule(reactContext: ReactApplicationContext) : ReactContextB
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
-        // 不需要实现
+    override fun onNewIntent(intent: Intent) {
+        // 如果需要处理新的Intent，在这里添加逻辑
+        // 如果不需要，可以保持为空实现
     }
 
     @ReactMethod
@@ -114,12 +116,13 @@ class FloatingLyricModule(reactContext: ReactApplicationContext) : ReactContextB
 
     @ReactMethod
     fun requestOverlayPermission(callback: com.facebook.react.bridge.Callback) {
-        val currentActivity = currentActivity
-        currentActivity?.let {
+        // Fix: Get current activity properly
+        val currentActivity = reactApplicationContext.currentActivity
+        if (currentActivity != null) {
             overlayPermissionCallback = callback
             val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
-            it.startActivityForResult(intent, OVERLAY_PERMISSION_REQUEST_CODE)
-        } ?: run {
+            currentActivity.startActivityForResult(intent, OVERLAY_PERMISSION_REQUEST_CODE)
+        } else {
             callback.invoke(false)
         }
     }

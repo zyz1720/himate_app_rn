@@ -79,7 +79,7 @@ Himate is a lightweight chat and music mobile application developed based on Rea
 - **socket.io-client**: 4.7.5
 
 ### Music Functionality
-- **react-native-audio-recorder-player**: 3.6.12
+- **react-native-nitro-sound**: 3.6.12
 - **react-native-music-control**: 1.4.1
 
 ### UI Components
@@ -116,7 +116,7 @@ Himate is a lightweight chat and music mobile application developed based on Rea
    - Modify environment variables as needed
 
 3. **Run Script to Replace Packages** (if needed)
-   - react-native-audio-recorder-player: Optimize extreme UI lag when loading music during network congestion.
+   - react-native-nitro-sound: Optimize extreme UI lag when loading music during network congestion.
    - react-native-music-control: Add Flyme status bar lyrics, improve support for Android 14.
    ```bash
    yarn fix

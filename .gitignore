@@ -33,6 +33,7 @@ local.properties
 .cxx/
 *.keystore
 !debug.keystore
+.kotlin/
 
 # node.js
 #
@@ -76,3 +77,8 @@ yarn-error.log
 # config
 .env.*
 
+
+# Expo
+.expo
+dist/
+web-build/

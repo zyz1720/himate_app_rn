@@ -1,7 +1,7 @@
-import React, {useState, createContext, useContext} from 'react';
-import {ToastAndroid, StyleSheet, Platform} from 'react-native';
-import {Toast, View, Text, Colors} from 'react-native-ui-lib';
-import {useSettingStore} from '@store/settingStore';
+import React, { useState, createContext, useContext } from 'react';
+import { ToastAndroid, StyleSheet, Platform } from 'react-native';
+import { Toast, View, Text, Colors } from 'react-native-ui-lib';
+import { useSettingStore } from '@store/settingStore';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -12,8 +12,8 @@ export const ToastContext = createContext();
 
 let timer = null;
 const ToastProvider = props => {
-  const {children} = props;
-  const {toastType} = useSettingStore();
+  const { children } = props;
+  const { toastType } = useSettingStore();
   const [message, setMessage] = useState(null);
   const [isVisible, setVisible] = useState(false);
   const [typeColor, setTypeColor] = useState(Colors.grey40);
@@ -68,7 +68,7 @@ const ToastProvider = props => {
   };
 
   return (
-    <ToastContext.Provider value={{showToast}}>
+    <ToastContext.Provider value={{ showToast }}>
       {children}
       <Toast
         onDismiss={() => {

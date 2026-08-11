@@ -6,14 +6,20 @@ import React, {
   useMemo,
   useCallback,
 } from 'react';
-import {StyleSheet, ActivityIndicator} from 'react-native';
-import {Image, View, Text, Colors, TouchableOpacity} from 'react-native-ui-lib';
-import {AnimatedCircularProgress} from 'react-native-circular-progress';
-import {useScreenDimensions} from '@components/contexts/ScreenDimensionsContext';
-import {Marquee} from '@animatereactnative/marquee';
-import {isEmptyObject, excludeFields} from '@utils/common/object_utils';
-import {getRandomInt} from '@utils/common/number_utils';
-import {useToast} from '@components/common/useToast';
+import { StyleSheet, ActivityIndicator } from 'react-native';
+import {
+  Image,
+  View,
+  Text,
+  Colors,
+  TouchableOpacity,
+} from 'react-native-ui-lib';
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
+import { useScreenDimensions } from '@components/contexts/ScreenDimensionsContext';
+import { Marquee } from '@animatereactnative/marquee';
+import { isEmptyObject, excludeFields } from '@utils/common/object_utils';
+import { getRandomInt } from '@utils/common/number_utils';
+import { useToast } from '@components/common/useToast';
 import {
   getMusic,
   likeMusic,
@@ -21,22 +27,22 @@ import {
   getMusicDetail,
   getMusicIsLiked,
 } from '@api/music';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
-import {useUserStore} from '@store/userStore';
-import {useConfigStore} from '@store/configStore';
-import {useMusicStore} from '@store/musicStore';
-import {useSettingStore} from '@store/settingStore';
-import {useTranslation} from 'react-i18next';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useUserStore } from '@store/userStore';
+import { useConfigStore } from '@store/configStore';
+import { useMusicStore } from '@store/musicStore';
+import { useSettingStore } from '@store/settingStore';
+import { useTranslation } from 'react-i18next';
 import {
   renderMusicTitle,
   formatLrc,
   findLyricIndex,
   HIDDEN_TEXTS,
 } from '@utils/system/lyric_utils';
-import {useMusicControl} from '@utils/hooks/useMusicControl';
-import {recordPlayHistory} from '@utils/realm/useMusicInfo';
-import {useAppStateStore} from '@store/appStateStore';
-import {useFloatingLyric} from '@utils/hooks/useFloatingLyric';
+import { useMusicControl } from '@utils/hooks/useMusicControl';
+import { recordPlayHistory } from '@utils/realm/useMusicInfo';
+import { useAppStateStore } from '@store/appStateStore';
+import { useFloatingLyric } from '@utils/hooks/useFloatingLyric';
 import Animated, {
   useSharedValue,
   withTiming,
@@ -45,13 +51,11 @@ import Animated, {
   useAnimatedStyle,
   cancelAnimation,
 } from 'react-native-reanimated';
+import Sound from 'react-native-nitro-sound';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import BaseImageBackground from '@components/common/BaseImageBackground';
 import LyricModal from './LyricModal';
 import ToBePlayedModal from './ToBePlayedModal';
-import AudioRecorderPlayer from 'react-native-audio-recorder-player';
-
-const audioPlayer = new AudioRecorderPlayer();
 
 const styles = StyleSheet.create({
   musicBut: {
@@ -93,11 +97,11 @@ const MusicPlaybackContext = createContext();
 const MusicPlayPositionContext = createContext();
 
 const MusicCtrlProvider = props => {
-  const {children} = props;
-  const {showToast} = useToast();
-  const {fullWidth} = useScreenDimensions();
-  const {userInfo} = useUserStore();
-  const {envConfig} = useConfigStore();
+  const { children } = props;
+  const { showToast } = useToast();
+  const { fullWidth } = useScreenDimensions();
+  const { userInfo } = useUserStore();
+  const { envConfig } = useConfigStore();
   const {
     showMusicCtrl,
     closeTime,
@@ -113,9 +117,9 @@ const MusicCtrlProvider = props => {
     setMusicPlayMode,
     setIsRandomPlay,
   } = useMusicStore();
-  const {statusBarLyricType, isShowDesktopLyric, isShowStatusBarLyric} =
+  const { statusBarLyricType, isShowDesktopLyric, isShowStatusBarLyric } =
     useSettingStore();
-  const {isAppActive} = useAppStateStore();
+  const { isAppActive } = useAppStateStore();
 
   const {
     setNowPlayingCtrl,
@@ -139,7 +143,7 @@ const MusicCtrlProvider = props => {
     stopLyricService,
   } = useFloatingLyric();
 
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   const [lyrics, setLyrics] = useState([]);
   const [nowLyricIndex, setNowLyricIndex] = useState(-1);
@@ -320,12 +324,12 @@ const MusicCtrlProvider = props => {
     resetLyricState();
     _setPlayingMusic({});
     await stopPlayerCtrl();
-    await audioPlayer.stopPlayer();
+    await Sound.stopPlayer();
   };
 
   // 处理播放更新
   const handlePlaybackUpdate = playbackMeta => {
-    const {currentPosition, duration, isFinished} = playbackMeta;
+    const { currentPosition, duration, isFinished } = playbackMeta;
     const isPlaying = currentPosition !== playPosition;
     const isSeekSuccess =
       seekPosition !== 0 && currentPosition !== seekPosition;
@@ -402,13 +406,13 @@ const MusicCtrlProvider = props => {
       return;
     }
     if (isMusicPlaying) {
-      await audioPlayer.pausePlayer();
+      await Sound.pausePlayer();
     } else {
       if (isEmptyObject(playingMusic)) {
         showToast(t('music.no_music'), 'warning');
         return;
       }
-      await audioPlayer.resumePlayer();
+      await Sound.resumePlayer();
     }
   };
 
@@ -437,7 +441,7 @@ const MusicCtrlProvider = props => {
     setIsMusicLoading(true);
     const roundedPosition = Math.round(position);
     const elapsedTime = Math.round(position / 1000);
-    await audioPlayer.seekToPlayer(roundedPosition);
+    await Sound.seekToPlayer(roundedPosition);
     setSeekPosition(roundedPosition);
     setProgressPosition(roundedPosition);
     seekToPlayerCtrl(elapsedTime);
@@ -447,7 +451,7 @@ const MusicCtrlProvider = props => {
   const getRandMusic = async () => {
     const index = getRandomInt(randomNumMin, randomNumMax);
     try {
-      const res = await getMusic({current: index, pageSize: 1});
+      const res = await getMusic({ current: index, pageSize: 1 });
       if (res.code === 0 && res.data.list.length > 0) {
         const music = res.data.list[0];
         setPlayingMusic(music);
@@ -465,7 +469,7 @@ const MusicCtrlProvider = props => {
         return;
       }
       //resetMusicControl();
-      await audioPlayer.stopPlayer();
+      await Sound.stopPlayer();
       seekToPlayerCtrl(0);
 
       resetPlayingState();
@@ -480,7 +484,7 @@ const MusicCtrlProvider = props => {
         url = playingMusic?.file_key;
       }
 
-      await audioPlayer.startPlayer(url);
+      await Sound.startPlayer(url);
       const index = playList.findIndex(item => item.id === playingMusic.id);
       setPlayingMusicIndex(index);
       recordPlayHistory(playingMusic);
@@ -508,7 +512,8 @@ const MusicCtrlProvider = props => {
           withGesture={false}
           speed={speed}
           spacing={spacing}
-          style={styles.marquee}>
+          style={styles.marquee}
+        >
           <Text white>{musicText}</Text>
         </Marquee>
       </View>
@@ -555,7 +560,7 @@ const MusicCtrlProvider = props => {
 
   // 旋转动画样式
   const rotateAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{rotate: `${rotation.value}deg`}],
+    transform: [{ rotate: `${rotation.value}deg` }],
   }));
 
   const [isExpand, setIsExpand] = useState(true);
@@ -571,7 +576,7 @@ const MusicCtrlProvider = props => {
   const fadeDownAnimatedStyle = useAnimatedStyle(() => ({
     display: display.value,
     opacity: opacity.value,
-    transform: [{translateY: translateY.value}],
+    transform: [{ translateY: translateY.value }],
   }));
 
   const musicCoverSource = useMemo(() => {
@@ -623,7 +628,7 @@ const MusicCtrlProvider = props => {
   // 是否需要恢复播放
   useEffect(() => {
     if (isMusicResumePlay) {
-      audioPlayer.resumePlayer();
+      Sound.resumePlayer();
       setIsMusicResumePlay(false);
     }
   }, [isMusicResumePlay]);
@@ -631,7 +636,7 @@ const MusicCtrlProvider = props => {
   // 是否被其它组件中断播放
   useEffect(() => {
     if (isMusicBreak) {
-      audioPlayer.pausePlayer();
+      Sound.pausePlayer();
       setIsMusicBreak(false);
     }
   }, [isMusicBreak]);
@@ -660,7 +665,7 @@ const MusicCtrlProvider = props => {
   useEffect(() => {
     if (closeTime) {
       playerTimer = setTimeout(() => {
-        audioPlayer.pausePlayer();
+        Sound.pausePlayer();
         pausePlayerCtrl();
         setIsClosed(true);
         clearTimeout(playerTimer);
@@ -716,8 +721,8 @@ const MusicCtrlProvider = props => {
   }, [isMusicPlaying, playingMusic?.id, isExpand]);
 
   useEffect(() => {
-    audioPlayer.addPlayBackListener(handlePlaybackUpdate);
-    return () => audioPlayer.removePlayBackListener();
+    Sound.addPlayBackListener(handlePlaybackUpdate);
+    return () => Sound.removePlayBackListener();
   }, [handlePlaybackUpdate]);
 
   useEffect(() => {
@@ -766,22 +771,25 @@ const MusicCtrlProvider = props => {
   return (
     <MusicCtrlContext.Provider value={contextValue}>
       <MusicPlaybackContext.Provider
-        value={{nowLyric, progressPosition, nowLyricIndex}}>
-        <MusicPlayPositionContext.Provider value={{playPosition}}>
+        value={{ nowLyric, progressPosition, nowLyricIndex }}
+      >
+        <MusicPlayPositionContext.Provider value={{ playPosition }}>
           {children}
-          <View style={[styles.CtrlContainer, {width: fullWidth}]}>
+          <View style={[styles.CtrlContainer, { width: fullWidth }]}>
             <Animated.View
               style={[
                 expandAnimatedStyle,
                 fadeDownAnimatedStyle,
                 styles.ctrlBackImage,
-              ]}>
+              ]}
+            >
               <BaseImageBackground
                 blurRadius={40}
                 source={{
                   uri: envConfig.THUMBNAIL_URL + userInfo?.user_bg_img,
                 }}
-                resizeMode="cover">
+                resizeMode="cover"
+              >
                 <GestureHandlerRootView>
                   <View row centerV spread>
                     <TouchableOpacity
@@ -792,7 +800,8 @@ const MusicCtrlProvider = props => {
                         ctrlWidth.value = withTiming(
                           ctrlWidth.value === 50 ? fullWidth - 32 : 50,
                         );
-                      }}>
+                      }}
+                    >
                       <View>
                         <AnimatedCircularProgress
                           key={playingMusic?.id}
@@ -801,7 +810,8 @@ const MusicCtrlProvider = props => {
                           fill={playingMusicProgress}
                           tintColor={Colors.red40}
                           rotation={0}
-                          lineCap="square">
+                          lineCap="square"
+                        >
                           {() => (
                             <Animated.View style={rotateAnimatedStyle}>
                               <Image
@@ -818,7 +828,8 @@ const MusicCtrlProvider = props => {
                         centerV
                         onPress={() => {
                           setMusicModalVisible(true);
-                        }}>
+                        }}
+                      >
                         {renderMarquee()}
                       </TouchableOpacity>
                       <View row centerV>
@@ -829,7 +840,8 @@ const MusicCtrlProvider = props => {
                             style={styles.musicBut}
                             onPress={() => {
                               playOrPauseTrack();
-                            }}>
+                            }}
+                          >
                             {isMusicPlaying ? (
                               <AntDesign
                                 name="pausecircleo"
@@ -850,7 +862,8 @@ const MusicCtrlProvider = props => {
                           style={styles.musicBut}
                           marginL-6
                           marginR-12
-                          onPress={() => setListModalVisible(true)}>
+                          onPress={() => setListModalVisible(true)}
+                        >
                           <AntDesign
                             name="menuunfold"
                             color={Colors.white}
