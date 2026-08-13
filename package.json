@@ -1,6 +1,6 @@
 {
   "name": "himate",
-  "version": "0.2.0",
+  "version": "0.3.3",
   "private": false,
   "scripts": {
     "android": "react-native run-android",
@@ -75,6 +75,8 @@
   "expo": {
     "autolinking": {
       "exclude": [
+        "expo-asset",
+        "expo-constants",
         "expo-application",
         "expo-file-system",
         "expo-font"
