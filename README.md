@@ -211,3 +211,4 @@ himate/
 ### 关联项目
 - **后端**: [Himate NestJS Server](https://gitee.com/zyz1720/himate_server_nest)
 - **后台管理**: [Himate React Backend](https://gitee.com/zyz1720/himate_backend_react)
+- **独立音乐APP(Flutter)**: [Himate Music](https://gitee.com/zyz1720/himate_music_flutter)
